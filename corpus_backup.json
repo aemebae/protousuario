@@ -1,0 +1,1986 @@
+{
+  "entradas": [
+    {
+      "fuente": "chatgpt",
+      "archivo": "corpus/raw/chatgpt/conversations-000.json",
+      "generado": "2026-06-23T07:38:16.494Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "chatgpt",
+      "archivo": "corpus/raw/chatgpt/conversations-001.json",
+      "generado": "2026-06-23T07:38:16.542Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "chatgpt",
+      "archivo": "corpus/raw/chatgpt/conversations-002.json",
+      "generado": "2026-06-23T07:38:16.567Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "chatgpt",
+      "archivo": "corpus/raw/chatgpt/conversation_asset_file_names.json",
+      "generado": "2026-06-23T07:38:16.568Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "chatgpt",
+      "archivo": "corpus/raw/chatgpt/export_manifest.json",
+      "generado": "2026-06-23T07:38:16.570Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "chatgpt",
+      "archivo": "corpus/raw/chatgpt/library_files.json",
+      "generado": "2026-06-23T07:38:16.576Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "chatgpt",
+      "archivo": "corpus/raw/chatgpt/message_feedback.json",
+      "generado": "2026-06-23T07:38:16.577Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "chatgpt",
+      "archivo": "corpus/raw/chatgpt/shared_conversations.json",
+      "generado": "2026-06-23T07:38:16.578Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "google-maps",
+      "archivo": "corpus/raw/google-maps/Rutas.json",
+      "generado": "2026-06-23T07:38:16.884Z",
+      "resumen": {
+        "total": 22644,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": [
+          {
+            "title": "sin_titulo",
+            "count": 22644
+          }
+        ]
+      }
+    },
+    {
+      "fuente": "google-maps",
+      "archivo": "corpus/raw/google-maps/Settings.json",
+      "generado": "2026-06-23T07:38:16.885Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "instagram",
+      "archivo": "corpus/raw/instagram/ads_about_meta.json",
+      "generado": "2026-06-23T07:38:16.887Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "instagram",
+      "archivo": "corpus/raw/instagram/ads_viewed.json",
+      "generado": "2026-06-23T07:38:16.888Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "instagram",
+      "archivo": "corpus/raw/instagram/advertisers_using_your_activity_or_information.json",
+      "generado": "2026-06-23T07:38:16.892Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "instagram",
+      "archivo": "corpus/raw/instagram/content_interactions.json",
+      "generado": "2026-06-23T07:38:16.893Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "instagram",
+      "archivo": "corpus/raw/instagram/in-app_message.json",
+      "generado": "2026-06-23T07:38:16.894Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "instagram",
+      "archivo": "corpus/raw/instagram/information_you've_submitted_to_advertisers.json",
+      "generado": "2026-06-23T07:38:16.895Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "instagram",
+      "archivo": "corpus/raw/instagram/other_categories_used_to_reach_you.json",
+      "generado": "2026-06-23T07:38:16.896Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "instagram",
+      "archivo": "corpus/raw/instagram/posts.json",
+      "generado": "2026-06-23T07:38:16.898Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "instagram",
+      "archivo": "corpus/raw/instagram/posts_viewed.json",
+      "generado": "2026-06-23T07:38:16.900Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "instagram",
+      "archivo": "corpus/raw/instagram/posts_you're_interested_or_not_interested_in.json",
+      "generado": "2026-06-23T07:38:16.902Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "instagram",
+      "archivo": "corpus/raw/instagram/posts_you're_not_interested_in.json",
+      "generado": "2026-06-23T07:38:16.903Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "instagram",
+      "archivo": "corpus/raw/instagram/suggested_profiles_viewed.json",
+      "generado": "2026-06-23T07:38:16.907Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "instagram",
+      "archivo": "corpus/raw/instagram/videos_watched.json",
+      "generado": "2026-06-23T07:38:16.909Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "spotify",
+      "archivo": "corpus/raw/spotify/Streaming_History_Audio_2026.json",
+      "generado": "2026-06-23T07:38:16.954Z",
+      "resumen": {
+        "total": 6987,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": [
+          {
+            "title": "sin_titulo",
+            "count": 6987
+          }
+        ]
+      }
+    },
+    {
+      "fuente": "unknown",
+      "archivo": "corpus/raw/brave/Brave_bookmarks.json",
+      "generado": "2026-06-24T06:31:44.020Z",
+      "resumen": {
+        "total": 1812,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": [
+          {
+            "title": "Fashion Breathable Tulle Splicing Chunky Boots Black Cowhide Leather – MyPlusWear",
+            "count": 4
+          },
+          {
+            "title": "Home",
+            "count": 3
+          },
+          {
+            "title": "IDIS | investigaciones sobre el Diseño de Imagen y Sonido",
+            "count": 2
+          },
+          {
+            "title": "Radio Tsonami | Programa – Archivolat",
+            "count": 2
+          },
+          {
+            "title": "brokenenglish.lol",
+            "count": 2
+          },
+          {
+            "title": "FREPAP: un partido ultra religioso colonizador nefasto de la Amazonía - IDEHPUCP PUCP",
+            "count": 2
+          },
+          {
+            "title": "Sismo en Lima | Tamboraque y los relaves mineros al lado del río Rímac que siguen sin trasladarse | #EstemosListos | LIMA | EL COMERCIO PERÚ",
+            "count": 2
+          },
+          {
+            "title": "Buscar",
+            "count": 2
+          },
+          {
+            "title": "El Brujo | Catálogo",
+            "count": 2
+          },
+          {
+            "title": "Perro yagán - Wikipedia, la enciclopedia libre",
+            "count": 2
+          },
+          {
+            "title": "Library Genesis",
+            "count": 2
+          },
+          {
+            "title": "",
+            "count": 2
+          },
+          {
+            "title": "Ecolocación - Tierra de delfines",
+            "count": 2
+          },
+          {
+            "title": "Naranjas de Hiroshima",
+            "count": 2
+          },
+          {
+            "title": "Zoowoman 1.0 – El lugar donde el cine te encuentra.",
+            "count": 2
+          },
+          {
+            "title": "García Canclini: la dictadura sanitaria por el coronavirus y la vigilancia corporativa generalizada",
+            "count": 2
+          },
+          {
+            "title": "Etsy Perú - Compra regalos hechos a mano, vintage, personalizados y únicos para todo el mundo",
+            "count": 2
+          },
+          {
+            "title": "Meta AI Demos",
+            "count": 2
+          },
+          {
+            "title": "Men's autumn and winter Halloween theme fashion pants a5fe",
+            "count": 2
+          },
+          {
+            "title": "Botas tipo calcetín con plataforma y punta cuadrada de charol Sassy -",
+            "count": 2
+          }
+        ]
+      }
+    },
+    {
+      "fuente": "unknown",
+      "archivo": "corpus/raw/brave/Brave_history.json",
+      "generado": "2026-06-24T06:31:44.072Z",
+      "resumen": {
+        "total": 10621,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": [
+          {
+            "title": "Foto - Google Fotos",
+            "count": 576
+          },
+          {
+            "title": "Instagram",
+            "count": 547
+          },
+          {
+            "title": "(2) Instagram",
+            "count": 502
+          },
+          {
+            "title": "(1) Instagram",
+            "count": 338
+          },
+          {
+            "title": "Google Traductor",
+            "count": 158
+          },
+          {
+            "title": "(3) Instagram",
+            "count": 154
+          },
+          {
+            "title": "(4) Instagram",
+            "count": 138
+          },
+          {
+            "title": "Acceso: Cuentas de Google",
+            "count": 80
+          },
+          {
+            "title": "Historias • Instagram",
+            "count": 67
+          },
+          {
+            "title": "Jordania - Google Maps",
+            "count": 50
+          },
+          {
+            "title": "ChatGPT",
+            "count": 46
+          },
+          {
+            "title": "YouTube",
+            "count": 42
+          },
+          {
+            "title": "",
+            "count": 42
+          },
+          {
+            "title": "cesar acuña - Buscar con Google",
+            "count": 39
+          },
+          {
+            "title": "tigresa del oriente - Buscar con Google",
+            "count": 38
+          },
+          {
+            "title": "Google Takeout",
+            "count": 36
+          },
+          {
+            "title": "Facebook",
+            "count": 33
+          },
+          {
+            "title": "Convocatorias • Instagram",
+            "count": 32
+          },
+          {
+            "title": "Timoteo - Buscar con Google",
+            "count": 30
+          },
+          {
+            "title": "voto-informado-web",
+            "count": 30
+          }
+        ]
+      }
+    },
+    {
+      "fuente": "chatgpt",
+      "archivo": "corpus/raw/chatgpt/conversations-000.json",
+      "generado": "2026-06-24T06:31:44.093Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "chatgpt",
+      "archivo": "corpus/raw/chatgpt/conversations-001.json",
+      "generado": "2026-06-24T06:31:44.141Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "chatgpt",
+      "archivo": "corpus/raw/chatgpt/conversations-002.json",
+      "generado": "2026-06-24T06:31:44.165Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "chatgpt",
+      "archivo": "corpus/raw/chatgpt/conversation_asset_file_names.json",
+      "generado": "2026-06-24T06:31:44.167Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "chatgpt",
+      "archivo": "corpus/raw/chatgpt/export_manifest.json",
+      "generado": "2026-06-24T06:31:44.170Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "chatgpt",
+      "archivo": "corpus/raw/chatgpt/library_files.json",
+      "generado": "2026-06-24T06:31:44.176Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "chatgpt",
+      "archivo": "corpus/raw/chatgpt/message_feedback.json",
+      "generado": "2026-06-24T06:31:44.177Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "chatgpt",
+      "archivo": "corpus/raw/chatgpt/shared_conversations.json",
+      "generado": "2026-06-24T06:31:44.178Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "google-maps",
+      "archivo": "corpus/raw/google-maps/Rutas.json",
+      "generado": "2026-06-24T06:31:44.516Z",
+      "resumen": {
+        "total": 22644,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": [
+          {
+            "title": "sin_titulo",
+            "count": 22644
+          }
+        ]
+      }
+    },
+    {
+      "fuente": "google-maps",
+      "archivo": "corpus/raw/google-maps/Settings.json",
+      "generado": "2026-06-24T06:31:44.519Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "instagram",
+      "archivo": "corpus/raw/instagram/ads_about_meta.json",
+      "generado": "2026-06-24T06:31:44.520Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "instagram",
+      "archivo": "corpus/raw/instagram/ads_viewed.json",
+      "generado": "2026-06-24T06:31:44.521Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "instagram",
+      "archivo": "corpus/raw/instagram/advertisers_using_your_activity_or_information.json",
+      "generado": "2026-06-24T06:31:44.524Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "instagram",
+      "archivo": "corpus/raw/instagram/content_interactions.json",
+      "generado": "2026-06-24T06:31:44.525Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "instagram",
+      "archivo": "corpus/raw/instagram/in-app_message.json",
+      "generado": "2026-06-24T06:31:44.526Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "instagram",
+      "archivo": "corpus/raw/instagram/information_you've_submitted_to_advertisers.json",
+      "generado": "2026-06-24T06:31:44.527Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "instagram",
+      "archivo": "corpus/raw/instagram/other_categories_used_to_reach_you.json",
+      "generado": "2026-06-24T06:31:44.527Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "instagram",
+      "archivo": "corpus/raw/instagram/posts.json",
+      "generado": "2026-06-24T06:31:44.528Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "instagram",
+      "archivo": "corpus/raw/instagram/posts_viewed.json",
+      "generado": "2026-06-24T06:31:44.530Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "instagram",
+      "archivo": "corpus/raw/instagram/posts_you're_interested_or_not_interested_in.json",
+      "generado": "2026-06-24T06:31:44.531Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "instagram",
+      "archivo": "corpus/raw/instagram/posts_you're_not_interested_in.json",
+      "generado": "2026-06-24T06:31:44.532Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "instagram",
+      "archivo": "corpus/raw/instagram/suggested_profiles_viewed.json",
+      "generado": "2026-06-24T06:31:44.536Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "instagram",
+      "archivo": "corpus/raw/instagram/videos_watched.json",
+      "generado": "2026-06-24T06:31:44.537Z",
+      "resumen": {
+        "total": 0,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": []
+      }
+    },
+    {
+      "fuente": "spotify",
+      "archivo": "corpus/raw/spotify/Streaming_History_Audio_2026.json",
+      "generado": "2026-06-24T06:31:44.581Z",
+      "resumen": {
+        "total": 6987,
+        "withTime": 0,
+        "byHour": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topItems": [
+          {
+            "title": "sin_titulo",
+            "count": 6987
+          }
+        ]
+      }
+    }
+  ]
+}

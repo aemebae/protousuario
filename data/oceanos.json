@@ -1,0 +1,19 @@
+{
+  "_uso": "Respaldo APROXIMADO por cajas (bbox) para nombrar océanos/mares cuando el punto subsatelital NO cae en ningún país de ne_110m_admin_0_countries.geojson. Es una simplificación honesta: los límites reales de océanos no son rectángulos. Para precisión real, reemplazar por polígonos de Marine Regions (Global Oceans and Seas + IHO Sea Areas, marineregions.org/downloads.php) cuando tengas internet para descargarlos -- ese dataset SÍ es preciso. Formato bbox: [latMin, latMax, lonMin, lonMax]. El Pacífico se parte en dos cajas (este/oeste) para no cruzar el antimeridiano (180°/-180°).",
+  "oceanos": [
+    { "nombre": "Océano Ártico", "bbox": [66, 90, -180, 180] },
+    { "nombre": "Océano Austral", "bbox": [-90, -60, -180, 180] },
+    { "nombre": "Mar Mediterráneo", "bbox": [30, 46, -6, 36] },
+    { "nombre": "Mar Caribe", "bbox": [9, 22, -87, -60] },
+    { "nombre": "Golfo de México", "bbox": [18, 30, -98, -81] },
+    { "nombre": "Mar de China Meridional", "bbox": [0, 23, 99, 121] },
+    { "nombre": "Mar Rojo", "bbox": [12, 30, 32, 44] },
+    { "nombre": "Océano Pacífico Norte", "bbox": [0, 66, 100, 180] },
+    { "nombre": "Océano Pacífico Norte", "bbox": [0, 66, -180, -100] },
+    { "nombre": "Océano Pacífico Sur", "bbox": [-60, 0, 130, 180] },
+    { "nombre": "Océano Pacífico Sur", "bbox": [-60, 0, -180, -70] },
+    { "nombre": "Océano Atlántico Norte", "bbox": [0, 66, -80, 0] },
+    { "nombre": "Océano Atlántico Sur", "bbox": [-60, 0, -70, 20] },
+    { "nombre": "Océano Índico", "bbox": [-60, 30, 20, 130] }
+  ]
+}

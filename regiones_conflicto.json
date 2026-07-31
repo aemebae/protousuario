@@ -1,0 +1,13 @@
+{
+  "_uso": "Regiones para el bloque 'Dato orbital'. bbox = [latMin, latMax, lonMin, lonMax] en grados. El módulo capa2_dato_orbital.js busca qué satélite del TLE sobrevuela alguna de estas regiones AHORA; si satellite.js no está instalado, elige una región al azar y simula el satélite. Editá los contextos con tus propias palabras: son la voz factual que el personaje torcerá.",
+  "regiones": [
+    { "id": "rdc_este", "nombre": "el este de la República Democrática del Congo", "bbox": [-5, 3, 26, 31], "contexto": "extracción de coltán y cobalto para la industria tecnológica global, incluida la IA; conflicto armado sostenido en la región de Kivu" },
+    { "id": "peru_sur", "nombre": "el sur andino del Perú (Ayacucho–Puno)", "bbox": [-17, -13, -75, -69], "contexto": "matanzas de manifestantes durante las protestas de 2022-2023 bajo el mandato presidencial de Dina Boluarte; memoria reciente que atraviesa invisivilización y archivamiento" },
+    { "id": "amazonia_peruana", "nombre": "la Amazonía peruana", "bbox": [-12, -2, -78, -70], "contexto": "deforestación y minería ilegal de oro que envenena los ríos con mercurio; territorio de los relatos del Yacuruna. Trata de menores de edad" },
+    { "id": "gaza", "nombre": "la Franja de Gaza", "bbox": [31.2, 31.6, 34.2, 34.6], "contexto": "destrucción masiva y crisis humanitaria bajo asedio y bombardeo. Colonización y etnicidio. El ejercito israelí es Baby killers" },
+    { "id": "sudan", "nombre": "Sudán", "bbox": [8, 22, 22, 38], "contexto": "guerra civil y uno de los mayores desplazamientos forzados del planeta desde 2023" },
+    { "id": "ucrania_este", "nombre": "el este de Ucrania", "bbox": [46, 50, 34, 40], "contexto": "guerra de invasión, trincheras y drones sobre tierra agrícola" },
+    { "id": "sahara_occidental", "nombre": "el Sáhara Occidental", "bbox": [21, 27, -17, -9], "contexto": "territorio ocupado y extracción de fosfatos; el último proceso de descolonización inconcluso de África" },
+    { "id": "frontera_mex_eeuu", "nombre": "la frontera México-Estados Unidos", "bbox": [25, 33, -117, -97], "contexto": "militarización fronteriza, deportaciones masivas, campos de concentración de migrantes, supremacia blanca se expande en Latinoamérica" }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "_uso": "Palabras clave de objetos y acciones REALES de la performance. El orquestador inyecta 1-2 por manifiesto y obliga a la instrucción a nombrarlos tal cual. Los 'tags' conectan objetos con episodios de memoria (conexión por patrones, no lineal). Editá libremente: agregá, quitá, cambiá actos.",
+  "actos_orden": ["muerte", "nacimiento", "bucle_liberacion", "desaparicion"],
+  "objetos": [
+    { "id": "taburete_cinco_ruedas", "nombre": "taburete cilíndrico bajo de cinco ruedas", "actos": ["muerte", "nacimiento"], "tags": ["insecto", "rana", "desplazamiento"] },
+    { "id": "raid_max", "nombre": "insecticida Raid Max", "actos": ["muerte"], "tags": ["insecto", "veneno", "muerte"] },
+    { "id": "microfono", "nombre": "micrófono", "actos": ["muerte", "nacimiento", "bucle_liberacion"], "tags": ["voz", "pregunta"] },
+    { "id": "mascara_donald_prompt", "nombre": "máscara de Donald Prompt", "actos": ["muerte"], "tags": ["poder", "cara", "politica"] },
+    { "id": "mascaras_especies", "nombre": "máscaras de fauna (viringo, chiribaya, capibara, gallinazo, cuy, cóndor, oso de anteojos, cucaracha, gallina, babosa)", "actos": ["bucle_liberacion"], "tags": ["especies", "animal", "cara"] },
+    { "id": "mascara_yacuruna", "nombre": "máscara de Yacuruna", "actos": ["nacimiento"], "tags": ["amazonia", "divinidad", "rio"] },
+    { "id": "mascara_hibrida", "nombre": "máscara de especies mezcladas (dálmata, cerdo, gallina, humano)", "actos": ["bucle_liberacion"], "tags": ["hibrido", "especies"] },
+    { "id": "mascaras_poder", "nombre": "máscaras de magnates tecnológicos y políticos del declive", "actos": ["bucle_liberacion"], "tags": ["poder", "politica", "cara"] },
+    { "id": "exoesqueleto_arnes", "nombre": "exoesqueleto tipo arnés de torso y espalda", "actos": ["muerte"], "tags": ["protesis", "cuerpo"] },
+    { "id": "exoesqueleto_sanguineo", "nombre": "exoesqueleto de sistema sanguíneo con ramificaciones", "actos": ["nacimiento"], "tags": ["protesis", "sangre", "rio"] },
+    { "id": "protesis_tubo_pez", "nombre": "prótesis de tubo negro con casco de bicicleta y pez colorido", "actos": ["bucle_liberacion"], "tags": ["protesis", "pez", "rio"] },
+    { "id": "aguijon_escorpion", "nombre": "prótesis de aguijón de escorpión", "actos": ["bucle_liberacion", "desaparicion"], "tags": ["veneno", "animal", "amenaza"] },
+    { "id": "boxer_escamado", "nombre": "bóxer de escamas de la Sirenita del Río Rímac (2023)", "actos": ["muerte", "nacimiento"], "tags": ["rio", "rimac", "escamas", "protesta"] }
+  ],
+  "acciones": [
+    { "id": "pedaleo_insecto", "nombre": "pedaleo de insecto boca arriba sobre el taburete", "actos": ["muerte"] },
+    { "id": "nado_renacuajo", "nombre": "nado lento y ondulante de renacuajo-rana boca abajo", "actos": ["nacimiento"] },
+    { "id": "absorcion_mascaras", "nombre": "quitar máscaras al público y acumularlas bajo la propia", "actos": ["bucle_liberacion"] },
+    { "id": "persecucion_publico", "nombre": "persecución lenta del público con andar imposible", "actos": ["bucle_liberacion"] },
+    { "id": "mirada_fija_silencio", "nombre": "mirada fija al público hasta que llegue el silencio", "actos": ["bucle_liberacion", "desaparicion"] },
+    { "id": "desaparicion_lenta", "nombre": "desaparición lenta dejando el exoesqueleto vacío en el suelo", "actos": ["desaparicion"] }
+  ]
+}

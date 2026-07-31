@@ -1,0 +1,346 @@
+{
+  "generado": "2026-07-05T11:02:22.304Z",
+  "global": {
+    "total_mensajes": 27866,
+    "total_palabras": 268015,
+    "longitud_media_mensaje_palabras": 9.62,
+    "longitud_media_oracion_palabras": 7.15,
+    "exclamaciones_por_mensaje": 0.102,
+    "interrogaciones_por_mensaje": 0.203,
+    "puntos_suspensivos_por_mensaje": 0.003,
+    "emojis_por_mensaje": 0.052,
+    "palabras_frecuentes": [
+      {
+        "palabra": "jajaja",
+        "conteo": 907
+      },
+      {
+        "palabra": "todo",
+        "conteo": 897
+      },
+      {
+        "palabra": "gracias",
+        "conteo": 774
+      },
+      {
+        "palabra": "bien",
+        "conteo": 745
+      },
+      {
+        "palabra": "estoy",
+        "conteo": 744
+      },
+      {
+        "palabra": "hola",
+        "conteo": 728
+      },
+      {
+        "palabra": "hay",
+        "conteo": 654
+      },
+      {
+        "palabra": "así",
+        "conteo": 584
+      },
+      {
+        "palabra": "ahí",
+        "conteo": 566
+      },
+      {
+        "palabra": "algo",
+        "conteo": 563
+      },
+      {
+        "palabra": "ahora",
+        "conteo": 563
+      },
+      {
+        "palabra": "hacer",
+        "conteo": 534
+      },
+      {
+        "palabra": "qué",
+        "conteo": 488
+      },
+      {
+        "palabra": "tmb",
+        "conteo": 488
+      },
+      {
+        "palabra": "aquí",
+        "conteo": 484
+      },
+      {
+        "palabra": "tengo",
+        "conteo": 482
+      },
+      {
+        "palabra": "voy",
+        "conteo": 452
+      },
+      {
+        "palabra": "cómo",
+        "conteo": 450
+      },
+      {
+        "palabra": "está",
+        "conteo": 450
+      },
+      {
+        "palabra": "solo",
+        "conteo": 433
+      },
+      {
+        "palabra": "bueno",
+        "conteo": 432
+      },
+      {
+        "palabra": "obra",
+        "conteo": 424
+      },
+      {
+        "palabra": "esa",
+        "conteo": 422
+      },
+      {
+        "palabra": "puedes",
+        "conteo": 420
+      },
+      {
+        "palabra": "desde",
+        "conteo": 398
+      }
+    ]
+  },
+  "por_registro": {
+    "analitico": {
+      "total_mensajes": 1866,
+      "total_palabras": 115784,
+      "longitud_media_mensaje_palabras": 62.05,
+      "longitud_media_oracion_palabras": 15.41,
+      "exclamaciones_por_mensaje": 0.121,
+      "interrogaciones_por_mensaje": 0.691,
+      "puntos_suspensivos_por_mensaje": 0.019,
+      "emojis_por_mensaje": 0.019,
+      "palabras_frecuentes": [
+        {
+          "palabra": "gpt",
+          "conteo": 331
+        },
+        {
+          "palabra": "hola",
+          "conteo": 309
+        },
+        {
+          "palabra": "imagen",
+          "conteo": 284
+        },
+        {
+          "palabra": "qué",
+          "conteo": 275
+        },
+        {
+          "palabra": "desde",
+          "conteo": 255
+        },
+        {
+          "palabra": "obra",
+          "conteo": 246
+        },
+        {
+          "palabra": "sobre",
+          "conteo": 241
+        },
+        {
+          "palabra": "puedes",
+          "conteo": 224
+        },
+        {
+          "palabra": "perú",
+          "conteo": 216
+        },
+        {
+          "palabra": "podrías",
+          "conteo": 211
+        },
+        {
+          "palabra": "gracias",
+          "conteo": 206
+        },
+        {
+          "palabra": "hacer",
+          "conteo": 195
+        },
+        {
+          "palabra": "artista",
+          "conteo": 183
+        },
+        {
+          "palabra": "gustaría",
+          "conteo": 181
+        },
+        {
+          "palabra": "entre",
+          "conteo": 179
+        },
+        {
+          "palabra": "cómo",
+          "conteo": 176
+        },
+        {
+          "palabra": "estoy",
+          "conteo": 171
+        },
+        {
+          "palabra": "arte",
+          "conteo": 170
+        },
+        {
+          "palabra": "todo",
+          "conteo": 169
+        },
+        {
+          "palabra": "solo",
+          "conteo": 168
+        },
+        {
+          "palabra": "ser",
+          "conteo": 166
+        },
+        {
+          "palabra": "está",
+          "conteo": 161
+        },
+        {
+          "palabra": "residencia",
+          "conteo": 159
+        },
+        {
+          "palabra": "ahora",
+          "conteo": 155
+        },
+        {
+          "palabra": "parte",
+          "conteo": 146
+        }
+      ]
+    },
+    "informal_intimo": {
+      "total_mensajes": 26000,
+      "total_palabras": 152231,
+      "longitud_media_mensaje_palabras": 5.86,
+      "longitud_media_oracion_palabras": 5.08,
+      "exclamaciones_por_mensaje": 0.1,
+      "interrogaciones_por_mensaje": 0.168,
+      "puntos_suspensivos_por_mensaje": 0.002,
+      "emojis_por_mensaje": 0.054,
+      "palabras_frecuentes": [
+        {
+          "palabra": "jajaja",
+          "conteo": 905
+        },
+        {
+          "palabra": "todo",
+          "conteo": 728
+        },
+        {
+          "palabra": "bien",
+          "conteo": 645
+        },
+        {
+          "palabra": "hay",
+          "conteo": 588
+        },
+        {
+          "palabra": "estoy",
+          "conteo": 573
+        },
+        {
+          "palabra": "gracias",
+          "conteo": 568
+        },
+        {
+          "palabra": "ahí",
+          "conteo": 539
+        },
+        {
+          "palabra": "tmb",
+          "conteo": 488
+        },
+        {
+          "palabra": "algo",
+          "conteo": 448
+        },
+        {
+          "palabra": "así",
+          "conteo": 444
+        },
+        {
+          "palabra": "aquí",
+          "conteo": 443
+        },
+        {
+          "palabra": "voy",
+          "conteo": 431
+        },
+        {
+          "palabra": "hola",
+          "conteo": 419
+        },
+        {
+          "palabra": "ahora",
+          "conteo": 408
+        },
+        {
+          "palabra": "bueno",
+          "conteo": 400
+        },
+        {
+          "palabra": "esa",
+          "conteo": 383
+        },
+        {
+          "palabra": "tengo",
+          "conteo": 346
+        },
+        {
+          "palabra": "hacer",
+          "conteo": 339
+        },
+        {
+          "palabra": "estás",
+          "conteo": 318
+        },
+        {
+          "palabra": "ese",
+          "conteo": 312
+        },
+        {
+          "palabra": "cosas",
+          "conteo": 309
+        },
+        {
+          "palabra": "siii",
+          "conteo": 305
+        },
+        {
+          "palabra": "igual",
+          "conteo": 294
+        },
+        {
+          "palabra": "está",
+          "conteo": 289
+        },
+        {
+          "palabra": "ver",
+          "conteo": 283
+        },
+        {
+          "palabra": "xd",
+          "conteo": 250
+        }
+        
+      ]
+    }
+  }
+}

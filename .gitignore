@@ -1,0 +1,5 @@
+.env
+node_modules
+corpus.json
+corpus.redacted.json
+redaction-report.json
