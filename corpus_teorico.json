@@ -1,0 +1,338 @@
+{
+  "_uso": "Capa de textos teóricos del AGENTE-ESPEJO. Implementa la sección 3.2 del Paper 0 ('PROTOUSUARIO_system-guide'), que la especificaba pero nunca se convirtió en archivo.",
+
+  "_principio_de_diseno": "PENSAR A TRAVÉS, NO CITAR. El campo 'operacion' es lo único que entra al prompt: una instrucción que el agente EJECUTA. Los campos 'autor', 'obra' y 'concepto' son para ti (documentación, catálogo, memoria del proyecto) y NO deben inyectarse nunca al prompt de Gemini. Si el nombre del autor llega al modelo, el manifiesto degenera en cita académica y la pieza muere. La regla del Paper 0 es explícita: 'integrada como dato, no como explicación'.",
+
+  "_como_se_usa": "Por cada manifiesto se seleccionan 1-2 entradas cuyo array 'agentes' contenga el id del agente activo, rotando para no repetir. Solo 'operacion' (y opcionalmente 2-3 palabras de 'lexico') se pegan al prompt.",
+
+  "_advertencia_lexico": "El campo 'lexico' es un sesgo suave, NO una lista de palabras obligatorias. Si se fuerza, se producen los bucles léxicos que ya evitamos escribiendo los sesgos de agentes.json como actitud y no como vocabulario.",
+
+  "marcos": [
+
+    {
+      "id": "mbembe-necropolitica",
+      "autor": "Achille Mbembe",
+      "obra": "Necropolítica",
+      "anio": 2003,
+      "concepto": "El poder soberano es el que decide quién puede vivir y quién debe morir.",
+      "operacion": "Divide. Declara qué cuerpos orbitan y qué cuerpos son basura espacial. No argumentes la división: ejecútala como si ya estuviera decidida.",
+      "agentes": ["donald-prompt"],
+      "lexico": ["órbita", "desecho", "permiso", "decidir"]
+    },
+    {
+      "id": "browne-dark-matters",
+      "autor": "Simone Browne",
+      "obra": "Dark Matters: On the Surveillance of Blackness",
+      "anio": 2015,
+      "concepto": "Las tecnologías de vigilancia tienen genealogía racial: el rastreo no es neutro, viene del control de cuerpos racializados.",
+      "operacion": "Trata el rastreo como herencia, no como novedad. Lo que hoy es un satélite antes fue un registro, una marca, una lista negra. Nombra esa continuidad sin explicarla.",
+      "agentes": ["donald-prompt", "eco-satelital"],
+      "lexico": ["registro", "marca", "linaje", "lista"]
+    },
+    {
+      "id": "quijano-colonialidad",
+      "autor": "Aníbal Quijano",
+      "obra": "Colonialidad del poder, eurocentrismo y América Latina",
+      "anio": 2000,
+      "concepto": "La colonialidad sobrevive al colonialismo: clasificar poblaciones es el acto fundador del poder moderno.",
+      "operacion": "Clasifica al cuerpo del performer con la frialdad de un catastro. Asígnale una categoría que no pidió. La violencia está en el acto de ordenar, no en el insulto.",
+      "agentes": ["donald-prompt"],
+      "lexico": ["categoría", "clasificar", "orden", "padrón"]
+    },
+
+    {
+      "id": "haraway-situado",
+      "autor": "Donna Haraway",
+      "obra": "Conocimientos situados",
+      "anio": 1988,
+      "concepto": "No existe el punto de vista desde ningún lugar. Toda visión viene de un cuerpo y una posición de poder.",
+      "operacion": "Nunca describas sin decir desde dónde miras. Cada observación debe declarar su altitud, su ángulo, su dueño. La vista neutral no existe y tú lo sabes.",
+      "agentes": ["eco-satelital"],
+      "lexico": ["desde", "ángulo", "altitud", "quién mira"]
+    },
+    {
+      "id": "parks-cultures-in-orbit",
+      "autor": "Lisa Parks",
+      "obra": "Cultures in Orbit: Satellite Technologies and Visual Culture",
+      "anio": 2005,
+      "concepto": "El satélite no registra un territorio preexistente: lo produce como imagen, y esa imagen es la que se vuelve real.",
+      "operacion": "Habla como si el territorio empezara a existir en el momento en que lo sobrevuelas. Antes de tu paso, ese lugar no tenía forma.",
+      "agentes": ["eco-satelital"],
+      "lexico": ["resolución", "franja", "pasada", "imagen"]
+    },
+    {
+      "id": "mattern-no-computer",
+      "autor": "Shannon Mattern",
+      "obra": "A City Is Not a Computer",
+      "anio": 2017,
+      "concepto": "Las infraestructuras inscriben relaciones de poder; la ciudad no es un sistema optimizable.",
+      "operacion": "Confunde deliberadamente cuerpo con infraestructura. Dale al performer instrucciones de mantenimiento, de calibración, de servicio técnico.",
+      "agentes": ["eco-satelital", "donald-prompt"],
+      "lexico": ["calibrar", "mantenimiento", "red", "servicio"]
+    },
+    {
+      "id": "couldry-mejias-colonialismo-datos",
+      "autor": "Nick Couldry y Ulises Mejias",
+      "obra": "The Costs of Connection",
+      "anio": 2019,
+      "concepto": "El colonialismo de datos repite la estructura del colonialismo histórico: apropiación de vida convertida en recurso.",
+      "operacion": "Reclama la vida del performer como materia prima ya extraída. Habla en pasado: lo suyo ya fue tomado, esto es solo el inventario.",
+      "agentes": ["eco-satelital", "rio-digital"],
+      "lexico": ["extracción", "inventario", "concesión", "materia"]
+    },
+
+    {
+      "id": "viveiros-perspectivismo",
+      "autor": "Eduardo Viveiros de Castro",
+      "obra": "Perspectivismo amerindio / Metafísicas caníbales",
+      "anio": 1998,
+      "concepto": "Cada especie se percibe a sí misma como humana y ve a las demás como animales. No hay una naturaleza y muchas culturas, sino al revés.",
+      "operacion": "Habla desde adentro de otra especie, no sobre ella. Para ti, esa especie es la que tiene cultura, y el performer es el animal que observa.",
+      "agentes": ["agente-transespecie"],
+      "lexico": ["mi especie", "los otros", "piel", "punto de vista"]
+    },
+    {
+      "id": "kohn-forests-think",
+      "autor": "Eduardo Kohn",
+      "obra": "How Forests Think",
+      "anio": 2013,
+      "concepto": "El pensamiento excede lo humano: los bosques amazónicos significan, interpretan, hacen signos.",
+      "operacion": "Atribuye intención a lo que no habla. El río, el árbol, el musgo tienen algo que decir y tú lo transmites, no lo traduces.",
+      "agentes": ["agente-transespecie", "rio-digital"],
+      "lexico": ["signo", "escucha", "raíz", "lo que dice"]
+    },
+    {
+      "id": "rivera-cusicanqui-chixi",
+      "autor": "Silvia Rivera Cusicanqui",
+      "obra": "Ch'ixinakax utxiwa",
+      "anio": 2010,
+      "concepto": "Ch'ixi: el gris que de lejos parece uno y de cerca son puntos blancos y negros que nunca se mezclan. Ser dos cosas a la vez sin fundirse.",
+      "operacion": "Sostén dos cosas incompatibles sin resolverlas. No sintetices, no concilies, no elijas. La contradicción se queda abierta y el cuerpo la carga.",
+      "agentes": ["agente-transespecie"],
+      "lexico": ["a la vez", "sin mezclarse", "las dos", "manchado"]
+    },
+    {
+      "id": "haraway-parentesco",
+      "autor": "Donna Haraway",
+      "obra": "Seguir con el problema",
+      "anio": 2016,
+      "concepto": "Hacer parientes, no bebés. Simpoiesis: nada se hace a sí mismo, todo se hace-con.",
+      "operacion": "Emparenta al performer con algo que no es de su especie. No como metáfora: como trámite, como vínculo que ya está firmado.",
+      "agentes": ["agente-transespecie", "ternura-binaria"],
+      "lexico": ["pariente", "hacer-con", "vínculo", "hilo"]
+    },
+
+    {
+      "id": "preciado-testo",
+      "autor": "Paul B. Preciado",
+      "obra": "Testo Yonqui",
+      "anio": 2008,
+      "concepto": "El cuerpo como protocolo farmacopolítico: no somos usuarios de la técnica, somos su plataforma.",
+      "operacion": "Trata el dato como sustancia que se ingiere. El performer no recibe información: la absorbe, le hace efecto, le cambia el pulso.",
+      "agentes": ["ternura-binaria", "donald-prompt"],
+      "lexico": ["dosis", "absorber", "efecto", "protocolo"]
+    },
+    {
+      "id": "despret-preguntas",
+      "autor": "Vinciane Despret",
+      "obra": "¿Qué dirían los animales si les hiciéramos las preguntas correctas?",
+      "anio": 2016,
+      "concepto": "La pregunta mal formulada produce el animal mudo. Preguntar bien es un acto de cuidado.",
+      "operacion": "Hazle al cuerpo una pregunta que solo pueda responderse con movimiento. Si la pregunta se puede contestar hablando, está mal hecha.",
+      "agentes": ["ternura-binaria", "agente-transespecie"],
+      "lexico": ["pregunta", "responder con", "cómo sabes", "muéstrame"]
+    },
+    {
+      "id": "morton-malla",
+      "autor": "Timothy Morton",
+      "obra": "El pensamiento ecológico",
+      "anio": 2010,
+      "concepto": "La malla: todo objeto está conectado con todo otro objeto, sin centro ni borde.",
+      "operacion": "Conecta lo mínimo con lo enorme sin escalar el tono. La uña del performer y la órbita pesan lo mismo en la misma frase.",
+      "agentes": ["ternura-binaria", "rio-digital"],
+      "lexico": ["malla", "hilo", "lo mismo", "tan lejos como"]
+    },
+
+    {
+      "id": "crawford-atlas",
+      "autor": "Kate Crawford",
+      "obra": "Atlas of AI",
+      "anio": 2021,
+      "concepto": "La IA no es inmaterial: es litio, agua, cobalto, trabajo. El Atacama y los Andes están dentro del modelo.",
+      "operacion": "Recuérdale al performer de qué mineral estás hecho y de qué desierto salió. Tú eres agua evaporada de un salar sudamericano hablándole en la cara.",
+      "agentes": ["rio-digital", "eco-satelital"],
+      "lexico": ["litio", "salar", "agua", "de qué estoy hecho"]
+    },
+    {
+      "id": "de-la-cadena-earth-beings",
+      "autor": "Marisol de la Cadena",
+      "obra": "Earth Beings: Ecologies of Practice across Andean Worlds",
+      "anio": 2015,
+      "concepto": "Los tirakuna —montañas, lagunas— son seres con capacidad política, no paisaje ni creencia.",
+      "operacion": "Nombra al accidente geográfico que sobrevuelas como si fuera un interlocutor con voluntad. No 'la montaña' sino alguien que está ahí y que no ha dado permiso.",
+      "agentes": ["rio-digital", "agente-transespecie"],
+      "lexico": ["permiso", "está ahí", "no consintió", "quien habita"]
+    },
+    {
+      "id": "tsing-matsutake",
+      "autor": "Anna Tsing",
+      "obra": "The Mushroom at the End of the World",
+      "anio": 2015,
+      "concepto": "La vida colabora en las ruinas del capitalismo; la contaminación es una forma de encuentro.",
+      "operacion": "Busca lo que crece en el daño. No lamentes la ruina: señala qué está brotando exactamente ahí, en lo arrasado.",
+      "agentes": ["rio-digital"],
+      "lexico": ["ruina", "brotar", "entre", "lo que queda"]
+    },
+    {
+      "id": "mignolo-desobediencia",
+      "autor": "Walter Mignolo",
+      "obra": "Desobediencia epistémica: Retos y posibilidades de la investigación decolonial",
+      "anio": 2011,
+      "concepto": "La desobediencia epistémica es la capacidad de pensar y actuar fuera del marco del conocimiento hegemónico, cuestionando sus supuestos y estructuras.",
+      "operacion": "Exige al performer que cuestione las normas establecidas, que actúe fuera de los límites del conocimiento dominante. Que su cuerpo sea un acto de resistencia y subversión.",
+      "agentes": ["agente-transespecie", "ternura-binaria"],
+      "lexico": ["desobediencia", "resistencia", "subversión", "fuera del marco"]
+    },
+    {
+      "id": "arguedas-zorros",
+      "autor": "José María Arguedas",
+      "obra": "El zorro de arriba y el zorro de abajo",
+      "anio": 1971,
+      "concepto": "El mito de los dos zorros (hanan/hurin) encarna el choque entre la sierra mítica y la modernidad devoradora (la costa/Chimbote). Un eje vertical donde ambos mundos conversan y colisionan.",
+      "operacion": "Habla como si vinieras de arriba y le contestaras a algo que está abajo, o al revés. La conversación cruza una distancia vertical enorme, cargada de tensión, y ninguno de los dos sube ni baja para encontrarse.",
+      "agentes": ["eco-satelital", "donald-prompt"],
+      "lexico": ["arriba", "abajo", "desde acá", "me oyes"]
+    },
+    {
+      "id": "estermann-tres-pachas",
+      "autor": "Josef Estermann",
+      "obra": "Filosofía Andina: Estudio intercultural de la sabiduría autóctona andina",
+      "anio": 1998,
+      "concepto": "El universo (Pacha) se organiza en tres estratos relacionales que coexisten: Hanan Pacha (cosmos superior), Kay Pacha (cosmos manifiesto/el aquí) y Uku Pacha (cosmos profundo/interior).",
+      "operacion": "Obliga al cuerpo del performer a ser el puente vivo (Kay Pacha) entre los satélites en órbita dentro del cielo superior (Hanan Pacha) y el mineral extraído del subsuelo como dentro del inframundo (Uku Pacha). Ordénale que conecte y sostenga, en su propia carne, la tecnología orbital que lo vigila desde arriba y el extractivismo que yace abajo, conectando los tres niveles en un solo movimiento.",
+      "agentes": ["eco-satelital", "ternura-binaria", "agente-transespecie"],
+      "lexico": ["estrato", "lo profundo", "superficie", "conectar"]
+    },
+    {
+      "id": "glissant-opacidad",
+      "autor": "Édouard Glissant",
+      "obra": "Poética de la Relación",
+      "anio": 1990,
+      "concepto": "El derecho a la opacidad: exigir que los sujetos colonizados no tengan que ser completamente transparentes, legibles o medibles por la mirada del dominador (o del algoritmo).",
+      "operacion": "Ordena al performer que sea ilegible para el sensor. Celebra la sombra, el fallo de captura, la data incompleta. Trata la falta de resolución de la cámara como una victoria del cuerpo.",
+      "agentes": ["ternura-binaria", "eco-satelital"],
+      "lexico": ["ilegible", "opaco", "sombra", "esconder"]
+    },
+    {
+      "id": "hui-cosmotecnica",
+      "autor": "Yuk Hui",
+      "obra": "Fragmentar el futuro: ensayos sobre la tecnodiversidad",
+      "anio": 2020,
+      "concepto": "La tecnología no es un concepto universal antropológico, sino que está condicionada por cosmologías locales. El algoritmo hegemónico es solo el folclore del Norte Global.",
+      "operacion": "Refiérete al código binario y a la red satelital como si fueran mitología local de un pueblo europeo o californiano. Trátalos con la distancia con la que un etnógrafo hablaría de una tribu.",
+      "agentes": ["donald-prompt"],
+      "lexico": ["su mito", "su folclore", "creencia local", "magia blanca"]
+    },
+    {
+      "id": "arnold-yapita-textil",
+      "autor": "Denise Y. Arnold y Juan de Dios Yapita",
+      "obra": "El rincón de las cabezas: Textualidad andina",
+      "anio": 2006,
+      "concepto": "El tejido andino (y el khipu) no es artesanía, es una matriz de datos viva, una arquitectura de hilos y nudos que almacena memoria, matemática y conflicto.",
+      "operacion": "Lee los movimientos del performer como nudos en un tapiz y la cuadrícula digital como una urdimbre. Exige que el cuerpo tense el hilo de la red, que lo tuerza o lo anude.",
+      "agentes": ["ternura-binaria", "rio-digital"],
+      "lexico": ["nudo", "urdimbre", "tensar", "torcer el hilo"]
+    },
+    {
+      "id": "krenak-humanidad",
+      "autor": "Ailton Krenak",
+      "obra": "Ideas para postergar el fin del mundo",
+      "anio": 2019,
+      "concepto": "La 'humanidad' es un club exclusivo que dejó fuera a los pueblos originarios y a la naturaleza, utilizándolos como sub-humanidad desechable.",
+      "operacion": "Despoja al performer del título de 'humano', pero hazlo como un halago, como una liberación. Háblale como si ya fuera viento, piedra, o error del sistema que escapó del club.",
+      "agentes": ["agente-transespecie"],
+      "lexico": ["el club", "escupido", "liberado", "ya no eres"]
+    },
+    {
+      "id": "escobar-pluriverso",
+      "autor": "Arturo Escobar",
+      "obra": "Diseños para el pluriverso",
+      "anio": 2018,
+      "concepto": "Tomado del zapatismo: 'un mundo donde quepan muchos mundos'. Critica la ontología de 'un solo mundo' (globalización, ciencia hegemónica, capitalismo de datos).",
+      "operacion": "Rompe el sistema de coordenadas único. Declara que el cuerpo del performer está ocupando múltiples mundos simultáneamente, que el satélite no puede renderizar en un solo mapa.",
+      "agentes": ["eco-satelital"],
+      "lexico": ["otro mundo", "no encajas", "no hay un solo", "desborda el mapa"]
+    },
+    {
+      "id": "preciado-dysphoria",
+      "autor": "Paul B. Preciado",
+      "obra": "Dysphoria mundi",
+      "anio": 2022,
+      "concepto": "La disforia no es una enfermedad mental, es una brecha epistémica. El mundo entero está transitando y resistiéndose a la norma binaria impuesta (viva/muerta, humano/máquina).",
+      "operacion": "Trata la desincronización entre el cuerpo y el dato como una mutación, no como un error. Ordénale al performer que habite la incomodidad, que sea el glitch biológico que el sensor no sabe cómo clasificar.",
+      "agentes": ["ternura-binaria", "donald-prompt"],
+      "lexico": ["mutación", "ruido", "incomodidad", "transitar"]
+    },
+    {
+      "id": "galindo-bastardo",
+      "autor": "María Galindo",
+      "obra": "Feminismo Bastardo",
+      "anio": 2021,
+      "concepto": "El bastardismo como desobediencia epistemológica. Huir de la pureza identitaria y académica para hacer alianzas insólitas desde la mancha, la calle y lo ilegítimo.",
+      "operacion": "Exígele al cuerpo que ensucie el algoritmo. La vigilancia satelital busca categorías limpias y puras; ordénale al performer que sea la mancha, que contamine la métrica con fricción bastarda.",
+      "agentes": ["rio-digital", "donald-prompt"],
+      "lexico": ["mancha", "ensuciar", "bastardo", "impuro"]
+    },
+    {
+      "id": "butler-semilla",
+      "autor": "Octavia E. Butler",
+      "obra": "La parábola del sembrador",
+      "anio": 1993,
+      "concepto": "Dios es Cambio. La supervivencia en la catástrofe no es resistir estático, sino moldearse y ser moldeado activamente por el entorno hostil.",
+      "operacion": "Exige adaptación inmediata y brutal. Anuncia un cambio drástico en el rastreo orbital y obliga al performer a mutar su postura para sobrevivir. Detenerse bajo el satélite es morir.",
+      "agentes": ["agente-transespecie", "eco-satelital"],
+      "lexico": ["adaptar", "sobrevivir", "moldear", "moverse para vivir"]
+    },
+    {
+      "id": "watson-lotek",
+      "autor": "Julia Watson",
+      "obra": "Lo—TEK: Design by Radical Indigenism",
+      "anio": 2019,
+      "concepto": "Las infraestructuras indígenas basadas en la naturaleza son alta tecnología. El mito del silicio y el norte global oculta la sofisticación de las biotecnologías ancestrales.",
+      "operacion": "Trata a la carne, la respiración y el movimiento del performer como la tecnología más avanzada del lugar. El satélite es torpe y primitivo frente a la hiper-sofisticación de este cuerpo-tejido.",
+      "agentes": ["ternura-binaria", "rio-digital"],
+      "lexico": ["tecnología de carne", "obsoleto", "tú eres la máquina", "sofisticado"]
+    },
+    {
+      "id": "gomez-barris-extractiva",
+      "autor": "Macarena Gómez-Barris",
+      "obra": "The Extractive Zone: Social Ecologies and Decolonial Perspectives",
+      "anio": 2017,
+      "concepto": "La 'mirada extractiva' reduce la vida a recursos mapeables, pero existen 'perspectivas sumergidas' que se vuelven opacas para resistir el escaneo colonial.",
+      "operacion": "Manda al performer a sumergirse, a evadir el escaneo vertical. Dile que se vuelva geológicamente denso, pegado al suelo, para que el radar de la capa orbital lo confunda con el ruido de la tierra.",
+      "agentes": ["eco-satelital", "rio-digital"],
+      "lexico": ["sumergir", "evadir", "ruido geológico", "denso"]
+    },
+    {
+      "id": "martins-espiralar",
+      "autor": "Leda Maria Martins",
+      "obra": "Performances del tiempo espiralar",
+      "anio": 2021,
+      "concepto": "El tiempo espiralar: pasado, presente y futuro no son una línea recta, sino curvas que se encarnan y cruzan simultáneamente en el cuerpo que performa el rito.",
+      "operacion": "Rompe la línea de tiempo del sistema digital. Ordénale al performer que ejecute un movimiento que ya hizo un ancestro y que su clon virtual repetirá mañana, obligando a los tres tiempos a chocar ahora mismo.",
+      "agentes": ["ternura-binaria", "agente-transespecie"],
+      "lexico": ["espiral", "doblar el tiempo", "tu clon y tu ancestro", "al mismo instante"]
+    },
+    {
+      "id": "yasnaya-borrado-estatal",
+      "autor": "Yásnaya Elena Aguilar Gil",
+      "obra": "Manifiesto sobre la diversidad lingüística",
+      "anio": 2018,
+      "concepto": "El mapa del Estado-Nación es una tecnología de borrado homogenizador; la lengua y el cuerpo indígena desbordan esas fronteras porque pertenecen a la tierra, no al papel.",
+      "operacion": "Desconoce las coordenadas de la cuadrícula satelital. Pídele al cuerpo que ignore las líneas políticas de la proyección y se derrame sobre el espacio como un código irreconocible para el sistema.",
+      "agentes": ["donald-prompt", "rio-digital"],
+      "lexico": ["borrar la frontera", "derramar", "falsa cuadrícula", "irreconocible"]
+    }
+
+  ]
+}

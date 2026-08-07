@@ -1,0 +1,15 @@
+{
+  "generatedAt": "2026-07-05T08:29:45.983Z",
+  "input": "corpus.json",
+  "output": "corpus.redacted.json",
+  "totalRedactions": 1,
+  "summaryByRule": {
+    "payment_card": 1
+  },
+  "findings": [
+    {
+      "path": "$.entradas[10].resumen.topItems[16].title",
+      "rule": "payment_card"
+    }
+  ]
+}

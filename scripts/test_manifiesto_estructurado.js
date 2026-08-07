@@ -215,9 +215,6 @@ async function funcion() {
     const proximidad = elevacionAProximidad(dato.elevacionDeg ?? -90);
     const { estado: estadoAfectivo, cambio } = actualizarFSM({ proximidad, enTerritorioConflicto: dato.region_real });
     if (cambio) await emitirAfecto(estadoAfectivo);
-    const proximidad = elevacionAProximidad(dato.elevacionDeg ?? -90);
-    const { estado: estadoAfectivo, cambio } = actualizarFSM({ proximidad, enTerritorioConflicto: dato.region_real });
-    if (cambio) await emitirAfecto(estadoAfectivo);
     const { objetos, accion } = elegirEscena(acto);
     const tags = [...new Set(objetos.flatMap((o) => o.tags))];
     const episodio = elegirEpisodio(tags);
@@ -244,7 +241,6 @@ async function funcion() {
     console.log('\n— PROMPT —\n');
     console.log(m.instruccion);
     await emitirPrompt(m.instruccion);
-    await emitirManifiesto(`${m.dato_orbital}\n\n${m.memoria}\n\n${m.instruccion}`);
 
     fs.appendFileSync('manifiestos_log.jsonl', JSON.stringify({
       fecha: new Date().toISOString(),
