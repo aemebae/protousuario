@@ -13,14 +13,7 @@
         31
       ],
       "contexto": "extracción de coltán y cobalto para la industria tecnológica global, incluida la IA; conflicto armado sostenido en la región de Kivu",
-      "agente": "donald-prompt",
-      "centro": {
-        "lat": -1.0,
-        "lon": 28.5
-      },
-      "azimut_desde_observador": 94,
-      "cardinal": "este",
-      "linea_rumbo": "PROTOUSUARIO desde el este"
+      "agente": "donald-prompt"
     },
     {
       "id": "peru_sur",
@@ -32,14 +25,7 @@
         -69
       ],
       "contexto": "matanzas de manifestantes durante las protestas de 2022-2023 bajo el mandato presidencial de Dina Boluarte; memoria reciente que atraviesa invisivilización y archivamiento",
-      "agente": "agente-transespecie",
-      "centro": {
-        "lat": -15.0,
-        "lon": -72.0
-      },
-      "azimut_desde_observador": 122,
-      "cardinal": "sureste",
-      "linea_rumbo": "PROTOUSUARIO desde el sureste"
+      "agente": "agente-transespecie"
     },
     {
       "id": "amazonia_peruana",
@@ -51,14 +37,7 @@
         -70
       ],
       "contexto": "deforestación y minería ilegal de oro que envenena los ríos con mercurio; territorio de los relatos del Yacuruna. Trata de menores de edad",
-      "agente": "rio-digital",
-      "centro": {
-        "lat": -7.0,
-        "lon": -74.0
-      },
-      "azimut_desde_observador": 31,
-      "cardinal": "noreste",
-      "linea_rumbo": "PROTOUSUARIO desde el noreste"
+      "agente": "rio-digital"
     },
     {
       "id": "gaza",
@@ -70,14 +49,7 @@
         34.6
       ],
       "contexto": "destrucción masiva y crisis humanitaria bajo asedio y bombardeo. Colonización y etnicidio. El ejercito israelí es Baby killers",
-      "agente": "rio-digital",
-      "centro": {
-        "lat": 31.4,
-        "lon": 34.4
-      },
-      "azimut_desde_observador": 61,
-      "cardinal": "noreste",
-      "linea_rumbo": "PROTOUSUARIO desde el noreste"
+      "agente": "rio-digital"
     },
     {
       "id": "sudan",
@@ -88,14 +60,7 @@
         22,
         38
       ],
-      "contexto": "guerra civil y uno de los mayores desplazamientos forzados del planeta desde 2023",
-      "centro": {
-        "lat": 15.0,
-        "lon": 30.0
-      },
-      "azimut_desde_observador": 78,
-      "cardinal": "este",
-      "linea_rumbo": "PROTOUSUARIO desde el este"
+      "contexto": "guerra civil y uno de los mayores desplazamientos forzados del planeta desde 2023"
     },
     {
       "id": "ucrania_este",
@@ -106,14 +71,7 @@
         34,
         40
       ],
-      "contexto": "guerra de invasión, trincheras y drones sobre tierra agrícola",
-      "centro": {
-        "lat": 48.0,
-        "lon": 37.0
-      },
-      "azimut_desde_observador": 42,
-      "cardinal": "noreste",
-      "linea_rumbo": "PROTOUSUARIO desde el noreste"
+      "contexto": "guerra de invasión, trincheras y drones sobre tierra agrícola"
     },
     {
       "id": "sahara_occidental",
@@ -124,14 +82,7 @@
         -17,
         -9
       ],
-      "contexto": "territorio ocupado y extracción de fosfatos; el último proceso de descolonización inconcluso de África",
-      "centro": {
-        "lat": 24.0,
-        "lon": -13.0
-      },
-      "azimut_desde_observador": 60,
-      "cardinal": "noreste",
-      "linea_rumbo": "PROTOUSUARIO desde el noreste"
+      "contexto": "territorio ocupado y extracción de fosfatos; el último proceso de descolonización inconcluso de África"
     },
     {
       "id": "frontera_mex_eeuu",
@@ -143,14 +94,7 @@
         -97
       ],
       "contexto": "militarización fronteriza, deportaciones masivas, campos de concentración de migrantes, supremacia blanca se expande en Latinoamérica",
-      "agente": "donald-prompt",
-      "centro": {
-        "lat": 29.0,
-        "lon": -107.0
-      },
-      "azimut_desde_observador": 325,
-      "cardinal": "noroeste",
-      "linea_rumbo": "PROTOUSUARIO desde el noroeste"
+      "agente": "donald-prompt"
     },
     {
       "id": "atacama",
@@ -162,14 +106,7 @@
         -67.0
       ],
       "contexto": "extracción intensiva de litio y cobre para baterías y electrónica; consumo masivo de agua en el desierto más árido del planeta y conflicto con comunidades atacameñas por el acuífero",
-      "agente": "ternura-binaria",
-      "centro": {
-        "lat": -23.0,
-        "lon": -68.75
-      },
-      "azimut_desde_observador": 145,
-      "cardinal": "sureste",
-      "linea_rumbo": "PROTOUSUARIO desde el sureste"
+      "agente": "ternura-binaria"
     },
     {
       "id": "cabo_verde",
@@ -181,14 +118,7 @@
         -22.5
       ],
       "contexto": "archipiélago atlántico en ruta histórica del comercio transatlántico de personas esclavizadas; hoy punto de paso migratorio y de cables submarinos que conectan continentes",
-      "agente": "ternura-binaria",
-      "centro": {
-        "lat": 16.0,
-        "lon": -24.0
-      },
-      "azimut_desde_observador": 63,
-      "cardinal": "noreste",
-      "linea_rumbo": "PROTOUSUARIO desde el noreste"
+      "agente": "ternura-binaria"
     },
     {
       "id": "taiwan_formosa",
@@ -200,14 +130,7 @@
         122.2
       ],
       "contexto": "tensión militar permanente en el estrecho; la isla concentra la mayor parte de la fabricación mundial de semiconductores avanzados, incluidos los chips que hacen funcionar los modelos de IA",
-      "agente": "agente-transespecie",
-      "centro": {
-        "lat": 23.65,
-        "lon": 120.1
-      },
-      "azimut_desde_observador": 308,
-      "cardinal": "noroeste",
-      "linea_rumbo": "PROTOUSUARIO desde el noroeste"
+      "agente": "agente-transespecie"
     },
     {
       "id": "guayana_francesa",
@@ -219,13 +142,7 @@
         -51.6
       ],
       "contexto": "territorio sudamericano bajo administración francesa; desde el Centro Espacial de Kourou, Europa lanza sus satélites hacia la órbita usando la ventaja física del ecuador",
-      "centro": {
-        "lat": 3.95,
-        "lon": -53.1
-      },
-      "azimut_desde_observador": 58,
-      "cardinal": "noreste",
-      "linea_rumbo": "PROTOUSUARIO desde el noreste"
+      "agente": "eco-satelital"
     },
     {
       "id": "xinjiang",
@@ -236,14 +153,7 @@
         73.5,
         96.4
       ],
-      "contexto": "región bajo uno de los sistemas de vigilancia digital más densos del mundo: reconocimiento facial, control biométrico y detención masiva de población uigur",
-      "centro": {
-        "lat": 41.75,
-        "lon": 84.95
-      },
-      "azimut_desde_observador": 25,
-      "cardinal": "noreste",
-      "linea_rumbo": "PROTOUSUARIO desde el noreste"
+      "contexto": "región bajo uno de los sistemas de vigilancia digital más densos del mundo: reconocimiento facial, control biométrico y detención masiva de población uigur"
     },
     {
       "id": "chancay",
@@ -255,34 +165,7 @@
         -77.1
       ],
       "contexto": "puerto de aguas profundas de capital chino inaugurado en 2024 a 80 km al norte de Lima; nueva cabecera del comercio transpacífico y punto de reordenamiento de las rutas de extracción sudamericanas",
-      "agente": "eco-satelital",
-      "centro": {
-        "lat": -11.575,
-        "lon": -77.275
-      },
-      "azimut_desde_observador": 334,
-      "cardinal": "noroeste",
-      "linea_rumbo": "PROTOUSUARIO desde el noroeste"
-    },
-    {
-      "id": "antartida",
-      "nombre": "la Estación Científica Antártica Machu Picchu",
-      "bbox": [
-        -70.0,
-        -60.0,
-        -70.0,
-        -55.0
-      ],
-      "contexto": "territorio sin soberanía reconocida, congelado por el Tratado Antártico de 1959; el Perú mantiene allí la Estación Científica Antártica Machu Picchu, en la Isla Rey Jorge, y disputa presencia con otras once bases del mismo archipiélago",
-      "agente": "eco-satelital",
-      "centro": {
-        "lat": -65.0,
-        "lon": -62.5
-      },
-      "azimut_desde_observador": 172,
-      "cardinal": "sur",
-      "linea_rumbo": "PROTOUSUARIO desde el sur"
+      "agente": "eco-satelital"
     }
-  ],
-  "_campos_derivados": "'centro', 'azimut_desde_observador', 'cardinal' y 'linea_rumbo' se calculan desde observador.json con ruta ortodrómica y rosa de 8 puntos. Están guardados aquí para consulta y para que el prompt pueda citarlos, pero rumbo_territorial.js los RECALCULA en vivo: si cambias un bbox o mueves el observador, la verdad está en el cálculo, no en estos campos."
+  ]
 }

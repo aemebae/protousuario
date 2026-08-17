@@ -36,6 +36,7 @@
   <div class="bloque bloque-prompt" id="bloquePrompt">
     <div class="bloque-titulo">PROMPT · PROTOUSUARIO</div>
     <div class="bloque-texto" id="textoPrompt"></div>
+    <div class="bloque-reflexion" id="textoReflexion"></div>
   </div>
 
   <!-- ZONA 5 · centro inferior: territorio sobrevolado -->
@@ -50,6 +51,27 @@
     <div class="overlay-tipo" id="overlayTipo"></div>
     <div class="overlay-titulo" id="overlayTitulo"></div>
     <div class="overlay-texto" id="overlayTexto"></div>
+  </div>
+
+  <!-- Rosa de los vientos: rumbo del territorio + AUTORIZADO/DESPLAZADO -->
+  <div class="rosa-vientos" id="rosaVientos" data-estado="DESPLAZADO">
+    <svg viewBox="0 0 100 100" class="rosa-svg">
+      <circle cx="50" cy="50" r="34" class="rosa-anillo" />
+      <circle cx="50" cy="50" r="24" class="rosa-anillo tenue" />
+      <g class="rosa-cruz">
+        <line x1="50" y1="12" x2="50" y2="88" /><line x1="12" y1="50" x2="88" y2="50" />
+      </g>
+      <g class="rosa-diagonales">
+        <line x1="26" y1="26" x2="74" y2="74" /><line x1="74" y1="26" x2="26" y2="74" />
+      </g>
+      <polygon points="50,14 46,50 50,44 54,50" class="rosa-aguja" id="rosaAguja" />
+      <circle cx="50" cy="50" r="2.6" class="rosa-centro" />
+    </svg>
+    <span class="rosa-letra n" id="rosaN">N</span>
+    <span class="rosa-letra e" id="rosaE">E</span>
+    <span class="rosa-letra s" id="rosaS">S</span>
+    <span class="rosa-letra o" id="rosaO">O</span>
+    <span class="rosa-estado" id="rosaEstado"></span>
   </div>
 
   <!-- Salud del sistema -->

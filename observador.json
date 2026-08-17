@@ -1,0 +1,51 @@
+{
+  "_uso": "EL CENTRO DE LA OBRA. Desde esta posición se trazan TODOS los puntos cardinales: el rumbo de cada territorio, la elevación y el azimut de cada satélite. Es el único lugar donde vive esa coordenada — rumbo_territorial.js y capa2_dato_orbital_v3.js la leen de aquí en vez de tenerla escrita cada uno por su lado. Si la obra viaja a otra sede, se cambia SOLO este archivo y todo el sistema se reorienta.",
+  "posicion": {
+    "nombre": "Museo de la Nación / MINCUL",
+    "ciudad": "Lima",
+    "pais": "Perú",
+    "evento": "VIDEOAKT 5",
+    "lat": -12.0464,
+    "lon": -77.0428,
+    "altKm": 0.154,
+    "_nota_precision": "Coordenada aproximada de Lima centro. Si quieres precisión de sala, reemplázala por la del MINCUL exacto (San Borja): lat -12.0975, lon -76.9931. Cambia los rumbos en menos de 1 grado, así que no altera ningún cardinal."
+  },
+  "metodo_rumbo": {
+    "tipo": "ortodromica",
+    "_que_es": "Rumbo inicial del círculo máximo: la dirección hacia la que apuntarías el dedo si pudieras atravesar la Tierra. Es lo que dibuja Google Maps. La alternativa, la loxodrómica (rumbo de brújula constante, el que 've' un mapa Mercator plano), solo difiere en trayectos muy largos: Taiwán da 308° por ortodrómica y 283° por loxodrómica.",
+    "rosa": 8,
+    "_por_que_8_puntos": "Con 4 puntos se pierde precisión real: el sur andino del Perú está a 122°, que es SURESTE, y una rosa de 4 lo redondeaba a 'este' — geográficamente falso.",
+    "pertenencia_parcial": true,
+    "_que_es_pertenencia_parcial": "Un intercardinal autoriza a sus dos componentes: 'sureste' vale tanto para el agente del sur como para el del este. Ese territorio está genuinamente en ambas direcciones."
+  },
+  "linea_de_rumbo": {
+    "_regla": "DOS enunciados distintos que NO deben confundirse (este era el error de la v1):\n  (1) PROTOUSUARIO se enuncia SIEMPRE desde el rumbo FIJO de su agente. Solo hay cinco posibles: norte, sur, este, oeste y cielos. NO cambia según el territorio: es identidad del agente, no dato variable.\n  (2) El TERRITORIO se ubica con la rosa de 8 puntos respecto al observador, e incluye los grados.\nAmbos van en el primer segmento 'orbital', y pueden reaparecer en 'memoria' o 'prompt' por correlación poética.",
+    "formula_protousuario": "PROTOUSUARIO desde el {rumbo_agente}",
+    "formula_protousuario_cielos": "PROTOUSUARIO desde los cielos",
+    "formula_territorio": "al {cardinal} ({azimut}°) desde el {observador}",
+    "_ejemplo": "...el ISS (Zarya) sobrevuela la República Democrática del Congo, al este (94°) desde el MINCUL, Lima, Perú. ... dicta que PROTOUSUARIO desde el este está AUTORIZADO...",
+    "elevacion_cielos_grados": 45
+  },
+  "rumbos_protousuario": {
+    "_uso": "LOS ÚNICOS CINCO. Fijos por agente, no se calculan. Cargar más sería darle cualidades no definidas.",
+    "norte": "PROTOUSUARIO desde el norte",
+    "este": "PROTOUSUARIO desde el este",
+    "sur": "PROTOUSUARIO desde el sur",
+    "oeste": "PROTOUSUARIO desde el oeste",
+    "cielos": "PROTOUSUARIO desde los cielos"
+  },
+  "cardinales_territorio": {
+    "_uso": "Rosa de 8 puntos, SOLO para ubicar países y territorios respecto al observador. Nunca para PROTOUSUARIO.",
+    "puntos": [
+      "norte",
+      "noreste",
+      "este",
+      "sureste",
+      "sur",
+      "suroeste",
+      "oeste",
+      "noroeste"
+    ],
+    "_rangos": "cada punto abarca 45°, centrado en su múltiplo de 45 (norte = 337.5-22.5, noreste = 22.5-67.5, ...)"
+  }
+}

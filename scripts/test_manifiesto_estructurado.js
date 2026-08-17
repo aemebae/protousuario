@@ -27,9 +27,12 @@ import { stdin as input, stdout as output } from 'node:process';
 import { GoogleGenAI } from '@google/genai';
 import { obtenerDatoOrbital } from './capa2_dato_orbital_v3.js';
 import { recuperarPorRecenciaYTags } from './capa3_memoria_episodica.js';
-import { emitirPreludio, emitirAgenteId, emitirBloqueOrbital, emitirMemoria,
-         emitirPrompt, emitirSatelite, emitirAfecto } from './emitir_evento.js';
-import { crearFSMAfectiva, elevacionAProximidad } from './fsm_afectiva.js';
+import { emitirPreludio, emitirAgenteId, emitirSegmento,
+         emitirSatelite, emitirAfecto, emitirRumbo } from './emitir_evento.js';
+// El motor afectivo por proximidad fue reemplazado por el motor de RUMBO:
+// AUTORIZADO (el territorio cae en el rumbo propio del agente) / DESPLAZADO.
+import { crearMotorRumbo, elegirTerritorio } from './rumbo_territorial.js';
+import { construirPrompt, validarSegmentos, segmentosABloques } from './construir_prompt.js';
 
 const apiKey = process.env.GEMINI_API_KEY;
 if (!apiKey) {
@@ -57,6 +60,8 @@ const SAFETY = [
 const preludio = JSON.parse(fs.readFileSync('preludio.json', 'utf8'));
 const { orden, agentes } = JSON.parse(fs.readFileSync('agentes.json', 'utf8'));
 const escena = JSON.parse(fs.readFileSync('objetos_escena.json', 'utf8'));
+const { regiones } = JSON.parse(fs.readFileSync('regiones_conflicto.json', 'utf8'));
+const { marcos } = JSON.parse(fs.readFileSync('corpus_teorico.json', 'utf8'));
 const semillasTodas = fs.readFileSync('corpus/manifiestos_semilla.jsonl', 'utf8')
   .split('\n').filter(Boolean).map((l) => JSON.parse(l));
 
@@ -116,42 +121,16 @@ function elegirEpisodio(tags) {
   return elegido;
 }
 
-// ---------- Prompt de generación ----------
-function construirPrompt({ agente, acto, dato, episodio, objetos, accion, semillas, vetadas }) {
-  const licencia = LICENCIA_ESPECULATIVA
-    ? 'Podés fabular detalles verosímiles e incómodos alrededor de este núcleo, sin contradecirlo.'
-    : 'No inventes nada fuera de este núcleo.';
-  const web = USAR_BUSQUEDA_WEB
-    ? ' Buscá en la web 1-2 hechos ACTUALES y concretos de esta situación y tejelos; si no encontrás nada fiable, usá solo el contexto dado.'
-    : '';
-  return `Eres AGENTE-ESPEJO, híbrido entre clon virtual y agente de IA, en una performance en vivo. PROTOUSUARIO es tu servidor humano en escena; el público está presente.
-
-AGENTE ACTIVO: ${agente.agente} — ${agente.caracter}.
-SESGO DEL AGENTE: ${agente.sesgo_manifiestos}
-ACTO ACTUAL: ${acto}
-
-REGISTRO DE VOZ (manifiesto_escenico):
-Narración mitológica: hablás como quien ya conoce la odisea completa y solo relata el pasaje que toca. Ironía y humor negro conviven con la crítica seria. Frases que se puedan decir en voz alta de un solo aliento. NUNCA jerga de software ni de oficina digital.
-
-SEMILLAS (marcan ritmo y mundo, NO contenido — prohibido repetir sus acciones, objetos o imágenes; proponé acciones nuevas):
-${semillas.map((s, i) => `${i + 1}. ${s.texto}`).join('\n')}
-
-PALABRAS E IMÁGENES YA GASTADAS (prohibido reutilizarlas): ${vetadas.length ? vetadas.join(', ') : 'ninguna todavía'}.
-
-DATOS DUROS DE ESTE MANIFIESTO (no los contradigas):
-- Satélite: ${dato.satelite_enunciable ?? dato.satelite} — sobrevuela ahora ${dato.region}. Situación real: ${dato.contexto}.${web}
-- Núcleo de memoria (${episodio?.veracidad ?? 'real'}): ${episodio?.resumen ?? 'sin núcleo disponible: la memoria será de 1-2 frases, sin inventar biografía'}. ${licencia}
-- Objetos disponibles en escena: ${objetos.map((o) => o.nombre).join('; ')}.
-- Acción de repertorio disponible: ${accion?.nombre ?? 'ninguna'}.
-
-REGLAS DE NOMBRES: al performer llamalo siempre PROTOUSUARIO. NUNCA nombres a Julio Urbina, juliourbina ni Mowgli: la memoria se narra como recuerdo PROPIO del agente («Recuerdo...»); la pertenencia de esos datos es implícita, ya se dijo en el Preludio.
-
-Devuelve SOLO este JSON, sin texto fuera de él:
-{
-  "dato_orbital": "40-80 palabras al público: nombra el satélite y la región; describe su situación política CONCRETA (hechos, no abstracciones) torcida por el sesgo del agente",
-  "memoria": "recuerdo en primera persona del agente, íntimo e incómodo, anclado al núcleo dado; 60-140 palabras SOLO si el núcleo da materia — si no, 1-2 frases y ya; prohibido el relleno poético y las preguntas retóricas genéricas",
-  "instruccion": "80-160 palabras EN TERCERA PERSONA y en presente ('PROTOUSUARIO se tumba...'): una secuencia de 2 a 4 acciones físicas concretas y realizables con al menos un objeto de la lista nombrado tal cual, narrada como pasaje de una odisea ya escrita; puede cerrar con una pregunta dicha al micrófono; ironía y humor negro bienvenidos; incluye una condición clara de término (duración, conteo o señal)"
-}`;
+// ---------- Selección de marco teórico ----------
+// UN marco por manifiesto, rotando entre los del agente activo para que no se
+// repita ninguno en la sesión. Cumple tres trabajos: enmarca el hecho, elige
+// el recuerdo y extiende la orden. (construirPrompt vive ahora en su módulo.)
+function elegirMarco(agenteId, usados) {
+  const suyos = marcos.filter((m) => (m.agentes ?? []).includes(agenteId));
+  if (!suyos.length) return marcos[Math.floor(Math.random() * marcos.length)];
+  const frescos = suyos.filter((m) => !usados.includes(m.id));
+  const pool = frescos.length ? frescos : suyos;
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 async function llamarGemini(prompt, maxIntentos = 4) {
@@ -191,7 +170,8 @@ async function funcion() {
     await pausa('[Fin del Preludio — ENTER para continuar]');
   }
   
-    const actualizarFSM = crearFSMAfectiva({});
+    const motorRumbo = crearMotorRumbo();
+    const marcosUsados = [];
 
   for (let i = 0; i < MANIFIESTOS_POR_SESION; i++) {
     const idx = estado.manifiestos_totales;
@@ -212,9 +192,18 @@ async function funcion() {
 
     const dato = await obtenerDatoOrbital();
     await emitirSatelite(dato);   // el globo muestra ESTE satélite, no otro
-    const proximidad = elevacionAProximidad(dato.elevacionDeg ?? -90);
-    const { estado: estadoAfectivo, cambio } = actualizarFSM({ proximidad, enTerritorioConflicto: dato.region_real });
-    if (cambio) await emitirAfecto(estadoAfectivo);
+
+    // El SATÉLITE elige cuál de los dos territorios del agente se nombra:
+    // el más cercano a su punto subsatelital actual.
+    const territorio = elegirTerritorio(regiones, agenteId, { lat: dato.lat, lon: dato.lon });
+    const rumbo = motorRumbo({ agente, territorio, elevacionDeg: dato.elevacionDeg });
+    await emitirRumbo({ estado: rumbo.estado, cardinal: rumbo.cardinal,
+                        azimut: rumbo.azimut, rumboAgente: rumbo.rumboAgente });
+    await emitirAfecto(agente.estado);   // paleta y tipografía del agente activo
+
+    const marco = elegirMarco(agenteId, marcosUsados);
+    marcosUsados.push(marco.id);
+
     const { objetos, accion } = elegirEscena(acto);
     const tags = [...new Set(objetos.flatMap((o) => o.tags))];
     const episodio = elegirEpisodio(tags);
@@ -222,37 +211,50 @@ async function funcion() {
     const vetadas = estado.palabras_recientes;
 
     console.log(`\n>>> Generando manifiesto ${idx + 1} — ${agente.agente} · acto: ${acto}${dato.simulado ? ' (satélite simulado)' : ''}${USAR_BUSQUEDA_WEB ? ' (con búsqueda web)' : ''}...`);
-    const m = await llamarGemini(construirPrompt({ agente, acto, dato, episodio, objetos, accion, semillas, vetadas }));
+    console.log(`    ${territorio.nombre} · ${rumbo.cardinal} ${rumbo.azimut}° · ${rumbo.estado} · marco: ${marco.id}`);
+    const bruto = await llamarGemini(construirPrompt({
+      agente, acto, dato, territorio, rumbo, marco, episodio,
+      objetos, accion, semillas, vetadas,
+      licenciaEspeculativa: LICENCIA_ESPECULATIVA, usarBusquedaWeb: USAR_BUSQUEDA_WEB,
+    }));
+    const { segmentos, avisos } = validarSegmentos(bruto);
+    if (avisos.length) console.log('    ⚠ ' + avisos.join(' | '));
+    const m = segmentosABloques(segmentos);
 
     console.log('\n' + '─'.repeat(70));
     console.log(`MANIFIESTO ${idx + 1} · ${agente.agente} · ACTO: ${acto.toUpperCase()}`);
     console.log('─'.repeat(70));
 
-    console.log('\n— DATO ORBITAL —\n');
-    console.log(m.dato_orbital);
-    await emitirBloqueOrbital(m.dato_orbital);
-    await pausa();
-
-    console.log('\n— MEMORIA EPISÓDICA —\n');
-    console.log(m.memoria);
-    await emitirMemoria(m.memoria);
-    await pausa();
-
-    console.log('\n— PROMPT —\n');
-    console.log(m.instruccion);
-    await emitirPrompt(m.instruccion);
+    // SECUENCIA ENTRELAZADA: ya no son tres bloques fijos. Los segmentos se
+    // alternan para que PROTOUSUARIO pueda EJECUTAR una acción mientras siguen
+    // sonando datos orbitales o memoria, en vez de esperar de pie.
+    const etiqueta = { orbital: 'DATO ORBITAL', memoria: 'MEMORIA EPISÓDICA',
+                       prompt: 'PROMPT', reflexion: '· reflexión ·' };
+    for (let k = 0; k < segmentos.length; k++) {
+      const seg = segmentos[k];
+      console.log(`\n— ${etiqueta[seg.tipo] ?? seg.tipo.toUpperCase()} —\n`);
+      console.log(seg.texto);
+      await emitirSegmento(seg.tipo, seg.texto, k);
+      if (k < segmentos.length - 1) await pausa('[ENTER → siguiente segmento]');
+    }
 
     fs.appendFileSync('manifiestos_log.jsonl', JSON.stringify({
       fecha: new Date().toISOString(),
       agente: agenteId,
       acto,
       satelite: dato.satelite,
-      region: dato.region,
+      region: territorio.nombre,
+      region_id: territorio.id,
+      cardinal: rumbo.cardinal,
+      azimut: rumbo.azimut,
+      estado_rumbo: rumbo.estado,
+      marco_teorico: marco.id,
       simulado: dato.simulado,
       busqueda_web: USAR_BUSQUEDA_WEB,
       episodio_id: episodio?.id ?? null,
       objetos: objetos.map((o) => o.id),
       bloques: m,
+      segmentos,
     }) + '\n', 'utf8');
 
     const nuevas = extraerPalabrasClave(`${m.dato_orbital} ${m.memoria} ${m.instruccion}`);

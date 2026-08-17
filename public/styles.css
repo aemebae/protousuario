@@ -228,3 +228,73 @@ html, body {
   background: var(--accent); box-shadow: var(--glow);
 }
 .indicador-salud .punto.degradado { background: var(--alert); }
+
+
+/* ---------- Cola reflexiva bajo el prompt ---------- */
+.bloque-reflexion {
+  font-family: var(--font-epico);
+  font-style: italic;
+  font-size: clamp(13px, 1.05vw, 18px);
+  line-height: 1.45;
+  color: var(--accent);
+  opacity: 0.9;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--accent-dim);
+  text-shadow: 0 2px 12px rgba(0,0,0,0.7);
+  transition: color var(--transicion-modo) ease, border-color var(--transicion-modo) ease;
+}
+.bloque-reflexion:empty { border-top: none; margin-top: 0; padding-top: 0; }
+
+/* ---------- Rosa de los vientos (inferior izquierda, sobre la salud) ---------- */
+.rosa-vientos {
+  position: fixed; bottom: 58px; left: 28px; z-index: 3;
+  width: 96px; height: 96px;
+  font-family: var(--font-hud);
+  transition: filter var(--transicion-modo) ease;
+}
+.rosa-svg { width: 100%; height: 100%; overflow: visible; }
+.rosa-anillo { fill: none; stroke: var(--accent-dim); stroke-width: 0.7; opacity: 0.55; }
+.rosa-anillo.tenue { opacity: 0.25; }
+.rosa-cruz line { stroke: var(--accent-dim); stroke-width: 0.7; opacity: 0.6; }
+.rosa-diagonales line { stroke: var(--accent-dim); stroke-width: 0.5; opacity: 0.3; }
+.rosa-aguja {
+  fill: var(--accent);
+  transform-origin: 50px 50px;
+  transition: transform 1400ms cubic-bezier(.22,.61,.36,1);
+  filter: drop-shadow(0 0 4px var(--accent));
+}
+.rosa-centro { fill: var(--accent); }
+
+.rosa-letra {
+  position: absolute;
+  font-size: 10px; letter-spacing: 0.1em;
+  color: var(--accent-dim);
+  transition: color 500ms ease, text-shadow 500ms ease;
+}
+.rosa-letra.n { top: -4px;  left: 50%; transform: translateX(-50%); }
+.rosa-letra.s { bottom: -4px; left: 50%; transform: translateX(-50%); }
+.rosa-letra.e { right: -10px; top: 50%; transform: translateY(-50%); }
+.rosa-letra.o { left: -10px;  top: 50%; transform: translateY(-50%); }
+
+.rosa-letra.activo { color: var(--accent); text-shadow: var(--glow); }
+/* Parpadeo SOLO cuando el agente está AUTORIZADO en ese rumbo: llegar a casa
+   es la excepción, y debe verse como un evento. */
+.rosa-letra.parpadea { animation: pulsoRumbo 1100ms ease-in-out infinite; }
+@keyframes pulsoRumbo {
+  0%, 100% { opacity: 1;   text-shadow: var(--glow); }
+  50%      { opacity: 0.25; text-shadow: none; }
+}
+
+.rosa-estado {
+  position: absolute; top: 102px; left: 0;
+  font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--accent-dim); white-space: nowrap;
+}
+/* AUTORIZADO enciende toda la rosa; DESPLAZADO la deja apagada y fría. */
+.rosa-vientos[data-estado="AUTORIZADO"] { filter: drop-shadow(0 0 8px var(--accent)); }
+.rosa-vientos[data-estado="AUTORIZADO"] .rosa-estado { color: var(--accent); text-shadow: var(--glow); }
+.rosa-vientos[data-estado="DESPLAZADO"] { filter: none; opacity: 0.72; }
+
+/* La salud baja para no chocar con la rosa */
+.indicador-salud { bottom: 18px; }

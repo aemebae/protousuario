@@ -161,6 +161,55 @@ function actualizarSalud(modo) {
   el('puntoSalud').classList.toggle('degradado', modo !== 'ONLINE_COMPLETO');
 }
 
+// ---------- Segmentos entrelazados ----------
+// El primer 'orbital' de un manifiesto nuevo limpia los paneles del anterior.
+let ultimoTipo = null;
+function mostrarSegmento(tipoSeg, texto) {
+  ocultarOverlay();
+  if (!texto) return;
+
+  if (tipoSeg === 'orbital' && ultimoTipo && ultimoTipo !== 'orbital') {
+    // manifiesto nuevo: limpiar
+    el('bloqueMemoria').classList.remove('visible');
+    el('bloquePrompt').classList.remove('visible');
+    el('textoReflexion').textContent = '';
+  }
+  ultimoTipo = tipoSeg;
+
+  if (tipoSeg === 'orbital')   mostrarBloque('bloqueOrbital', 'textoOrbital', texto, 0);
+  if (tipoSeg === 'memoria')   mostrarBloque('bloqueMemoria', 'textoMemoria', texto, 0);
+  if (tipoSeg === 'prompt') {
+    el('textoReflexion').textContent = '';        // la reflexión pertenece al prompt anterior
+    mostrarBloque('bloquePrompt', 'textoPrompt', texto, 0);
+  }
+  if (tipoSeg === 'reflexion') {
+    el('textoReflexion').textContent = texto;     // se acumula bajo el prompt vigente
+    el('bloquePrompt').classList.add('visible');
+  }
+}
+
+// ---------- Rosa de los vientos ----------
+function actualizarRumbo(d) {
+  const rosa = el('rosaVientos');
+  if (!rosa) return;
+  rosa.dataset.estado = d.estado || 'DESPLAZADO';
+  // aguja: el azimut real del territorio nombrado
+  const aguja = el('rosaAguja');
+  if (aguja && typeof d.azimut === 'number') aguja.style.transform = `rotate(${d.azimut}deg)`;
+  // se enciende la letra del cardinal activo
+  for (const letra of ['N', 'E', 'S', 'O']) {
+    const nodo = el('rosa' + letra);
+    if (!nodo) continue;
+    const mapa = { N: 'norte', E: 'este', S: 'sur', O: 'oeste' };
+    const activo = (d.cardinal || '').includes(mapa[letra]);
+    nodo.classList.toggle('activo', activo);
+    // parpadea solo si además el agente está AUTORIZADO en ese rumbo
+    nodo.classList.toggle('parpadea', activo && d.estado === 'AUTORIZADO');
+  }
+  const et = el('rosaEstado');
+  if (et) et.textContent = d.estado || '';
+}
+
 // ---------- WebSocket ----------
 function conectar() {
   const ws = new WebSocket(`ws://${location.host}`);
@@ -178,24 +227,13 @@ function conectar() {
     if (tipo === 'preludio')    mostrarOverlay('PRELUDIO', d.titulo, d.texto);
     if (tipo === 'agente_id')   mostrarOverlay('AGENTE ID', d.nombre, d.texto);
 
-    // Los tres bloques del manifiesto. El primero que llega cierra el
-    // overlay ceremonial: así el Preludio/Agente ID se queda en pantalla
-    // todo el tiempo que tú tardes en presionar ENTER, ni más ni menos.
-    if (tipo === 'bloque_orbital') {
-      ocultarOverlay();
-      // limpiamos los bloques del manifiesto anterior
-      el('bloqueMemoria').classList.remove('visible');
-      el('bloquePrompt').classList.remove('visible');
-      mostrarBloque('bloqueOrbital', 'textoOrbital', d.texto, 0);
-    }
-    if (tipo === 'memoria') {
-      ocultarOverlay();
-      mostrarBloque('bloqueMemoria', 'textoMemoria', d.texto, 0);
-    }
-    if (tipo === 'prompt') {
-      ocultarOverlay();
-      mostrarBloque('bloquePrompt', 'textoPrompt', d.texto, 0);
-    }
+    // SEGMENTOS ENTRELAZADOS: cada segmento llega por separado y va a su
+    // zona. Como se alternan, el cuerpo puede seguir ejecutando el último
+    // 'prompt' mientras suenan 'orbital' o 'memoria'.
+    if (tipo === 'segmento') mostrarSegmento(d.tipo, d.texto);
+
+    // Rosa de los vientos: rumbo y pertenencia
+    if (tipo === 'rumbo') actualizarRumbo(d);
   };
   ws.onclose = () => {
     actualizarSalud('DEGRADADO');
