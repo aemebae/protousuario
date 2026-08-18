@@ -198,7 +198,7 @@ export function crearMotorRumbo({ sostenerLecturas = 1, elevacionCielos = ELEVAC
       // (2) El territorio: rosa de 8 puntos + grados, respecto al observador.
       territorio_texto: lineaTerritorio(cardinalConfirmado, azimut),
       // (3) La marca de estado, tal como Julio la escribe en escena.
-      estado_marca: estado === 'AUTORIZADO' ? '★ AUTORIZADO' : 'DESPLAZADO',
+      estado_marca: estado === 'AUTORIZADO' ? '★ AUTORIZADO' : '✖ DESPLAZADO',
     };
   };
 }

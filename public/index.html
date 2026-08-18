@@ -1,90 +1,87 @@
 <!DOCTYPE html>
-<html lang="es" data-estado="AUTORITARIO">
+<html lang="es" data-estado="PANOPTICO">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-<title>AGENTE-ESPEJO — Rastreo Orbital</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AGENTE-ESPEJO — Escena compuesta</title>
 <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+<div class="escena">
 
-  <div id="globo"></div>
-  <div class="scanlines"></div>
+  <!-- ══ ZONA IZQUIERDA: rastreo satelital orbital ══ -->
+  <section class="zona-globo">
+    <div id="globo"></div>
+    <div class="scanlines"></div>
 
-  <!-- ZONA 1 · superior izquierda: telemetría cruda del satélite -->
-  <div class="panel-telemetria" id="panelTelemetria">
-    <div><span class="etiqueta">SATÉLITE</span><span id="tSatelite">—</span></div>
-    <div><span class="etiqueta">LAT/LON</span><span id="tCoords">—</span></div>
-    <div><span class="etiqueta">ALT</span><span id="tAlt">—</span> km</div>
-    <div><span class="etiqueta">ELEV</span><span id="tElev">—</span>°</div>
-    <div class="estado-afectivo" id="tEstado">AUTORITARIO</div>
-  </div>
+    <div class="panel-telemetria">
+      <div><span class="etiqueta">SATÉLITE</span><span id="tSatelite">—</span></div>
+      <div><span class="etiqueta">LAT/LON</span><span id="tCoords">—</span></div>
+      <div><span class="etiqueta">ALT</span><span id="tAlt">—</span> km</div>
+      <div><span class="etiqueta">ELEV</span><span id="tElev">—</span>°</div>
+      <div class="estado-afectivo" id="tEstado">—</div>
+    </div>
 
-  <!-- ZONA 2 · superior derecha: DATO ORBITAL (bloque 3 del manifiesto) -->
-  <div class="bloque bloque-orbital" id="bloqueOrbital">
-    <div class="bloque-titulo">DATO ORBITAL</div>
-    <div class="bloque-texto" id="textoOrbital"></div>
-  </div>
+    <div class="banner-territorio" id="bannerTerritorio">
+      <span class="tipo" id="bTipo">TERRITORIO</span>
+      <span class="detalle" id="bDetalle"></span>
+      <span id="bNombre">—</span>
+      <span class="region-conflicto" id="bRegion"></span>
+    </div>
 
-  <!-- ZONA 3 · izquierda media: MEMORIA EPISÓDICA (bloque 4) -->
-  <div class="bloque bloque-memoria" id="bloqueMemoria">
-    <div class="bloque-titulo">MEMORIA EPISÓDICA</div>
-    <div class="bloque-texto" id="textoMemoria"></div>
-  </div>
+    <div class="rosa-vientos" id="rosaVientos" data-estado="DESPLAZADO">
+      <svg viewBox="0 0 100 100" class="rosa-svg">
+        <circle cx="50" cy="50" r="34" class="rosa-anillo" />
+        <circle cx="50" cy="50" r="24" class="rosa-anillo tenue" />
+        <g class="rosa-cruz"><line x1="50" y1="12" x2="50" y2="88" /><line x1="12" y1="50" x2="88" y2="50" /></g>
+        <g class="rosa-diagonales"><line x1="26" y1="26" x2="74" y2="74" /><line x1="74" y1="26" x2="26" y2="74" /></g>
+        <polygon points="50,14 46,50 50,44 54,50" class="rosa-aguja" id="rosaAguja" />
+        <circle cx="50" cy="50" r="2.6" class="rosa-centro" />
+      </svg>
+      <span class="rosa-letra n" id="rosaN">N</span>
+      <span class="rosa-letra e" id="rosaE">E</span>
+      <span class="rosa-letra s" id="rosaS">S</span>
+      <span class="rosa-letra o" id="rosaO">O</span>
+      <span class="rosa-estado" id="rosaEstado"></span>
+    </div>
 
-  <!-- ZONA 4 · inferior derecha: PROMPT / instrucción al performer (bloque 5) -->
-  <div class="bloque bloque-prompt" id="bloquePrompt">
-    <div class="bloque-titulo">PROMPT · PROTOUSUARIO</div>
-    <div class="bloque-texto" id="textoPrompt"></div>
-    <div class="bloque-reflexion" id="textoReflexion"></div>
-  </div>
+    <div class="indicador-salud">
+      <span class="punto" id="puntoSalud"></span><span id="textoSalud">—</span>
+    </div>
+  </section>
 
-  <!-- ZONA 5 · centro inferior: territorio sobrevolado -->
-  <div class="banner-territorio" id="bannerTerritorio">
-    <span class="tipo" id="bTipo">TERRITORIO</span>
-    <span id="bNombre">—</span>
-    <span class="region-conflicto" id="bRegion"></span>
-  </div>
+  <!-- ══ ZONA DERECHA ══ -->
+  <section class="zona-derecha">
 
-  <!-- ZONA 6 · pantalla completa: PRELUDIO y AGENTE ID (ceremoniales) -->
-  <div class="overlay" id="overlay">
-    <div class="overlay-tipo" id="overlayTipo"></div>
-    <div class="overlay-titulo" id="overlayTitulo"></div>
-    <div class="overlay-texto" id="overlayTexto"></div>
-  </div>
+    <!-- superior: prompt-manifiesto, escrito como a máquina -->
+    <div class="panel-texto" id="panelTexto">
+      <div class="panel-cabecera">
+        <span id="cabAgente">—</span>
+        <span id="cabMarca" class="marca"></span>
+      </div>
+      <div class="corrido" id="corrido"></div>
+    </div>
 
-  <!-- Rosa de los vientos: rumbo del territorio + AUTORIZADO/DESPLAZADO -->
-  <div class="rosa-vientos" id="rosaVientos" data-estado="DESPLAZADO">
-    <svg viewBox="0 0 100 100" class="rosa-svg">
-      <circle cx="50" cy="50" r="34" class="rosa-anillo" />
-      <circle cx="50" cy="50" r="24" class="rosa-anillo tenue" />
-      <g class="rosa-cruz">
-        <line x1="50" y1="12" x2="50" y2="88" /><line x1="12" y1="50" x2="88" y2="50" />
-      </g>
-      <g class="rosa-diagonales">
-        <line x1="26" y1="26" x2="74" y2="74" /><line x1="74" y1="26" x2="26" y2="74" />
-      </g>
-      <polygon points="50,14 46,50 50,44 54,50" class="rosa-aguja" id="rosaAguja" />
-      <circle cx="50" cy="50" r="2.6" class="rosa-centro" />
-    </svg>
-    <span class="rosa-letra n" id="rosaN">N</span>
-    <span class="rosa-letra e" id="rosaE">E</span>
-    <span class="rosa-letra s" id="rosaS">S</span>
-    <span class="rosa-letra o" id="rosaO">O</span>
-    <span class="rosa-estado" id="rosaEstado"></span>
-  </div>
+    <!-- inferior: dos pantallas -->
+    <div class="zona-inferior">
+      <div class="panel-clon" id="panelClon">
+        <div class="panel-titulo">CLON TRANSESPECIE</div>
+        <div class="placeholder" id="phClon">
+          <span>ventana reservada</span>
+          <small>fuente de video / OBS</small>
+        </div>
+      </div>
+      <div class="panel-zoom" id="panelZoom">
+        <div class="panel-titulo">PLANO SATÉLITE</div>
+        <div id="globoZoom"></div>
+      </div>
+    </div>
 
-  <!-- Salud del sistema -->
-  <div class="indicador-salud">
-    <span class="punto" id="puntoSalud"></span>
-    <span id="textoSalud">ONLINE_COMPLETO</span>
-  </div>
+  </section>
+</div>
 
-  <!-- Vendor local, SIN CDN: funciona en OFFLINE_AUTONOMO.
-       OJO: NO cargamos three.min.js aparte -- globe.gl.min.js ya trae su
-       propia copia de three.js empacada adentro. Cargar las dos a la vez
-       causa "Multiple instances of Three.js" y rompe todo. -->
-  <script src="vendor/globe.gl.min.js"></script>
-  <script src="app.js"></script>
+<!-- globe.gl trae su propio three.js: NO cargar three por separado -->
+<script src="vendor/globe.gl.min.js"></script>
+<script src="app.js"></script>
 </body>
 </html>

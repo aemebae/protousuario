@@ -77,7 +77,50 @@ function guardarEstado(e) { fs.writeFileSync(ESTADO_PATH, JSON.stringify(e, null
 const estado = cargarEstado();
 
 const rl = readline.createInterface({ input, output });
-const pausa = async (msg = '[ENTER para continuar]') => { await rl.question('\n' + msg + ' '); };
+// ═══════════════════════════════════════════════════════════════════════
+//  PAUSA CON DOBLE MANDO: celular O teclado, lo que llegue primero.
+//  El celular es el mando principal en escena; ENTER queda como RESPALDO
+//  por si el teléfono se cuelga o pierde el wifi a mitad de función.
+//  Devuelve el comando recibido: 'avanzar' | 'repetir' | 'saltar_agente' | 'terminar'
+// ═══════════════════════════════════════════════════════════════════════
+const URL_VISUAL = process.env.URL_VISUAL || 'http://localhost:3000';
+
+async function esperarCelular(señal) {
+  try {
+    const r = await fetch(`${URL_VISUAL}/control/esperar`, { signal: señal });
+    if (!r.ok) return null;
+    return (await r.json()).comando;
+  } catch { return null; }   // servidor caído: solo queda el teclado
+}
+
+const pausa = async (msg = '[ENTER o botón del celular para continuar]') => {
+  const ctrl = new AbortController();
+  const porTeclado = rl.question('\n' + msg + ' ').then(() => 'avanzar');
+  const porCelular = esperarCelular(ctrl.signal);
+  const comando = await Promise.race([porTeclado, porCelular]);
+  ctrl.abort();                 // cancelar la espera del celular
+  return comando ?? 'avanzar';
+};
+
+/** Informa al celular en qué punto va la performance. */
+async function informarControl(datos) {
+  try {
+    await fetch(`${URL_VISUAL}/control/estado`, { method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(datos), signal: AbortSignal.timeout(1200) });
+  } catch { /* la pantalla es un extra, nunca frena la función */ }
+}
+
+/** Señal para cortar la performance desde el celular. */
+class TerminarPerformance extends Error {}
+class SaltarAgente extends Error {}
+
+/** Traduce el comando recibido en la acción correspondiente. */
+function aplicarComando(cmd) {
+  if (cmd === 'terminar') throw new TerminarPerformance();
+  if (cmd === 'saltar_agente') throw new SaltarAgente();
+  return cmd;
+}
 
 // ---------- Anti-repetición léxica ----------
 const STOP_ES = new Set(['protousuario', 'satélite', 'satelite', 'público', 'publico', 'agente', 'manifiesto', 'micrófono', 'microfono', 'mientras', 'durante', 'después', 'despues', 'aunque', 'porque', 'también', 'tambien', 'ustedes', 'nosotros', 'entonces', 'todavía', 'todavia', 'siempre', 'ninguna', 'ninguno', 'alguien', 'alguna', 'alguno', 'ahora', 'sobre', 'entre', 'hasta', 'desde', 'donde', 'cuando', 'contra', 'hacia', 'antes', 'luego', 'quien']);
@@ -167,13 +210,14 @@ async function funcion() {
     await emitirPreludio(preludio.titulo, preludio.texto);
     estado.preludio_reproducido = true;
     guardarEstado(estado);
-    await pausa('[Fin del Preludio — ENTER para continuar]');
+    aplicarComando(await pausa('[Fin del Preludio — ENTER o celular]'));
   }
   
     const motorRumbo = crearMotorRumbo();
     const marcosUsados = [];
 
   for (let i = 0; i < MANIFIESTOS_POR_SESION; i++) {
+   try {
     const idx = estado.manifiestos_totales;
     const agenteId = orden[idx % orden.length];
     const agente = agentes.find((a) => a.id === agenteId);
@@ -187,7 +231,7 @@ async function funcion() {
       await emitirAgenteId(agente.agente, agente.agente_id_texto);
       estado.agentes_presentados.push(agenteId);
       guardarEstado(estado);
-      await pausa('[ENTER → dato orbital]');
+      aplicarComando(await pausa('[ENTER o celular → primer segmento]'));
     }
 
     const dato = await obtenerDatoOrbital();
@@ -211,7 +255,14 @@ async function funcion() {
     const vetadas = estado.palabras_recientes;
 
     console.log(`\n>>> Generando manifiesto ${idx + 1} — ${agente.agente} · acto: ${acto}${dato.simulado ? ' (satélite simulado)' : ''}${USAR_BUSQUEDA_WEB ? ' (con búsqueda web)' : ''}...`);
-    console.log(`    ${territorio.nombre} · ${rumbo.cardinal} ${rumbo.azimut}° · ${rumbo.estado} · marco: ${marco.id}`);
+    console.log(`    ${territorio.nombre} · ${rumbo.cardinal} ${rumbo.azimut}° · ${rumbo.estado_marca} · marco: ${marco.id}`);
+    await informarControl({
+      agente: agente.agente,
+      territorio: `${territorio.nombre} — ${rumbo.territorio_texto}`,
+      estado_marca: rumbo.estado_marca,
+      rumbo_texto: rumbo.rumbo_texto,
+      progreso: `MANIFIESTO ${i + 1} DE ${MANIFIESTOS_POR_SESION} · ACTO: ${acto.toUpperCase()}`,
+    });
     const bruto = await llamarGemini(construirPrompt({
       agente, acto, dato, territorio, rumbo, marco, episodio,
       objetos, accion, semillas, vetadas,
@@ -235,7 +286,15 @@ async function funcion() {
       console.log(`\n— ${etiqueta[seg.tipo] ?? seg.tipo.toUpperCase()} —\n`);
       console.log(seg.texto);
       await emitirSegmento(seg.tipo, seg.texto, k);
-      if (k < segmentos.length - 1) await pausa('[ENTER → siguiente segmento]');
+      if (k < segmentos.length - 1) {
+        let cmd = aplicarComando(await pausa('[ENTER o celular → siguiente segmento]'));
+        while (cmd === 'repetir') {   // volver a decir el segmento actual
+          console.log('\n  ↺ repitiendo segmento\n');
+          console.log(seg.texto);
+          await emitirSegmento(seg.tipo, seg.texto, k);
+          cmd = aplicarComando(await pausa('[ENTER o celular → siguiente segmento]'));
+        }
+      }
     }
 
     fs.appendFileSync('manifiestos_log.jsonl', JSON.stringify({
@@ -261,8 +320,17 @@ async function funcion() {
     estado.palabras_recientes = [...new Set([...nuevas, ...estado.palabras_recientes])].slice(0, 24);
     estado.manifiestos_totales++;
     guardarEstado(estado);
+   } catch (e) {
+     if (e instanceof SaltarAgente) {
+       console.log('\n  ⏭  AGENTE SALTADO — pasando al siguiente\n');
+       estado.manifiestos_totales++;   // avanzar la rotación igual
+       guardarEstado(estado);
+       continue;
+     }
+     throw e;   // TerminarPerformance y errores reales suben
+   }
 
-    await pausa('[PROTOUSUARIO ejecuta la acción. ENTER cuando termine → siguiente manifiesto]');
+    aplicarComando(await pausa('[PROTOUSUARIO ejecuta. ENTER o celular → siguiente manifiesto]'));
   }
 
   console.log('\n✓ Fin de la sesión. Registro en manifiestos_log.jsonl; estado en estado_performance.json.');
@@ -270,4 +338,13 @@ async function funcion() {
   rl.close();
 }
 
-funcion().catch((e) => { console.error(e); rl.close(); });
+funcion().catch((e) => {
+  if (e instanceof TerminarPerformance) {
+    console.log('\n\n■  PERFORMANCE TERMINADA desde el celular.');
+    console.log('   El estado quedó guardado: podés retomar donde ibas.\n');
+  } else {
+    console.error(e);
+  }
+  rl.close();
+  process.exit(0);
+});

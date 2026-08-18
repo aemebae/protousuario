@@ -1,243 +1,201 @@
-// PROTOUSUARIO / AGENTE-ESPEJO — cliente de la interfaz de rastreo orbital
-//
-// Todo lo que corre aquí es 100% local: globe.gl.min.js se carga desde
-// vendor/ (sin CDN; ya trae three.js empacado adentro, por eso NO cargamos
-// un three.min.js aparte -- eso causaba un conflicto de versiones). El
-// GeoJSON de países se carga desde data/ (Natural Earth, dominio público).
-//
-// Este archivo solo ESCUCHA y PINTA. No decide nada: ni qué satélite mostrar
-// ni qué estado afectivo aplicar. Todo eso llega por WebSocket desde
-// servidor_visual.js, que a su vez lo recibe del orquestador.
+// PROTOUSUARIO / AGENTE-ESPEJO — cliente de la ESCENA COMPUESTA
+// Todo local: globe.gl (trae su three.js) + Natural Earth 50m.
 
-// ---------- Paleta espejo de styles.css ----------
-// Los colores del globo 3D no pueden leer las variables CSS, así que aquí
-// hay una copia. AL AGREGAR UN ESTADO NUEVO: agrégalo en los DOS lados.
 const PALETA = {
-  AUTORITARIO: { grid: 0x3a5c46, accent: 0x55ffa6, accentDim: 0x2b6b49 },
-  TERNURA:     { grid: 0x6b4f96, accent: 0xc9a6ff, accentDim: 0x6b4f96 },
+  PANOPTICO:  {grid:0x3a5c46, accent:0x55ffa6, dim:0x2b6b49},
+  LIMINAL:    {grid:0x6b4f96, accent:0xc9a6ff, dim:0x6b4f96},
+  CORRIENTE:  {grid:0x2b6b7a, accent:0x5fe0e8, dim:0x256b74},
+  ORBITAL:    {grid:0x7a5c1e, accent:0xffc65f, dim:0x8a6520},
+  POLIFONICO: {grid:0x8a3a6b, accent:0xff7ad1, dim:0x8a3a6b},
 };
-const ESTADO_POR_DEFECTO = 'AUTORITARIO';
+const POR_DEFECTO = 'PANOPTICO';
+// Ámbar de los satélites secundarios: fijo, NO cambia con la paleta, para
+// que se lean siempre como "los otros" (referencia satellitemap.space).
+const AMBAR = '#ff9b3d', AMBAR_TENUE = '#c06a1e';
+const MAR = '#0b1f33', TIERRA = '#3a3320';
 
-let estadoActual = ESTADO_POR_DEFECTO;
-let paisActualIdx = -1;
-let satelites = [];
-let protagonista = null;
+let estadoActual = POR_DEFECTO, paisIdx = -1, satelites = [], protagonista = null;
+const el = id => document.getElementById(id);
+const hex = n => '#' + n.toString(16).padStart(6,'0');
+const paleta = () => PALETA[estadoActual] ?? PALETA[POR_DEFECTO];
 
-const el = (id) => document.getElementById(id);
-const elPanel = {
-  satelite: el('tSatelite'), coords: el('tCoords'), alt: el('tAlt'),
-  elev: el('tElev'), estado: el('tEstado'),
-};
-
-const temporizadores = {};
-function mostrarTemporal(nodo, ms) {
-  nodo.classList.add('visible');
-  clearTimeout(temporizadores[nodo.id]);
-  if (ms) temporizadores[nodo.id] = setTimeout(() => nodo.classList.remove('visible'), ms);
+// ══ GLOBO PRINCIPAL ══
+// showGlobe(true) con material de color: así el mar se ve como superficie y
+// las líneas dejan de superponerse en el vacío. El truco para no necesitar
+// THREE por separado: globeMaterial() devuelve el material YA creado y se
+// muta su color, en vez de construir uno nuevo.
+function crearGlobo(contenedor, opts = {}) {
+  const g = Globe()(contenedor)
+    .backgroundColor('rgba(0,0,0,0)')
+    .showAtmosphere(true).atmosphereColor('#3a6ea5').atmosphereAltitude(0.13)
+    .showGraticules(opts.graticulas ?? true);
+  try { g.globeMaterial().color.set(MAR); } catch {}
+  return g;
 }
+const globo = crearGlobo(el('globo'));
+const globoZoom = crearGlobo(el('globoZoom'), {graticulas:false});
 
-function colorHexCSS(n) { return '#' + n.toString(16).padStart(6, '0'); }
-const paletaActual = () => PALETA[estadoActual] ?? PALETA[ESTADO_POR_DEFECTO];
+function ajustar(){
+  const c = el('globo').getBoundingClientRect();
+  globo.width(c.width).height(c.height);
+  const z = el('globoZoom').getBoundingClientRect();
+  globoZoom.width(z.width).height(z.height);
+}
+addEventListener('resize', ajustar); setTimeout(ajustar, 60);
 
-// ---------- Globo ----------
-// NO mostramos la esfera base (showGlobe(false)): así evitamos necesitar un
-// material 3D personalizado, que exigiría cargar THREE por separado -- la
-// causa exacta del error "Multiple instances of Three.js". Los países,
-// satélites y anillos viven en capas independientes de la esfera, así que se
-// dibujan igual. El resultado es el look de "líneas de datos sobre el vacío".
-const globo = Globe()(el('globo'))
-  .backgroundColor('rgba(0,0,0,0)')
-  .showGlobe(false)
-  .showAtmosphere(false)
-  .showGraticules(false)
-  .width(window.innerWidth)
-  .height(window.innerHeight);
-
-window.addEventListener('resize', () => {
-  globo.width(window.innerWidth).height(window.innerHeight);
-});
-
+// ══ PAÍSES (50m: incluye Cabo Verde, Rapa Nui, Malvinas, Hawái) ══
 let paises = [];
-fetch('data/ne_110m_admin_0_countries.geojson')
-  .then((r) => r.json())
-  .then((geo) => { paises = geo.features; dibujarPoligonos(); })
-  .catch((e) => console.error('No se pudo cargar el GeoJSON de países:', e));
+fetch('data/ne_50m_admin_0_countries.geojson').then(r=>r.json()).then(geo=>{
+  paises = geo.features; pintarPoligonos();
+}).catch(e=>console.error('GeoJSON:', e));
 
-function dibujarPoligonos() {
-  const p = paletaActual();
-  globo
-    .polygonsData(paises)
-    .polygonCapColor((f, i) => (i === paisActualIdx ? colorHexCSS(p.accent) + '55' : 'rgba(0,0,0,0)'))
-    .polygonSideColor(() => 'rgba(0,0,0,0)')
-    .polygonStrokeColor((f, i) => (i === paisActualIdx ? colorHexCSS(p.accent) : colorHexCSS(p.grid)))
-    .polygonAltitude((f, i) => (i === paisActualIdx ? 0.02 : 0.006));
+function pintarPoligonos(){
+  const p = paleta();
+  for (const g of [globo, globoZoom]) {
+    g.polygonsData(paises)
+     .polygonCapColor((f,i)=> i===paisIdx ? hex(p.accent)+'99' : TIERRA)
+     .polygonSideColor(()=> 'rgba(0,0,0,0.15)')
+     .polygonStrokeColor((f,i)=> i===paisIdx ? hex(p.accent) : hex(p.grid))
+     .polygonAltitude((f,i)=> i===paisIdx ? 0.016 : 0.004);
+  }
 }
 
-function dibujarSatelites() {
-  const p = paletaActual();
-  globo
-    .pointsData(satelites)
-    .pointLat((d) => d.lat)
-    .pointLng((d) => d.lon)
-    .pointColor((d) => (d.esProtagonista ? colorHexCSS(p.accent) : colorHexCSS(p.accentDim)))
-    .pointAltitude(0.012)
-    .pointRadius((d) => (d.esProtagonista ? 0.55 : 0.22));
-
-  const anillo = protagonista ? [{ lat: protagonista.lat, lng: protagonista.lon }] : [];
-  globo
-    .ringsData(anillo)
-    .ringLat('lat').ringLng('lng')
-    .ringColor(() => colorHexCSS(p.accent))
-    .ringMaxRadius(4).ringPropagationSpeed(2).ringRepeatPeriod(1400);
+function pintarSatelites(){
+  const p = paleta();
+  for (const g of [globo, globoZoom]) {
+    g.pointsData(satelites)
+     .pointLat(d=>d.lat).pointLng(d=>d.lon)
+     // Protagonista con el color del agente; los demás en ámbar fijo.
+     .pointColor(d => d.esProtagonista ? hex(p.accent) : (d.altKm>1200 ? AMBAR_TENUE : AMBAR))
+     .pointAltitude(d => Math.min(0.35, (d.altKm ?? 500)/12000))
+     .pointRadius(d => d.esProtagonista ? 0.5 : 0.16)
+     .pointsMerge(false);
+  }
+  // El anillo de radar SOLO rodea al protagonista.
+  const anillo = protagonista ? [{lat:protagonista.lat, lng:protagonista.lon}] : [];
+  globo.ringsData(anillo).ringLat('lat').ringLng('lng')
+    .ringColor(()=> hex(p.accent)).ringMaxRadius(4)
+    .ringPropagationSpeed(2).ringRepeatPeriod(1400);
 }
 
-// ---------- Estado afectivo ----------
-function aplicarEstadoAfectivo(estado) {
-  if (!estado) return;
-  // Si llega un estado que todavía no tiene paleta definida, no rompemos
-  // nada: mostramos su nombre y usamos la paleta por defecto.
-  estadoActual = PALETA[estado] ? estado : ESTADO_POR_DEFECTO;
+// ══ CÁMARA: retorno lento tras tocar el globo ══
+// Si el performer mueve o hace zoom, el globo NO debe arrebatarle la vista:
+// espera 2,5 s desde la última interacción y vuelve despacio (4 s).
+let ultimaInteraccion = 0;
+const ESPERA_RETORNO = 2500, DURACION_RETORNO = 4000;
+for (const ev of ['mousedown','wheel','touchstart','touchmove'])
+  el('globo').addEventListener(ev, ()=>{ ultimaInteraccion = Date.now(); }, {passive:true});
+
+function centrar(lat, lon){
+  const hacer = () => globo.pointOfView({lat, lng:lon, altitude:1.9}, DURACION_RETORNO);
+  const falta = ESPERA_RETORNO - (Date.now() - ultimaInteraccion);
+  falta > 0 ? setTimeout(hacer, falta) : hacer();
+  globoZoom.pointOfView({lat, lng:lon, altitude:0.55}, 2500);  // plano detalle
+}
+
+// ══ ESTADO DEL AGENTE ══
+function aplicarEstado(estado){
+  if(!estado) return;
+  estadoActual = PALETA[estado] ? estado : POR_DEFECTO;
   document.documentElement.setAttribute('data-estado', estadoActual);
-  elPanel.estado.textContent = estado; // el nombre real, aunque no tenga paleta
-  dibujarPoligonos();
-  dibujarSatelites();
+  el('tEstado').textContent = estado;
+  pintarPoligonos(); pintarSatelites();
 }
 
-// ---------- Bloques del manifiesto ----------
-function mostrarBloque(idContenedor, idTexto, texto, ms) {
-  if (!texto) return;
-  el(idTexto).textContent = texto;
-  mostrarTemporal(el(idContenedor), ms);
+// ══ TEXTO: máquina de escribir ══
+const VEL = 22;                        // ms por carácter
+let escribiendo = null;
+const ROTULO = {orbital:'DATO ORBITAL', memoria:'MEMORIA EPISÓDICA',
+                prompt:'PROMPT · PROTOUSUARIO', reflexion:'REFLEXIÓN'};
+
+function nuevoSegmento(tipo, texto){
+  const corrido = el('corrido');
+  // el segmento anterior se atenúa: el foco siempre en el que suena
+  corrido.querySelectorAll('.seg.activo').forEach(n=>n.classList.remove('activo'));
+  if (tipo === 'orbital' && corrido.children.length > 8) corrido.innerHTML = '';
+
+  const div = document.createElement('div');
+  div.className = 'seg activo'; div.dataset.tipo = tipo;
+  div.innerHTML = `<span class="rotulo">${ROTULO[tipo] ?? tipo}</span><span class="cuerpo cursor"></span>`;
+  corrido.appendChild(div);
+  const cuerpo = div.querySelector('.cuerpo');
+
+  clearInterval(escribiendo);
+  let i = 0;
+  escribiendo = setInterval(()=>{
+    cuerpo.textContent = texto.slice(0, ++i);
+    corrido.scrollTop = corrido.scrollHeight;
+    if(i >= texto.length){ clearInterval(escribiendo); cuerpo.classList.remove('cursor'); }
+  }, VEL);
 }
 
-function mostrarOverlay(tipo, titulo, texto) {
-  el('overlayTipo').textContent = tipo;
-  el('overlayTitulo').textContent = titulo || '';
-  el('overlayTexto').textContent = texto || '';
-  el('overlay').classList.add('visible');
-}
-function ocultarOverlay() { el('overlay').classList.remove('visible'); }
-
-// ---------- Territorio ----------
-function mostrarTerritorio(d) {
+// ══ TERRITORIO ══
+function mostrarTerritorio(d){
   el('bTipo').textContent = d.tipo === 'oceano' ? 'CUERPO DE AGUA' : 'TERRITORIO';
   el('bNombre').textContent = d.nombre ?? '—';
-
-  // La región curada de regiones_conflicto.json solo se anuncia cuando el
-  // satélite REALMENTE la sobrevuela (region_real), no cuando fue una
-  // asignación de respaldo -- para no mentirle al público.
-  const elRegion = el('bRegion');
-  if (d.region && d.region_real) {
-    elRegion.textContent = '▸ ' + d.region;
-    elRegion.classList.add('visible');
-  } else {
-    elRegion.classList.remove('visible');
-  }
-
-  mostrarTemporal(el('bannerTerritorio'), 0); // sin auto-ocultar: es el contexto permanente
-  if (typeof d.paisIdx === 'number') { paisActualIdx = d.paisIdx; dibujarPoligonos(); }
+  // distrito / ciudad / país cuando el servidor los manda
+  el('bDetalle').textContent = [d.distrito, d.ciudad].filter(Boolean).join(' · ');
+  const r = el('bRegion');
+  if(d.region && d.region_real){ r.textContent = '▸ ' + d.region; r.classList.add('visible'); }
+  else r.classList.remove('visible');
+  el('bannerTerritorio').classList.add('visible');
+  if(typeof d.paisIdx === 'number'){ paisIdx = d.paisIdx; pintarPoligonos(); }
 }
 
-// ---------- Posiciones ----------
-function actualizarPosiciones(d) {
-  satelites = (d.todos || []).map((s) => ({
-    ...s,
-    esProtagonista: d.protagonista && s.nombre === d.protagonista.nombre,
-  }));
+function actualizarPosiciones(d){
+  satelites = (d.todos||[]).map(s=>({...s, esProtagonista: d.protagonista && s.nombre===d.protagonista.nombre}));
   protagonista = d.protagonista || null;
-  dibujarSatelites();
-
-  if (protagonista) {
-    elPanel.satelite.textContent = protagonista.nombre;
-    elPanel.coords.textContent = `${protagonista.lat.toFixed(2)}, ${protagonista.lon.toFixed(2)}`;
-    elPanel.alt.textContent = protagonista.altKm != null ? protagonista.altKm.toFixed(0) : '—';
-    elPanel.elev.textContent = protagonista.elevacionDeg != null ? protagonista.elevacionDeg.toFixed(1) : '—';
-    globo.pointOfView({ lat: protagonista.lat, lng: protagonista.lon, altitude: 1.9 }, 2500);
+  pintarSatelites();
+  if(protagonista){
+    el('tSatelite').textContent = protagonista.nombre;
+    el('tCoords').textContent = `${protagonista.lat.toFixed(2)}, ${protagonista.lon.toFixed(2)}`;
+    el('tAlt').textContent = protagonista.altKm != null ? protagonista.altKm.toFixed(0) : '—';
+    el('tElev').textContent = protagonista.elevacionDeg != null ? protagonista.elevacionDeg.toFixed(1) : '—';
+    centrar(protagonista.lat, protagonista.lon);
   }
 }
 
-function actualizarSalud(modo) {
+function actualizarRumbo(d){
+  const rosa = el('rosaVientos'); if(!rosa) return;
+  rosa.dataset.estado = d.estado || 'DESPLAZADO';
+  if(typeof d.azimut === 'number') el('rosaAguja').style.transform = `rotate(${d.azimut}deg)`;
+  const mapa = {N:'norte', E:'este', S:'sur', O:'oeste'};
+  for(const L of ['N','E','S','O']){
+    const n = el('rosa'+L); if(!n) continue;
+    const activo = (d.cardinal||'').includes(mapa[L]);
+    n.classList.toggle('activo', activo);
+    n.classList.toggle('parpadea', activo && d.estado==='AUTORIZADO');
+  }
+  el('rosaEstado').textContent = d.estado==='AUTORIZADO' ? '★ AUTORIZADO' : '✖ DESPLAZADO';
+}
+
+function actualizarSalud(modo){
   el('textoSalud').textContent = modo;
   el('puntoSalud').classList.toggle('degradado', modo !== 'ONLINE_COMPLETO');
 }
 
-// ---------- Segmentos entrelazados ----------
-// El primer 'orbital' de un manifiesto nuevo limpia los paneles del anterior.
-let ultimoTipo = null;
-function mostrarSegmento(tipoSeg, texto) {
-  ocultarOverlay();
-  if (!texto) return;
-
-  if (tipoSeg === 'orbital' && ultimoTipo && ultimoTipo !== 'orbital') {
-    // manifiesto nuevo: limpiar
-    el('bloqueMemoria').classList.remove('visible');
-    el('bloquePrompt').classList.remove('visible');
-    el('textoReflexion').textContent = '';
-  }
-  ultimoTipo = tipoSeg;
-
-  if (tipoSeg === 'orbital')   mostrarBloque('bloqueOrbital', 'textoOrbital', texto, 0);
-  if (tipoSeg === 'memoria')   mostrarBloque('bloqueMemoria', 'textoMemoria', texto, 0);
-  if (tipoSeg === 'prompt') {
-    el('textoReflexion').textContent = '';        // la reflexión pertenece al prompt anterior
-    mostrarBloque('bloquePrompt', 'textoPrompt', texto, 0);
-  }
-  if (tipoSeg === 'reflexion') {
-    el('textoReflexion').textContent = texto;     // se acumula bajo el prompt vigente
-    el('bloquePrompt').classList.add('visible');
-  }
-}
-
-// ---------- Rosa de los vientos ----------
-function actualizarRumbo(d) {
-  const rosa = el('rosaVientos');
-  if (!rosa) return;
-  rosa.dataset.estado = d.estado || 'DESPLAZADO';
-  // aguja: el azimut real del territorio nombrado
-  const aguja = el('rosaAguja');
-  if (aguja && typeof d.azimut === 'number') aguja.style.transform = `rotate(${d.azimut}deg)`;
-  // se enciende la letra del cardinal activo
-  for (const letra of ['N', 'E', 'S', 'O']) {
-    const nodo = el('rosa' + letra);
-    if (!nodo) continue;
-    const mapa = { N: 'norte', E: 'este', S: 'sur', O: 'oeste' };
-    const activo = (d.cardinal || '').includes(mapa[letra]);
-    nodo.classList.toggle('activo', activo);
-    // parpadea solo si además el agente está AUTORIZADO en ese rumbo
-    nodo.classList.toggle('parpadea', activo && d.estado === 'AUTORIZADO');
-  }
-  const et = el('rosaEstado');
-  if (et) et.textContent = d.estado || '';
-}
-
-// ---------- WebSocket ----------
-function conectar() {
+// ══ WEBSOCKET ══
+function conectar(){
   const ws = new WebSocket(`ws://${location.host}`);
-  ws.onmessage = (e) => {
-    let msg; try { msg = JSON.parse(e.data); } catch { return; }
-    const { tipo, datos: d } = msg;
-
-    if (tipo === 'posiciones')  actualizarPosiciones(d);
-    if (tipo === 'territorio')  mostrarTerritorio(d);
-    if (tipo === 'afecto')      aplicarEstadoAfectivo(d.estado);
-    if (tipo === 'salud')       actualizarSalud(d.modo);
-
-    // Ceremoniales: toman la pantalla completa hasta que llegue el
-    // siguiente bloque del manifiesto (ver más abajo).
-    if (tipo === 'preludio')    mostrarOverlay('PRELUDIO', d.titulo, d.texto);
-    if (tipo === 'agente_id')   mostrarOverlay('AGENTE ID', d.nombre, d.texto);
-
-    // SEGMENTOS ENTRELAZADOS: cada segmento llega por separado y va a su
-    // zona. Como se alternan, el cuerpo puede seguir ejecutando el último
-    // 'prompt' mientras suenan 'orbital' o 'memoria'.
-    if (tipo === 'segmento') mostrarSegmento(d.tipo, d.texto);
-
-    // Rosa de los vientos: rumbo y pertenencia
-    if (tipo === 'rumbo') actualizarRumbo(d);
+  ws.onmessage = e => {
+    let m; try{ m = JSON.parse(e.data); }catch{ return; }
+    const d = m.datos;
+    if(m.tipo==='posiciones')   actualizarPosiciones(d);
+    if(m.tipo==='territorio')   mostrarTerritorio(d);
+    if(m.tipo==='afecto')       aplicarEstado(d.estado);
+    if(m.tipo==='salud')        actualizarSalud(d.modo);
+    if(m.tipo==='rumbo')        actualizarRumbo(d);
+    if(m.tipo==='segmento')     nuevoSegmento(d.tipo, d.texto);
+    if(m.tipo==='preludio'){ el('cabAgente').textContent='PRELUDIO'; nuevoSegmento('orbital', d.texto||''); }
+    if(m.tipo==='agente_id'){ el('cabAgente').textContent=d.nombre||''; nuevoSegmento('orbital', d.texto||''); }
+    if(m.tipo==='control_estado'){
+      if(d.agente) el('cabAgente').textContent = d.agente;
+      if(d.estado_marca){
+        el('cabMarca').textContent = d.estado_marca;
+        el('cabMarca').className = 'marca ' + (d.estado_marca.includes('AUTORIZADO')?'':'desplazado');
+      }
+    }
   };
-  ws.onclose = () => {
-    actualizarSalud('DEGRADADO');
-    setTimeout(conectar, 2000);
-  };
+  ws.onclose = () => { actualizarSalud('DEGRADADO'); setTimeout(conectar, 2000); };
 }
 conectar();

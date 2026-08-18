@@ -38,7 +38,7 @@ const RAIZ = join(__dirname, '..');
 
 // ---------- Ajustes ----------
 const PUERTO = process.env.PUERTO_VISUAL || 3000;
-const GRUPO_SATELITAL = process.env.GRUPO_SATELITAL || 'stations';
+const GRUPO_SATELITAL = process.env.GRUPO_SATELITAL || 'active';
 const POLL_MS = 5000;        // cada cuánto refresca el ciclo de espera
 const SILENCIO_MS = 120000;  // si el orquestador calla 2 min, vuelve el ciclo de espera
 
@@ -131,6 +131,58 @@ app.post('/evento', (req, res) => {
   res.json({ ok: true });
 });
 
+
+// ═══════════════════════════════════════════════════════════════════════
+//  CONTROL REMOTO DESDE EL CELULAR
+//  El orquestador (test_manifiesto_estructurado.js) ya no depende solo de
+//  ENTER en la terminal: espera un comando que puede venir del celular
+//  (POST /control) o de la tecla. Lo que llegue primero, gana.
+//
+//  CÓMO FUNCIONA (long-polling): el orquestador hace GET /control/esperar y
+//  ese pedido queda ABIERTO, sin responder, hasta que alguien toca un botón
+//  en el celular. Ahí el servidor responde y el orquestador sigue. Es la
+//  forma más simple y robusta de que dos procesos se coordinen sin
+//  WebSocket de por medio.
+// ═══════════════════════════════════════════════════════════════════════
+let esperandoOrquestador = null;   // { resolver, contexto }
+const colaComandos = [];
+
+function entregarComando(cmd) {
+  if (esperandoOrquestador) {
+    const { resolver } = esperandoOrquestador;
+    esperandoOrquestador = null;
+    resolver(cmd);
+  } else {
+    colaComandos.push(cmd);   // llegó antes de que el orquestador preguntara
+  }
+  emitir('control', { comando: cmd, t: Date.now() });
+}
+
+// El celular manda un comando.
+app.post('/control', (req, res) => {
+  const cmd = req.body?.comando;
+  const validos = ['avanzar', 'repetir', 'saltar_agente', 'terminar', 'pausa'];
+  if (!validos.includes(cmd)) return res.status(400).json({ error: 'comando inválido', validos });
+  console.log(`[control] ${cmd.toUpperCase()}`);
+  entregarComando(cmd);
+  res.json({ ok: true, comando: cmd });
+});
+
+// El orquestador pregunta "¿qué hago ahora?" y espera aquí colgado.
+app.get('/control/esperar', (req, res) => {
+  if (colaComandos.length) return res.json({ comando: colaComandos.shift() });
+  esperandoOrquestador = { resolver: (cmd) => res.json({ comando: cmd }) };
+  req.on('close', () => { if (esperandoOrquestador) esperandoOrquestador = null; });
+});
+
+// El orquestador informa en qué punto está, para que el celular lo muestre.
+app.post('/control/estado', (req, res) => {
+  ultimoEstado.control = req.body || {};
+  emitir('control_estado', ultimoEstado.control);
+  res.json({ ok: true });
+});
+app.get('/control/estado', (req, res) => res.json(ultimoEstado.control ?? {}));
+
 // ---------- Ciclo de espera (solo cuando el orquestador está callado) ----------
 async function cicloEspera() {
   if (orquestadorActivo()) return; // el orquestador manda: no interferir
@@ -164,7 +216,9 @@ async function cicloEspera() {
 server.listen(PUERTO, () => {
   console.log(`\n✓ Interfaz visual en http://localhost:${PUERTO}`);
   console.log(`  Grupo satelital: ${GRUPO_SATELITAL}  |  ciclo de espera cada ${POLL_MS / 1000}s`);
-  console.log('  Esperando al orquestador (test_manifiesto_estructurado.js)...\n');
+  console.log(`  ESCENA COMPUESTA : http://localhost:${PUERTO}`);
+  console.log(`  CONTROL (celular): http://localhost:${PUERTO}/control.html`);
+  console.log('  Esperando al orquestador...\n');
   cicloEspera();
   setInterval(cicloEspera, POLL_MS);
 });

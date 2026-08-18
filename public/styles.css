@@ -1,300 +1,138 @@
-/* PROTOUSUARIO / AGENTE-ESPEJO — Interfaz de rastreo satelital
-   ================================================================
-   SISTEMA DE DISEÑO: la paleta y la tipografía cambian según el estado
-   afectivo del AGENTE-ESPEJO. Ese cambio ES la pieza, no decoración: es la
-   traducción visual de qué identidad está enunciando. Se dispara poniendo
-   data-estado="..." en <html>.
+/* PROTOUSUARIO / AGENTE-ESPEJO — ESCENA COMPUESTA
+   ══════════════════════════════════════════════════════════════════
+   Disposición (proyector 16:9, extensión HDMI de la laptop):
+     IZQUIERDA 50%  → rastreo satelital orbital
+     DERECHA   50%  → arriba: prompt-manifiesto | abajo: clon + plano satélite
 
-   PARA AGREGAR UN ESTADO NUEVO (cuando cerremos los 5 agentes):
-   copia un bloque html[data-estado="..."] de abajo, cámbiale el nombre y
-   los colores, y agrega el mismo nombre a PALETA en app.js. Nada más.
+   Cinco paletas, una por agente. El cambio de paleta es la pieza, no
+   decoración: traduce qué identidad está enunciando.                     */
 
-   TIPOGRAFÍA: dos familias en tensión deliberada.
-   - --font-hud: monoespaciada, para telemetría/coordenadas/IDs de satélite.
-     Vernácula real de consolas de rastreo orbital (NORAD, Gpredict, ADS-B).
-   - --font-epico: serif de carácter, para territorio, memoria y manifiesto
-     -- la "voz viva" en tensión con la "máquina".
-   Ambas son pilas de fuentes DEL SISTEMA (sin descargas de red) para
-   garantizar que la interfaz funcione en OFFLINE_AUTONOMO.
-
-   DISPOSICIÓN (pensada para proyector 16:9, sin colisiones):
-     columna izq. 0-27%    -> telemetría (arriba) + memoria (medio)
-     centro      30-64%    -> globo + nombre de territorio (abajo)
-     columna der. 66-100%  -> dato orbital (arriba) + prompt (abajo)
-*/
-
-:root {
-  --font-hud: ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
-  --font-epico: 'Iowan Old Style', 'Palatino Linotype', Georgia, 'Times New Roman', serif;
+:root{
+  --font-hud: ui-monospace,'SF Mono','Cascadia Code','Roboto Mono',Consolas,monospace;
+  --font-epico:'Iowan Old Style','Palatino Linotype',Georgia,'Times New Roman',serif;
   --transicion-modo: 1100ms;
+  --mar:#0b1f33; --tierra:#3a3320; --tierra-alta:#4a3d24;
 }
 
-/* ---------- AUTORITARIO (base) — verde fósforo, consola de vigilancia ---------- */
-html[data-estado="AUTORITARIO"] {
-  --bg: #05080a;
-  --grid: #1c2b22;
-  --grid-fuerte: #3a5c46;
-  --accent: #55ffa6;
-  --accent-dim: #2b6b49;
-  --text: #d9ffe9;
-  --alert: #ff6b4a;
-  --glow: 0 0 18px rgba(85, 255, 166, 0.35);
-}
+/* PANÓPTICO · Donald-Prompt — verde fósforo, consola de vigilancia */
+html[data-estado="PANOPTICO"]{--bg:#05080a;--grid:#3a5c46;--accent:#55ffa6;--accent-dim:#2b6b49;
+  --text:#d9ffe9;--alert:#ff6b4a;--glow:0 0 18px rgba(85,255,166,.35);}
+/* LIMINAL · Ternura-Binaria — violeta bioluminiscente */
+html[data-estado="LIMINAL"]{--bg:#0b0714;--grid:#6b4f96;--accent:#c9a6ff;--accent-dim:#6b4f96;
+  --text:#f3e8ff;--alert:#ffb37a;--glow:0 0 22px rgba(201,166,255,.4);}
+/* CORRIENTE · Río-Digital — cian de agua turbia */
+html[data-estado="CORRIENTE"]{--bg:#04121a;--grid:#2b6b7a;--accent:#5fe0e8;--accent-dim:#256b74;
+  --text:#dcfbff;--alert:#ffa04a;--glow:0 0 20px rgba(95,224,232,.35);}
+/* ORBITAL · Eco-Satelital — ámbar de instrumento */
+html[data-estado="ORBITAL"]{--bg:#0d0a04;--grid:#7a5c1e;--accent:#ffc65f;--accent-dim:#8a6520;
+  --text:#fff3d9;--alert:#ff7a4a;--glow:0 0 20px rgba(255,198,95,.35);}
+/* POLIFÓNICO · Quimera-Transespecie — magenta orgánico */
+html[data-estado="POLIFONICO"]{--bg:#100610;--grid:#8a3a6b;--accent:#ff7ad1;--accent-dim:#8a3a6b;
+  --text:#ffe4f5;--alert:#ffc94a;--glow:0 0 22px rgba(255,122,209,.38);}
 
-/* ---------- TERNURA — violeta bioluminiscente, contacto ---------- */
-html[data-estado="TERNURA"] {
-  --bg: #0b0714;
-  --grid: #2e2244;
-  --grid-fuerte: #6b4f96;
-  --accent: #c9a6ff;
-  --accent-dim: #6b4f96;
-  --text: #f3e8ff;
-  --alert: #ffb37a;
-  --glow: 0 0 22px rgba(201, 166, 255, 0.4);
-}
+*{box-sizing:border-box;}
+html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--text);
+  font-family:var(--font-hud);overflow:hidden;transition:background var(--transicion-modo) ease;}
 
-* { box-sizing: border-box; }
+.escena{display:grid;grid-template-columns:1fr 1fr;width:100vw;height:100vh;}
 
-html, body {
-  margin: 0; padding: 0; width: 100%; height: 100%;
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-hud);
-  overflow: hidden;
-  transition: background var(--transicion-modo) ease;
-}
+/* ══ IZQUIERDA ══ */
+.zona-globo{position:relative;overflow:hidden;border-right:1px solid var(--accent-dim);}
+#globo{position:absolute;inset:0;}
+.scanlines{position:absolute;inset:0;pointer-events:none;z-index:1;mix-blend-mode:overlay;
+  background:repeating-linear-gradient(to bottom,rgba(255,255,255,.018) 0 1px,transparent 1px 3px);}
 
-#globo { position: fixed; inset: 0; z-index: 0; }
+.panel-telemetria{position:absolute;top:22px;left:22px;z-index:3;font-size:12px;line-height:1.6;
+  color:var(--accent);text-shadow:var(--glow);border-left:2px solid var(--accent-dim);padding-left:12px;
+  transition:color var(--transicion-modo) ease,border-color var(--transicion-modo) ease;}
+.panel-telemetria .etiqueta{color:var(--text);opacity:.55;margin-right:8px;}
+.panel-telemetria .estado-afectivo{font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  opacity:.85;margin-top:6px;}
 
-/* Scanline sutil — vocabulario real de monitores de radar/CRT. Muy tenue. */
-.scanlines {
-  position: fixed; inset: 0; z-index: 1; pointer-events: none;
-  background: repeating-linear-gradient(
-    to bottom,
-    rgba(255,255,255,0.018) 0px, rgba(255,255,255,0.018) 1px,
-    transparent 1px, transparent 3px);
-  mix-blend-mode: overlay;
-}
+.banner-territorio{position:absolute;left:50%;bottom:7%;z-index:3;transform:translate(-50%,12px);
+  text-align:center;max-width:82%;font-family:var(--font-epico);
+  font-size:clamp(20px,2.1vw,34px);letter-spacing:.03em;color:var(--text);text-shadow:var(--glow);
+  opacity:0;transition:opacity 900ms ease,transform 900ms ease,color var(--transicion-modo) ease;
+  pointer-events:none;}
+.banner-territorio.visible{opacity:1;transform:translate(-50%,0);}
+.banner-territorio .tipo{display:block;font-family:var(--font-hud);font-size:10px;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--accent);opacity:.8;margin-bottom:4px;}
+.banner-territorio .detalle{display:block;font-family:var(--font-hud);font-size:11px;letter-spacing:.1em;
+  opacity:.62;margin-bottom:6px;}
+.banner-territorio .region-conflicto{display:block;font-family:var(--font-hud);font-size:10px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--alert);opacity:0;margin-top:8px;
+  transition:opacity 700ms ease;}
+.banner-territorio .region-conflicto.visible{opacity:.9;}
 
-/* ---------- ZONA 1 · Telemetría (superior izquierda) ---------- */
-.panel-telemetria {
-  position: fixed; top: 28px; left: 28px; z-index: 3;
-  font-family: var(--font-hud);
-  font-size: 13px; line-height: 1.6; letter-spacing: 0.02em;
-  color: var(--accent);
-  text-shadow: var(--glow);
-  border-left: 2px solid var(--accent-dim);
-  padding-left: 14px;
-  transition: color var(--transicion-modo) ease, border-color var(--transicion-modo) ease;
-}
-.panel-telemetria .etiqueta { color: var(--text); opacity: 0.55; margin-right: 8px; }
-.panel-telemetria .estado-afectivo {
-  font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase;
-  opacity: 0.85; margin-top: 6px;
-}
+.rosa-vientos{position:absolute;bottom:54px;left:24px;z-index:3;width:84px;height:84px;
+  transition:filter var(--transicion-modo) ease;}
+.rosa-svg{width:100%;height:100%;overflow:visible;}
+.rosa-anillo{fill:none;stroke:var(--accent-dim);stroke-width:.7;opacity:.55;}
+.rosa-anillo.tenue{opacity:.25;}
+.rosa-cruz line{stroke:var(--accent-dim);stroke-width:.7;opacity:.6;}
+.rosa-diagonales line{stroke:var(--accent-dim);stroke-width:.5;opacity:.3;}
+.rosa-aguja{fill:var(--accent);transform-origin:50px 50px;
+  transition:transform 1400ms cubic-bezier(.22,.61,.36,1);filter:drop-shadow(0 0 4px var(--accent));}
+.rosa-centro{fill:var(--accent);}
+.rosa-letra{position:absolute;font-size:9px;letter-spacing:.1em;color:var(--accent-dim);
+  transition:color 500ms ease,text-shadow 500ms ease;}
+.rosa-letra.n{top:-4px;left:50%;transform:translateX(-50%);}
+.rosa-letra.s{bottom:-4px;left:50%;transform:translateX(-50%);}
+.rosa-letra.e{right:-10px;top:50%;transform:translateY(-50%);}
+.rosa-letra.o{left:-10px;top:50%;transform:translateY(-50%);}
+.rosa-letra.activo{color:var(--accent);text-shadow:var(--glow);}
+.rosa-letra.parpadea{animation:pulsoRumbo 1100ms ease-in-out infinite;}
+@keyframes pulsoRumbo{0%,100%{opacity:1;text-shadow:var(--glow);}50%{opacity:.25;text-shadow:none;}}
+.rosa-estado{position:absolute;top:90px;left:0;font-size:9px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--accent-dim);white-space:nowrap;}
+.rosa-vientos[data-estado="AUTORIZADO"]{filter:drop-shadow(0 0 8px var(--accent));}
+.rosa-vientos[data-estado="AUTORIZADO"] .rosa-estado{color:var(--accent);text-shadow:var(--glow);}
+.rosa-vientos[data-estado="DESPLAZADO"]{opacity:.72;}
 
-/* ---------- Bloques de texto del manifiesto (zonas 2, 3, 4) ---------- */
-.bloque {
-  position: fixed; z-index: 3;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 900ms ease, transform 900ms ease, border-color var(--transicion-modo) ease;
-  pointer-events: none;
-}
-.bloque.visible { opacity: 1; transform: translateY(0); }
+.indicador-salud{position:absolute;bottom:18px;left:24px;z-index:3;font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--accent-dim);display:flex;align-items:center;gap:8px;}
+.indicador-salud .punto{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:var(--glow);}
+.indicador-salud .punto.degradado{background:var(--alert);}
 
-.bloque-titulo {
-  font-family: var(--font-hud);
-  font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
-  color: var(--accent);
-  opacity: 0.85;
-  margin-bottom: 10px;
-  text-shadow: var(--glow);
-  transition: color var(--transicion-modo) ease;
-}
-.bloque-texto {
-  font-family: var(--font-epico);
-  line-height: 1.5;
-  color: var(--text);
-  text-shadow: 0 2px 14px rgba(0,0,0,0.75);
-  transition: color var(--transicion-modo) ease;
-}
+/* ══ DERECHA ══ */
+.zona-derecha{display:grid;grid-template-rows:1fr 1fr;overflow:hidden;}
 
-/* ZONA 2 · DATO ORBITAL — superior derecha */
-.bloque-orbital {
-  top: 28px; right: 34px; width: 32%;
-  border-right: 2px solid var(--accent-dim);
-  padding-right: 16px;
-  text-align: right;
-}
-.bloque-orbital .bloque-texto { font-size: clamp(13px, 1.05vw, 17px); }
+.panel-texto{position:relative;padding:26px 30px;overflow:hidden;display:flex;flex-direction:column;
+  border-bottom:1px solid var(--accent-dim);}
+.panel-cabecera{display:flex;justify-content:space-between;align-items:baseline;
+  font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);
+  opacity:.85;padding-bottom:10px;margin-bottom:14px;border-bottom:1px solid var(--accent-dim);
+  text-shadow:var(--glow);}
+.panel-cabecera .marca{font-size:10px;letter-spacing:.14em;}
+.panel-cabecera .marca.desplazado{color:var(--alert);}
 
-/* ZONA 3 · MEMORIA EPISÓDICA — izquierda media */
-.bloque-memoria {
-  top: 34%; left: 28px; width: 26%;
-  border-left: 2px solid var(--accent-dim);
-  padding-left: 16px;
-}
-.bloque-memoria .bloque-texto {
-  font-size: clamp(13px, 1.05vw, 17px);
-  font-style: italic; /* primera persona, voz interior */
-}
+/* Texto corrido: los segmentos se acumulan, el nuevo entra escribiéndose */
+.corrido{flex:1;overflow-y:auto;scroll-behavior:smooth;padding-right:10px;}
+.corrido::-webkit-scrollbar{width:3px;}
+.corrido::-webkit-scrollbar-thumb{background:var(--accent-dim);}
+.seg{margin-bottom:16px;opacity:.34;transition:opacity 900ms ease;}
+.seg.activo{opacity:1;}
+.seg .rotulo{display:block;font-family:var(--font-hud);font-size:9px;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--accent);opacity:.75;margin-bottom:5px;}
+.seg .cuerpo{font-family:var(--font-epico);line-height:1.55;color:var(--text);}
+/* sangría y tamaño por tipo, para que se lean como partes distintas */
+.seg[data-tipo="orbital"]   .cuerpo{font-size:clamp(13px,1.05vw,18px);}
+.seg[data-tipo="memoria"]   .cuerpo{font-size:clamp(13px,1.05vw,18px);font-style:italic;padding-left:2.2em;}
+.seg[data-tipo="prompt"]    .cuerpo{font-size:clamp(15px,1.3vw,23px);border-left:2px solid var(--accent);
+  padding-left:.9em;}
+.seg[data-tipo="reflexion"] .cuerpo{font-size:clamp(12px,1vw,17px);font-style:italic;color:var(--accent);
+  opacity:.92;padding-left:3.4em;}
+/* cursor de máquina de escribir */
+.cursor::after{content:'▌';margin-left:2px;animation:parpadeoCursor 900ms steps(2) infinite;color:var(--accent);}
+@keyframes parpadeoCursor{0%,49%{opacity:1;}50%,100%{opacity:0;}}
 
-/* ZONA 4 · PROMPT — inferior derecha (lo que el PROTOUSUARIO ejecuta) */
-.bloque-prompt {
-  bottom: 46px; right: 34px; width: 34%;
-  border-right: 2px solid var(--accent);
-  padding-right: 18px;
-  text-align: right;
-}
-.bloque-prompt .bloque-titulo { opacity: 1; }
-.bloque-prompt .bloque-texto {
-  font-size: clamp(15px, 1.35vw, 22px);
-  line-height: 1.45;
-}
-
-/* ---------- ZONA 5 · Territorio (centro inferior) ---------- */
-.banner-territorio {
-  position: fixed; left: 47%; bottom: 8%; z-index: 3;
-  transform: translate(-50%, 12px);
-  text-align: center; max-width: 34%;
-  font-family: var(--font-epico);
-  font-size: clamp(24px, 3vw, 46px);
-  letter-spacing: 0.04em;
-  color: var(--text);
-  text-shadow: var(--glow);
-  opacity: 0;
-  transition: opacity 900ms ease, transform 900ms ease, color var(--transicion-modo) ease;
-  pointer-events: none;
-}
-.banner-territorio.visible { opacity: 1; transform: translate(-50%, 0); }
-.banner-territorio .tipo {
-  display: block;
-  font-family: var(--font-hud);
-  font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase;
-  color: var(--accent); opacity: 0.8; margin-bottom: 6px;
-}
-.banner-territorio .region-conflicto {
-  display: block;
-  font-family: var(--font-hud);
-  font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
-  color: var(--alert); opacity: 0; margin-top: 10px;
-  transition: opacity 700ms ease;
-}
-.banner-territorio .region-conflicto.visible { opacity: 0.9; }
-
-/* ---------- ZONA 6 · Overlay ceremonial (Preludio / Agente ID) ---------- */
-.overlay {
-  position: fixed; inset: 0; z-index: 10;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 6vh 12vw;
-  background: color-mix(in srgb, var(--bg) 92%, transparent);
-  opacity: 0; pointer-events: none;
-  transition: opacity 1200ms ease, background var(--transicion-modo) ease;
-}
-.overlay.visible { opacity: 1; }
-.overlay-tipo {
-  font-family: var(--font-hud);
-  font-size: 12px; letter-spacing: 0.35em; text-transform: uppercase;
-  color: var(--accent); opacity: 0.8; margin-bottom: 18px;
-  text-shadow: var(--glow);
-}
-.overlay-titulo {
-  font-family: var(--font-epico);
-  font-size: clamp(30px, 4vw, 62px);
-  color: var(--text); margin-bottom: 28px; text-align: center;
-  text-shadow: var(--glow);
-}
-.overlay-texto {
-  font-family: var(--font-epico);
-  font-size: clamp(16px, 1.5vw, 26px);
-  line-height: 1.6; color: var(--text);
-  max-width: 60ch; text-align: center;
-  white-space: pre-wrap; /* respeta los saltos de línea de tu preludio.json */
-  max-height: 62vh; overflow: hidden;
-}
-
-/* ---------- Salud del sistema (inferior izquierda) ---------- */
-.indicador-salud {
-  position: fixed; bottom: 24px; left: 28px; z-index: 3;
-  font-family: var(--font-hud);
-  font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
-  color: var(--accent-dim);
-  display: flex; align-items: center; gap: 8px;
-}
-.indicador-salud .punto {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--accent); box-shadow: var(--glow);
-}
-.indicador-salud .punto.degradado { background: var(--alert); }
-
-
-/* ---------- Cola reflexiva bajo el prompt ---------- */
-.bloque-reflexion {
-  font-family: var(--font-epico);
-  font-style: italic;
-  font-size: clamp(13px, 1.05vw, 18px);
-  line-height: 1.45;
-  color: var(--accent);
-  opacity: 0.9;
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid var(--accent-dim);
-  text-shadow: 0 2px 12px rgba(0,0,0,0.7);
-  transition: color var(--transicion-modo) ease, border-color var(--transicion-modo) ease;
-}
-.bloque-reflexion:empty { border-top: none; margin-top: 0; padding-top: 0; }
-
-/* ---------- Rosa de los vientos (inferior izquierda, sobre la salud) ---------- */
-.rosa-vientos {
-  position: fixed; bottom: 58px; left: 28px; z-index: 3;
-  width: 96px; height: 96px;
-  font-family: var(--font-hud);
-  transition: filter var(--transicion-modo) ease;
-}
-.rosa-svg { width: 100%; height: 100%; overflow: visible; }
-.rosa-anillo { fill: none; stroke: var(--accent-dim); stroke-width: 0.7; opacity: 0.55; }
-.rosa-anillo.tenue { opacity: 0.25; }
-.rosa-cruz line { stroke: var(--accent-dim); stroke-width: 0.7; opacity: 0.6; }
-.rosa-diagonales line { stroke: var(--accent-dim); stroke-width: 0.5; opacity: 0.3; }
-.rosa-aguja {
-  fill: var(--accent);
-  transform-origin: 50px 50px;
-  transition: transform 1400ms cubic-bezier(.22,.61,.36,1);
-  filter: drop-shadow(0 0 4px var(--accent));
-}
-.rosa-centro { fill: var(--accent); }
-
-.rosa-letra {
-  position: absolute;
-  font-size: 10px; letter-spacing: 0.1em;
-  color: var(--accent-dim);
-  transition: color 500ms ease, text-shadow 500ms ease;
-}
-.rosa-letra.n { top: -4px;  left: 50%; transform: translateX(-50%); }
-.rosa-letra.s { bottom: -4px; left: 50%; transform: translateX(-50%); }
-.rosa-letra.e { right: -10px; top: 50%; transform: translateY(-50%); }
-.rosa-letra.o { left: -10px;  top: 50%; transform: translateY(-50%); }
-
-.rosa-letra.activo { color: var(--accent); text-shadow: var(--glow); }
-/* Parpadeo SOLO cuando el agente está AUTORIZADO en ese rumbo: llegar a casa
-   es la excepción, y debe verse como un evento. */
-.rosa-letra.parpadea { animation: pulsoRumbo 1100ms ease-in-out infinite; }
-@keyframes pulsoRumbo {
-  0%, 100% { opacity: 1;   text-shadow: var(--glow); }
-  50%      { opacity: 0.25; text-shadow: none; }
-}
-
-.rosa-estado {
-  position: absolute; top: 102px; left: 0;
-  font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--accent-dim); white-space: nowrap;
-}
-/* AUTORIZADO enciende toda la rosa; DESPLAZADO la deja apagada y fría. */
-.rosa-vientos[data-estado="AUTORIZADO"] { filter: drop-shadow(0 0 8px var(--accent)); }
-.rosa-vientos[data-estado="AUTORIZADO"] .rosa-estado { color: var(--accent); text-shadow: var(--glow); }
-.rosa-vientos[data-estado="DESPLAZADO"] { filter: none; opacity: 0.72; }
-
-/* La salud baja para no chocar con la rosa */
-.indicador-salud { bottom: 18px; }
+.zona-inferior{display:grid;grid-template-columns:1fr 1fr;overflow:hidden;}
+.panel-clon{position:relative;border-right:1px solid var(--accent-dim);overflow:hidden;}
+.panel-zoom{position:relative;overflow:hidden;}
+#globoZoom{position:absolute;inset:0;}
+.panel-titulo{position:absolute;top:12px;left:14px;z-index:3;font-size:9px;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--accent);opacity:.7;text-shadow:var(--glow);}
+.placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:6px;color:var(--accent-dim);font-size:11px;letter-spacing:.16em;
+  text-transform:uppercase;border:1px dashed var(--accent-dim);margin:12px;opacity:.5;}
+.placeholder small{font-size:9px;opacity:.7;letter-spacing:.1em;}
