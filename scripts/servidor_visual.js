@@ -31,6 +31,7 @@ import { createServer } from 'node:http';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { networkInterfaces } from 'node:os';
 import { obtenerDatoOrbital } from './capa2_dato_orbital_v3.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -39,7 +40,7 @@ const RAIZ = join(__dirname, '..');
 // ---------- Ajustes ----------
 const PUERTO = process.env.PUERTO_VISUAL || 3000;
 const GRUPO_SATELITAL = process.env.GRUPO_SATELITAL || 'active';
-const POLL_MS = 5000;        // cada cuánto refresca el ciclo de espera
+const POLL_MS = Number(process.env.POLL_MS || 10000); // ciclo de espera (10 s: menos carga)
 const SILENCIO_MS = 120000;  // si el orquestador calla 2 min, vuelve el ciclo de espera
 
 // ---------- Índice país -> posición en el GeoJSON (para resaltar en el cliente) ----------
@@ -213,11 +214,40 @@ async function cicloEspera() {
   }
 }
 
-server.listen(PUERTO, () => {
-  console.log(`\n✓ Interfaz visual en http://localhost:${PUERTO}`);
-  console.log(`  Grupo satelital: ${GRUPO_SATELITAL}  |  ciclo de espera cada ${POLL_MS / 1000}s`);
-  console.log(`  ESCENA COMPUESTA : http://localhost:${PUERTO}`);
-  console.log(`  CONTROL (celular): http://localhost:${PUERTO}/control.html`);
+// ---------- Direcciones reales de esta laptop en la red ----------
+// EL ERROR MÁS CARO DE TODOS: escribir "localhost:3000" en el celular.
+// En el celular, `localhost` ES EL CELULAR. Hay que escribir la IP de la
+// LAPTOP. Este bloque la imprime en grande al arrancar para que no haya
+// que adivinarla nunca más, y la reimprime si cambias de red (hotspot).
+function direccionesLan() {
+  const salida = [];
+  for (const [nombre, lista] of Object.entries(networkInterfaces())) {
+    for (const i of lista || []) {
+      if (i.family === 'IPv4' && !i.internal) salida.push({ nombre, ip: i.address });
+    }
+  }
+  return salida;
+}
+
+// 0.0.0.0 explícito: escucha en TODAS las interfaces (Wi-Fi, hotspot,
+// ethernet). Sin esto, algunas configuraciones de Windows solo abren el
+// puerto en loopback y el celular nunca llega.
+server.listen(PUERTO, '0.0.0.0', () => {
+  const ips = direccionesLan();
+  console.log('\n════════════════════════════════════════════════════');
+  console.log('  ESCENA COMPUESTA (proyector)  http://localhost:' + PUERTO);
+  console.log('  CONTROL (esta laptop)         http://localhost:' + PUERTO + '/control.html');
+  console.log('  ──────────────────────────────────────────────────');
+  if (ips.length) {
+    console.log('  DESDE EL CELULAR, escribe UNA de estas (con http:// y todo):');
+    for (const { nombre, ip } of ips) {
+      console.log(`     http://${ip}:${PUERTO}/control.html      [${nombre}]`);
+    }
+  } else {
+    console.log('  ⚠ Sin red: no hay IP de LAN. Conecta el Wi-Fi / hotspot.');
+  }
+  console.log('════════════════════════════════════════════════════');
+  console.log(`  Grupo satelital: ${GRUPO_SATELITAL} | ciclo de espera: ${POLL_MS / 1000}s`);
   console.log('  Esperando al orquestador...\n');
   cicloEspera();
   setInterval(cicloEspera, POLL_MS);

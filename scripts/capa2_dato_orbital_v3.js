@@ -1,4 +1,19 @@
-// PROTOUSUARIO / AGENTE-ESPEJO -- Capa 2, "Dato orbital" v3
+// PROTOUSUARIO / AGENTE-ESPEJO -- Capa 2, "Dato orbital" v3.1
+//
+// ═══ QUE CAMBIA EN v3.1 (rendimiento; misma salida, mismo contrato) ═══
+// El grupo 'active' de CelesTrak trae ~13.000 objetos. Antes, CADA llamada:
+//   (a) leia y parseaba de disco un JSON de ~10 MB,
+//   (b) construia 13.000 satrec desde cero con json2satrec(),
+//   (c) devolvia los 13.000 en 'todos' para dibujarlos en el navegador.
+// Con el ciclo de espera corriendo cada 5 s, eso bloqueaba el hilo de Node
+// varias decimas de segundo por vuelta y ahogaba al navegador. Ahora:
+//   (a) el JSON parseado se memoriza en RAM (MEMO_GP),
+//   (b) los satrec se memorizan por satelite (MEMO_SATREC): json2satrec es
+//       lo caro, propagate() es barato,
+//   (c) 'todos' se recorta a MAX_SATELITES (por defecto 400) eligiendo los
+//       mas cercanos al protagonista + un reparto global, para que la nube
+//       se vea densa alrededor de la accion sin fundir la GPU.
+// Se ajusta con variables de entorno: MAX_SATELITES=250 node ...
 //
 // Reemplaza a capa2_dato_orbital.js (v2). Mantiene el mismo CONTRATO de
 // salida que ya consume test_manifiesto_estructurado.js:
@@ -27,6 +42,41 @@ import { obtenerGP } from './descargar_gp.js';
 import { resolverTerritorio } from './resolver_territorio.js';
 
 const LIMA = { lat: -12.0464, lon: -77.0428, altKm: 0.154 };
+
+// Cuantos satelites se MANDAN al navegador (no cuantos se propagan).
+// 400 se ve denso como satellitemap.space y la GTX 1050 lo mueve sobrado.
+const MAX_SATELITES = Number(process.env.MAX_SATELITES || 400);
+
+// Memoria de proceso: evita releer/reparsear y reconstruir todo cada vuelta.
+const MEMO_GP = new Map();      // cachePath -> { t, modo, datos }
+const MEMO_SATREC = new Map();  // clave del satelite -> satrec
+const MEMO_GP_MS = 15 * 60 * 1000;  // 15 min: los TLE no cambian tan rapido
+
+function claveSat(omm) {
+  return String(omm.NORAD_CAT_ID ?? omm.OBJECT_ID ?? omm.OBJECT_NAME);
+}
+
+/**
+ * Recorta la nube de satelites que viaja al navegador.
+ * Mitad "cerca del protagonista" (para que la accion se vea poblada) y
+ * mitad repartida por todo el globo (para que el planeta no quede vacio).
+ */
+function recortarNube(candidatos, elegido, maximo) {
+  if (candidatos.length <= maximo) return candidatos;
+  const cerca = [...candidatos].sort((a, b) => {
+    const da = (a.lat - elegido.lat) ** 2 + (a.lon - elegido.lon) ** 2;
+    const db = (b.lat - elegido.lat) ** 2 + (b.lon - elegido.lon) ** 2;
+    return da - db;
+  }).slice(0, Math.floor(maximo / 2));
+  const vistos = new Set(cerca.map((c) => c.nombre));
+  const resto = candidatos.filter((c) => !vistos.has(c.nombre));
+  const paso = Math.max(1, Math.floor(resto.length / (maximo - cerca.length)));
+  const reparto = [];
+  for (let i = 0; i < resto.length && reparto.length < maximo - cerca.length; i += paso) {
+    reparto.push(resto[i]);
+  }
+  return cerca.concat(reparto);
+}
 
 function cargarRegiones(path) {
   try {
@@ -60,7 +110,15 @@ export async function obtenerDatoOrbital({
   const url = `https://celestrak.org/NORAD/elements/gp.php?GROUP=${grupo}&FORMAT=json`;
   const cachePath = `tles/gp_cache_${grupo}.json`;
 
-  const { modo, datos } = await obtenerGP({ url, cachePath });
+  // --- memoria de proceso: no releer 10 MB de disco cada 5 segundos ---
+  let modo, datos;
+  const memo = MEMO_GP.get(cachePath);
+  if (memo && Date.now() - memo.t < MEMO_GP_MS) {
+    ({ modo, datos } = memo);
+  } else {
+    ({ modo, datos } = await obtenerGP({ url, cachePath }));
+    MEMO_GP.set(cachePath, { t: Date.now(), modo, datos });
+  }
 
   // ---------- MODO SIMULADO (no hay datos reales de ningún tipo) ----------
   // CLAVE para "nunca parar": aunque no haya TLE/JSON real, esta rama SIEMPRE
@@ -113,7 +171,11 @@ export async function obtenerDatoOrbital({
   const candidatos = [];
   for (const omm of datos) {
     try {
-      const satrec = satellite.json2satrec(omm);
+      // json2satrec es lo caro (parseo + inicializacion SGP4). Se hace UNA
+      // vez por satelite en toda la sesion; propagate() si es barato.
+      const k = claveSat(omm);
+      let satrec = MEMO_SATREC.get(k);
+      if (!satrec) { satrec = satellite.json2satrec(omm); MEMO_SATREC.set(k, satrec); }
       const pv = satellite.propagate(satrec, ahora);
       if (!pv || !pv.position) continue; // objeto decaído / error numérico: se descarta
 
@@ -182,6 +244,9 @@ export async function obtenerDatoOrbital({
     elevacionDeg: elegido.elevacionDeg, rangeKm: elegido.rangeKm,
     proximidad: Math.max(0, Math.min(1, elegido.elevacionDeg / 90)),
     // TODOS los satélites del grupo con posición, para dibujar el fondo en el globo.
-    todos: candidatos.map((c) => ({ nombre: c.nombre, lat: c.lat, lon: c.lon, altKm: c.altKm })),
+    // Nube RECORTADA (ver recortarNube): el navegador no necesita 13.000
+    // puntos para verse lleno, y con 13.000 no se ve: se atraganta.
+    todos: recortarNube(candidatos, elegido, MAX_SATELITES)
+      .map((c) => ({ nombre: c.nombre, lat: c.lat, lon: c.lon, altKm: c.altKm })),
   };
 }

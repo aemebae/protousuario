@@ -136,3 +136,86 @@ html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--text)
   justify-content:center;gap:6px;color:var(--accent-dim);font-size:11px;letter-spacing:.16em;
   text-transform:uppercase;border:1px dashed var(--accent-dim);margin:12px;opacity:.5;}
 .placeholder small{font-size:9px;opacity:.7;letter-spacing:.1em;}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PEGA ESTE BLOQUE AL FINAL DE public/styles.css  (no borres nada de arriba)
+   v4 · PROMPT-MANIFIESTO: cuatro voces, cuatro tipografías, dos rótulos.
+
+   La regla de escena:
+     DATO ORBITAL   → rótulo + monoespaciada de instrumento. Habla la máquina.
+     PROMPT         → rótulo (una sola vez por agente) + raya vertical +
+                      cuerpo grande. Es la orden: tiene que leerse de lejos.
+     NARRACIÓN      → SIN rótulo. Serif ancha, calma, tono documental.
+                      Es la voz NatGeo: describe, no manda.
+     MEMORIA        → SIN rótulo. Serif en cursiva, sangrada, más tenue.
+                      Es voz interior: suena por debajo de todo lo demás.
+
+   Como el CSS que va después gana, esto pisa lo anterior sin conflictos.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* — Ningún rótulo en memoria ni en narración — */
+.seg[data-tipo="memoria"]   .rotulo,
+.seg[data-tipo="narracion"] .rotulo,
+.seg[data-tipo="reflexion"] .rotulo{ display:none; }
+
+/* Sin rótulo, el segmento se pega al anterior: son parte del mismo aliento */
+.seg[data-tipo="memoria"],
+.seg[data-tipo="narracion"],
+.seg[data-tipo="reflexion"]{ margin-top:-6px; margin-bottom:14px; }
+
+/* — DATO ORBITAL · voz de instrumento — */
+.seg[data-tipo="orbital"] .cuerpo{
+  font-family:var(--font-hud);
+  font-size:clamp(12px,.98vw,17px);
+  line-height:1.62; letter-spacing:.015em;
+  color:var(--text); opacity:.94; font-style:normal;
+}
+
+/* — PROMPT · la orden — */
+.seg[data-tipo="prompt"] .cuerpo{
+  font-family:var(--font-epico);
+  font-size:clamp(16px,1.38vw,25px);
+  line-height:1.42; font-style:normal;
+  color:var(--text); text-shadow:var(--glow);
+  border-left:2px solid var(--accent);   /* ← la raya vertical que te gusta.
+      Si la querías del OTRO lado, cambia esta línea por:
+      border-right:2px solid var(--accent);  y padding-left por padding-right */
+  padding-left:.85em;
+}
+
+/* — NARRACIÓN NATGEO · el documental — */
+/* 'reflexion' es el nombre viejo; se mantiene para no romper logs antiguos */
+.seg[data-tipo="narracion"] .cuerpo,
+.seg[data-tipo="reflexion"] .cuerpo{
+  font-family:'Iowan Old Style','Palatino Linotype','Book Antiqua',Georgia,serif;
+  font-size:clamp(13px,1.06vw,19px);
+  line-height:1.66; letter-spacing:.012em;
+  font-style:normal;
+  color:var(--text); opacity:.9;
+  text-shadow:none;
+  border-left:none; padding-left:0;
+  max-width:52ch;                 /* columna de lectura: obliga a respirar */
+}
+
+/* — MEMORIA EPISÓDICA · voz interior — */
+.seg[data-tipo="memoria"] .cuerpo{
+  font-family:var(--font-epico);
+  font-size:clamp(12px,1vw,17px);
+  font-style:italic; line-height:1.58;
+  color:var(--text); opacity:.72;
+  padding-left:2.4em;
+  border-left:1px solid var(--accent-dim);
+}
+
+/* — El rótulo, cuando toca — */
+.seg .rotulo{
+  display:block; font-family:var(--font-hud);
+  font-size:9px; letter-spacing:.26em; text-transform:uppercase;
+  color:var(--accent); opacity:.75; margin-bottom:7px;
+}
+
+/* — Scanlines: bajan de coste —
+   mix-blend-mode sobre un canvas WebGL a pantalla completa obliga al
+   navegador a recomponer la capa en CADA cuadro. Se queda el efecto,
+   se va la mezcla. Si igual notas lag, pon display:none aquí. */
+.scanlines{ mix-blend-mode:normal; opacity:.5; }
