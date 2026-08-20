@@ -40,8 +40,28 @@
   #btnAvanzar{padding:30px;font-size:21px;}
   #btnTerminar{background:transparent;color:var(--alert);border:1px solid var(--alert);
     padding:12px;font-size:12px;}
-  .conexion{font-size:10px;letter-spacing:.14em;text-align:center;opacity:.45;padding-bottom:4px;}
-  .conexion.caida{color:var(--alert);opacity:1;}
+  /* PAUSA: segundo botón en tamaño, porque en escena se usa de verdad.
+     Cuando está activo se pinta entero y AVANZAR se atenúa, para que a
+     oscuras y de un vistazo sepas en qué estado estás. */
+  #btnPausa{background:transparent;color:var(--accent);border:1px solid var(--dim);
+    padding:20px;font-size:16px;}
+  body[data-pausa="1"] #btnPausa{background:#ffc65f;color:var(--bg);border-color:#ffc65f;}
+  body[data-pausa="1"] #btnAvanzar{opacity:.3;}
+  body[data-pausa="1"] .estado{border-bottom-color:#ffc65f;}
+  #btnPausa{background:transparent;color:#ffc65f;border:1px solid #8a6520;
+    padding:18px;font-size:16px;letter-spacing:.1em;}
+  body[data-pausa="1"] #btnPausa{background:#ffc65f;color:var(--bg);}
+  body[data-pausa="1"] #btnPausa::after{content:' · ACTIVA';}
+  body[data-pausa="1"] .segmento{border-color:#ffc65f;opacity:.55;}
+  body[data-pausa="1"] #btnAvanzar{opacity:.35;}
+  #btnDeriva{background:transparent;color:#c9a6ff;border:1px solid #6b4f96;
+    padding:16px;font-size:14px;letter-spacing:.1em;}
+  body[data-deriva="1"] #btnDeriva{background:#c9a6ff;color:var(--bg);}
+  body[data-deriva="1"] #btnAvanzar{opacity:.25;}
+  .conexion{font-size:11px;letter-spacing:.14em;text-align:center;opacity:.55;padding-bottom:4px;}
+  .conexion.caida{color:var(--alert);opacity:1;font-size:13px;}
+  .conexion.local{color:#ffc65f;opacity:1;font-size:13px;}
+  .buffer{font-size:10px;opacity:.4;letter-spacing:.1em;text-align:center;}
 </style>
 </head>
 <body>
@@ -59,33 +79,82 @@
 
   <div class="botonera">
     <button id="btnAvanzar">▶  AVANZAR</button>
+    <button id="btnPausa">⏸  PAUSA</button>
+    <button id="btnPausa">⏸ PAUSA</button>
     <div class="fila">
       <button id="btnRepetir">↺ REPETIR</button>
       <button id="btnSaltar">⏭ SALTAR AGENTE</button>
     </div>
+    <button id="btnDeriva">◈ DERIVA — PASAJE FINAL</button>
     <button id="btnTerminar">■ TERMINAR PERFORMANCE</button>
   </div>
   <div class="conexion" id="conexion">conectando…</div>
+  <div class="buffer" id="buffer"></div>
 
 <script>
 const el = (id) => document.getElementById(id);
 
-async function enviar(comando){
-  try{
-    await fetch('/control', {method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({comando})});
-    if (navigator.vibrate) navigator.vibrate(comando==='terminar'?[60,40,60]:25);
-  }catch(e){ el('conexion').textContent='error de red'; el('conexion').classList.add('caida'); }
+// ═══════════════════════════════════════════════════════════════════════
+//  RESPALDO SIN RED
+//  Si te alejás y el hotspot se corta, este teléfono NO se queda en blanco:
+//  guarda la secuencia completa del manifiesto en cuanto llega, y AVANZAR
+//  sigue mostrándote los textos que faltan aunque el servidor no responda.
+//  Al volver al alcance, el WebSocket se reconecta solo y se re-sincroniza.
+// ═══════════════════════════════════════════════════════════════════════
+let secuencia = [], iLocal = 0, enLinea = false, modoLocal = false;
+
+function pintarConexion(){
+  const c = el('conexion');
+  c.className = 'conexion' + (enLinea ? '' : (modoLocal ? ' local' : ' caida'));
+  c.textContent = enLinea ? 'conectado'
+    : (modoLocal ? '⚠ SIN RED — avanzando local' : 'reconectando…');
+  el('buffer').textContent = secuencia.length
+    ? `respaldo: ${Math.min(iLocal, secuencia.length)}/${secuencia.length} segmentos`
+    : '';
 }
 
-el('btnAvanzar').onclick = () => enviar('avanzar');
+async function enviar(comando){
+  if (navigator.vibrate) navigator.vibrate(comando==='terminar'?[60,40,60]:25);
+  try{
+    const r = await fetch('/control', {method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({comando}), signal: AbortSignal.timeout(2500)});
+    if(!r.ok) throw new Error('http');
+    modoLocal = false; pintarConexion();
+  }catch(e){
+    // Sin red: si es AVANZAR y hay respaldo, se avanza en el teléfono.
+    modoLocal = true;
+    if (comando === 'avanzar' && secuencia.length){
+      const seg = secuencia[Math.min(iLocal, secuencia.length-1)];
+      if (seg) pintarSegmento(seg.tipo, seg.texto);
+      iLocal++;
+      if (navigator.vibrate) navigator.vibrate([20,40,20]);
+    }
+    pintarConexion();
+  }
+}
+
+el('btnAvanzar').onclick = () => { document.body.dataset.pausa=''; enviar('avanzar'); };
+el('btnPausa').onclick   = () => {
+  const activa = document.body.dataset.pausa === '1';
+  document.body.dataset.pausa = activa ? '' : '1';
+  if (navigator.vibrate) navigator.vibrate(activa ? 25 : [40,60,40]);
+  enviar('pausa');
+};
 el('btnRepetir').onclick = () => enviar('repetir');
 el('btnSaltar').onclick  = () => { if(confirm('¿Saltar al siguiente agente?')) enviar('saltar_agente'); };
 el('btnTerminar').onclick= () => { if(confirm('¿TERMINAR la performance?')) enviar('terminar'); };
+el('btnDeriva').onclick  = () => {
+  if(confirm('◈ DERIVA: el sistema queda autónomo y sigue hablando solo. ¿Entrar al pasaje final?')){
+    document.body.dataset.deriva='1';
+    enviar('deriva');
+  }
+};
 
 // Espacio y flecha derecha también avanzan (por si usas teclado bluetooth)
 addEventListener('keydown', e => {
-  if (e.code==='Space'||e.code==='ArrowRight'){ e.preventDefault(); enviar('avanzar'); }
+  if (e.code==='Space'||e.code==='ArrowRight'){ e.preventDefault(); document.body.dataset.pausa=''; enviar('avanzar'); }
+  if (e.code==='KeyP'){ e.preventDefault(); el('btnPausa').click(); }
 });
 
 function pintarEstado(d){
@@ -99,25 +168,51 @@ function pintarEstado(d){
   if(d.progreso) el('progreso').textContent = d.progreso;
 }
 function pintarSegmento(tipo, texto){
-  const nombres={orbital:'DATO ORBITAL',memoria:'MEMORIA EPISÓDICA',prompt:'PROMPT',reflexion:'REFLEXIÓN'};
+  // En el celular SÍ conviene ver la etiqueta de cada parte: es tu partitura,
+  // no la pantalla del público. Aquí sirve saber si lo que sigue es una orden
+  // para tu cuerpo o una narración que solo suena.
+  const nombres={orbital:'DATO ORBITAL', memoria:'memoria episódica',
+                 prompt:'▌ PROMPT — EJECUTA', narracion:'narración NatGeo',
+                 reflexion:'narración NatGeo', pregunta:'◈ PREGUNTA — AL MICRÓFONO'};
   el('segTipo').textContent = nombres[tipo] ?? tipo.toUpperCase();
   el('segTexto').textContent = texto;
   el('segmento').scrollTop = 0;
+  el('segmento').style.borderColor =
+    tipo==='prompt' ? 'var(--accent)' : (tipo==='pregunta' ? '#c9a6ff' : 'var(--dim)');
+  el('segTexto').style.fontSize = tipo==='pregunta' ? '19px' : '';
 }
 
 function conectar(){
   const ws = new WebSocket(`ws://${location.host}`);
-  ws.onopen = () => { el('conexion').textContent='conectado'; el('conexion').classList.remove('caida'); };
+  ws.onopen = () => { enLinea = true; modoLocal = false; pintarConexion(); };
   ws.onmessage = (e) => {
     let m; try{ m=JSON.parse(e.data);}catch{return;}
-    if(m.tipo==='segmento') pintarSegmento(m.datos.tipo, m.datos.texto);
+    if(m.tipo==='segmento'){
+      pintarSegmento(m.datos.tipo, m.datos.texto);
+      // sincronizar el puntero local con lo que ya sonó de verdad
+      const k = secuencia.findIndex(s=>s.texto===m.datos.texto);
+      if(k>=0) iLocal = k+1;
+      pintarConexion();
+    }
+    if(m.tipo==='secuencia'){
+      secuencia = m.datos.segmentos || []; iLocal = 0; pintarConexion();
+    }
+    if(m.tipo==='pausa'){ document.body.dataset.pausa = m.datos.activa ? '1' : ''; }
+    if(m.tipo==='deriva' && m.datos.activa){
+      document.body.dataset.deriva='1';
+      el('agente').textContent='DERIVA — pasaje final';
+    }
     if(m.tipo==='control_estado') pintarEstado(m.datos);
     if(m.tipo==='preludio'){ el('agente').textContent='PRELUDIO'; pintarSegmento('orbital', m.datos.texto||''); }
     if(m.tipo==='agente_id'){ el('agente').textContent=m.datos.nombre||''; pintarSegmento('orbital', m.datos.texto||''); }
   };
-  ws.onclose = () => { el('conexion').textContent='reconectando…'; el('conexion').classList.add('caida'); setTimeout(conectar,1500); };
+  ws.onclose = () => { enLinea = false; pintarConexion(); setTimeout(conectar,1200); };
+  ws.onerror = () => { enLinea = false; pintarConexion(); };
 }
 conectar();
+// Mantener la pantalla encendida durante la función (Android Chrome).
+try { navigator.wakeLock?.request?.('screen'); } catch {}
+if ('wakeLock' in navigator) navigator.wakeLock.request('screen').catch(()=>{});
 fetch('/control/estado').then(r=>r.json()).then(pintarEstado).catch(()=>{});
 </script>
 </body>

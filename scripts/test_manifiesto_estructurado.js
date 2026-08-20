@@ -31,8 +31,11 @@ import { emitirPreludio, emitirAgenteId, emitirSegmento,
          emitirSatelite, emitirAfecto, emitirRumbo } from './emitir_evento.js';
 // El motor afectivo por proximidad fue reemplazado por el motor de RUMBO:
 // AUTORIZADO (el territorio cae en el rumbo propio del agente) / DESPLAZADO.
-import { crearMotorRumbo, elegirTerritorio } from './rumbo_territorial.js';
-import { construirPrompt, validarSegmentos, segmentosABloques } from './construir_prompt.js';
+import { crearMotorRumbo } from './rumbo_territorial.js';
+import { construirPrompt, validarGenerado, construirPromptDeriva } from './construir_prompt.js';
+// v4: TUS actos manda; Gemini solo narra. El ensamblado vive en su módulo.
+import { ensamblarSecuencia, elegirPatron, rellenarFichas, segmentosABloques } from './ensamblar_secuencia.js';
+import { emitirSecuencia, emitirDeriva, emitirPausa } from './emitir_evento.js';
 
 const apiKey = process.env.GEMINI_API_KEY;
 if (!apiKey) {
@@ -46,6 +49,7 @@ const NUEVA_FUNCION = false;        // true = resetea estado_performance.json (p
 const USAR_BUSQUEDA_WEB = false;    // true = grounding con Google Search en el dato orbital (gasta cupo diario del free tier, sube latencia)
 const LICENCIA_ESPECULATIVA = true; // permite fabular alrededor del núcleo real de memoria
 const MANIFIESTOS_POR_SESION = 5;   // 5 = un manifiesto por agente, en el orden fijo
+const DERIVA_MS = Number(process.env.DERIVA_MS || 11000);  // pausa entre textos del pasaje final
 
 // Umbral mínimo de bloqueo que permite la API (reduce rechazos espurios en contenido
 // político/corporal legítimo; los límites duros del proveedor siguen existiendo).
@@ -62,6 +66,16 @@ const { orden, agentes } = JSON.parse(fs.readFileSync('agentes.json', 'utf8'));
 const escena = JSON.parse(fs.readFileSync('objetos_escena.json', 'utf8'));
 const { regiones } = JSON.parse(fs.readFileSync('regiones_conflicto.json', 'utf8'));
 const { marcos } = JSON.parse(fs.readFileSync('corpus_teorico.json', 'utf8'));
+const permanentes = JSON.parse(fs.readFileSync('instrucciones_permanentes.json', 'utf8'));
+const { patrones } = JSON.parse(fs.readFileSync('patrones_secuencia.json', 'utf8'));
+// Las preguntas del pasaje final. Van en archivo y no las genera la IA: son lo
+// último que se escucha, y tienen que sonar aunque no haya red.
+let PREGUNTAS_DERIVA = [];
+try {
+  PREGUNTAS_DERIVA = JSON.parse(fs.readFileSync('preguntas_deriva.json', 'utf8')).preguntas ?? [];
+} catch { console.warn('  ⚠ sin preguntas_deriva.json — la deriva usará solo material generado'); }
+const deriva = (() => { try { return JSON.parse(fs.readFileSync('preguntas_deriva.json', 'utf8')); }
+  catch { return { apertura: [], nucleo: [], respiros: [], reserva: [] }; } })();
 const semillasTodas = fs.readFileSync('corpus/manifiestos_semilla.jsonl', 'utf8')
   .split('\n').filter(Boolean).map((l) => JSON.parse(l));
 
@@ -85,21 +99,55 @@ const rl = readline.createInterface({ input, output });
 // ═══════════════════════════════════════════════════════════════════════
 const URL_VISUAL = process.env.URL_VISUAL || 'http://localhost:3000';
 
+// ARREGLO IMPORTANTE: antes, si el servidor estaba caído, este fetch fallaba
+// al instante, la carrera la ganaba el 'null' y la función AVANZABA SOLA de
+// segmento en segmento sin que nadie pulsara nada. Ahora reintenta en silencio
+// cada 1,2 s: mientras no haya servidor, el único mando es el teclado.
 async function esperarCelular(señal) {
-  try {
-    const r = await fetch(`${URL_VISUAL}/control/esperar`, { signal: señal });
-    if (!r.ok) return null;
-    return (await r.json()).comando;
-  } catch { return null; }   // servidor caído: solo queda el teclado
+  while (!señal.aborted) {
+    try {
+      const r = await fetch(`${URL_VISUAL}/control/esperar`, { signal: señal });
+      if (r.ok) {
+        const j = await r.json();
+        if (j?.comando) return j.comando;
+      }
+    } catch { if (señal.aborted) return null; }
+    await new Promise((r) => setTimeout(r, 1200));
+  }
+  return null;
 }
 
+// El botón PAUSA no avanza: retiene. Se queda esperando hasta que llegue otro
+// comando. Sirve para sostener un gesto largo, para un imprevisto en sala, o
+// simplemente para que la pantalla no corra mientras el cuerpo todavía está en
+// lo suyo. Pulsar PAUSA otra vez (o AVANZAR) reanuda.
+let enPausa = false;
+
 const pausa = async (msg = '[ENTER o botón del celular para continuar]') => {
-  const ctrl = new AbortController();
-  const porTeclado = rl.question('\n' + msg + ' ').then(() => 'avanzar');
-  const porCelular = esperarCelular(ctrl.signal);
-  const comando = await Promise.race([porTeclado, porCelular]);
-  ctrl.abort();                 // cancelar la espera del celular
-  return comando ?? 'avanzar';
+  while (true) {
+    const ctrl = new AbortController();
+    // El signal en rl.question evita que se apilen preguntas de teclado
+    // huérfanas: sin esto, tras varios avances desde el celular el ENTER
+    // dejaba de responder porque estaba resolviendo promesas viejas.
+    const porTeclado = rl.question('\n' + msg + ' ', { signal: ctrl.signal })
+      .then(() => 'avanzar')
+      .catch(() => new Promise(() => {}));   // abortado: nunca gana la carrera
+    const porCelular = esperarCelular(ctrl.signal);
+    const comando = await Promise.race([porTeclado, porCelular]);
+    ctrl.abort();
+
+    const cmd = comando ?? 'avanzar';
+    if (cmd === 'pausa') {
+      enPausa = !enPausa;
+      console.log(enPausa ? '\n  ⏸  EN PAUSA — pulsá PAUSA o AVANZAR para seguir\n'
+                          : '\n  ▶  reanudado\n');
+      await informarControl({ estado_marca: enPausa ? '⏸ EN PAUSA' : '' });
+      if (enPausa) continue;     // se queda esperando otro comando
+      return 'avanzar';
+    }
+    if (enPausa) { enPausa = false; await informarControl({ estado_marca: '' }); }
+    return cmd;
+  }
 };
 
 /** Informa al celular en qué punto va la performance. */
@@ -114,11 +162,13 @@ async function informarControl(datos) {
 /** Señal para cortar la performance desde el celular. */
 class TerminarPerformance extends Error {}
 class SaltarAgente extends Error {}
+class EntrarEnDeriva extends Error {}
 
 /** Traduce el comando recibido en la acción correspondiente. */
 function aplicarComando(cmd) {
   if (cmd === 'terminar') throw new TerminarPerformance();
   if (cmd === 'saltar_agente') throw new SaltarAgente();
+  if (cmd === 'deriva') throw new EntrarEnDeriva();
   return cmd;
 }
 
@@ -162,6 +212,34 @@ function elegirEpisodio(tags) {
   const elegido = barajar(candidatos)[0];
   episodiosUsados.add(elegido.id);
   return elegido;
+}
+
+// ---------- Los DOS territorios de cada agente ----------
+// Cada ID tiene dos territorios curados y AHORA SE NOMBRAN LOS DOS:
+//   A = el más cercano al punto subsatelital actual → abre el manifiesto.
+//   B = el otro → entra a mitad, después del segundo acto.
+// El motor de rumbo se calcula para CADA UNO por separado, así un mismo
+// agente puede estar ✖ DESPLAZADO en su primer territorio y ★ AUTORIZADO en
+// el segundo (Donald-Prompt: Congo al este = DESPLAZADO; frontera México-EEUU
+// al noroeste = AUTORIZADO, porque el noroeste contiene al norte).
+function distanciaAprox(a, b) {
+  const dLat = a.lat - b.lat;
+  const dLon = (a.lon - b.lon) * Math.cos((a.lat * Math.PI) / 180);
+  return Math.sqrt(dLat * dLat + dLon * dLon);
+}
+function centroDe(r) {
+  const [laMin, laMax, loMin, loMax] = r.bbox;
+  return { lat: (laMin + laMax) / 2, lon: (loMin + loMax) / 2 };
+}
+function elegirTerritoriosAB(regs, agenteId, puntoSat) {
+  const suyos = regs.filter((r) => r.agente === agenteId);
+  if (!suyos.length) return [null, null];
+  if (suyos.length === 1) return [suyos[0], null];
+  if (!puntoSat || puntoSat.lat == null) return [suyos[0], suyos[1]];
+  const ordenados = [...suyos].sort(
+    (x, y) => distanciaAprox(puntoSat, centroDe(x)) - distanciaAprox(puntoSat, centroDe(y))
+  );
+  return [ordenados[0], ordenados[1] ?? null];
 }
 
 // ---------- Selección de marco teórico ----------
@@ -237,10 +315,13 @@ async function funcion() {
     const dato = await obtenerDatoOrbital();
     await emitirSatelite(dato);   // el globo muestra ESTE satélite, no otro
 
-    // El SATÉLITE elige cuál de los dos territorios del agente se nombra:
-    // el más cercano a su punto subsatelital actual.
-    const territorio = elegirTerritorio(regiones, agenteId, { lat: dato.lat, lon: dato.lon });
+    // El SATÉLITE ordena los DOS territorios del agente: el más cercano abre,
+    // el otro entra a mitad de escena.
+    const [territorio, territorioB] = elegirTerritoriosAB(regiones, agenteId, { lat: dato.lat, lon: dato.lon });
     const rumbo = motorRumbo({ agente, territorio, elevacionDeg: dato.elevacionDeg });
+    const rumboB = territorioB
+      ? motorRumbo({ agente, territorio: territorioB, elevacionDeg: dato.elevacionDeg })
+      : null;
     await emitirRumbo({ estado: rumbo.estado, cardinal: rumbo.cardinal,
                         azimut: rumbo.azimut, rumboAgente: rumbo.rumboAgente });
     await emitirAfecto(agente.estado);   // paleta y tipografía del agente activo
@@ -254,6 +335,24 @@ async function funcion() {
     const semillas = semillasPara(agenteId, acto);
     const vetadas = estado.palabras_recientes;
 
+    // ── TUS ACTOS ──
+    // Se leen de instrucciones_permanentes.json y se les rellenan las fichas
+    // ({ESTADO}, {TERRITORIO}...). De aquí en adelante son intocables.
+    const ctx = {
+      estado_marca: rumbo.estado_marca,
+      territorio_nombre: territorio.nombre,
+      territorio_texto: rumbo.territorio_texto,
+      rumbo_texto: rumbo.rumbo_texto,
+      satelite: dato.satelite_enunciable ?? dato.satelite,
+      indice: idx,
+    };
+    const actosCrudos = permanentes.agentes?.[agenteId]?.actos ?? [];
+    if (!actosCrudos.length) {
+      console.warn(`  ⚠ ${agenteId} no tiene actos en instrucciones_permanentes.json`);
+    }
+    const actos = actosCrudos.map((a) => rellenarFichas(a, ctx));
+    const patron = elegirPatron(patrones, idx);
+
     console.log(`\n>>> Generando manifiesto ${idx + 1} — ${agente.agente} · acto: ${acto}${dato.simulado ? ' (satélite simulado)' : ''}${USAR_BUSQUEDA_WEB ? ' (con búsqueda web)' : ''}...`);
     console.log(`    ${territorio.nombre} · ${rumbo.cardinal} ${rumbo.azimut}° · ${rumbo.estado_marca} · marco: ${marco.id}`);
     await informarControl({
@@ -263,14 +362,40 @@ async function funcion() {
       rumbo_texto: rumbo.rumbo_texto,
       progreso: `MANIFIESTO ${i + 1} DE ${MANIFIESTOS_POR_SESION} · ACTO: ${acto.toUpperCase()}`,
     });
-    const bruto = await llamarGemini(construirPrompt({
-      agente, acto, dato, territorio, rumbo, marco, episodio,
-      objetos, accion, semillas, vetadas,
-      licenciaEspeculativa: LICENCIA_ESPECULATIVA, usarBusquedaWeb: USAR_BUSQUEDA_WEB,
-    }));
-    const { segmentos, avisos } = validarSegmentos(bruto);
+    // Si Gemini falla del todo, la escena SIGUE: los actos son tuyos y las
+    // narraciones caen al banco de respaldo. Nunca se cae la función por la API.
+    let generado = { orbital_1: '', orbital_2: '', memoria: '', narraciones: [] };
+    const avisos = [];
+    try {
+      const bruto = await llamarGemini(construirPrompt({
+        agente, acto, dato, territorio, territorioB, rumbo, rumboB, marco, episodio,
+        actos, objetos, semillas, vetadas,
+        licenciaEspeculativa: LICENCIA_ESPECULATIVA, usarBusquedaWeb: USAR_BUSQUEDA_WEB,
+      }));
+      const v = validarGenerado(bruto, actos.length);
+      generado = v.generado;
+      avisos.push(...v.avisos);
+    } catch (err) {
+      avisos.push(`GEMINI CAÍDO (${err.message}) — solo tus actos + respaldo`);
+      generado.orbital_1 = `${dato.satelite_enunciable ?? dato.satelite} sobrevuela ${territorio.nombre}, ${rumbo.territorio_texto}. ${rumbo.rumbo_texto} está ${rumbo.estado_marca}.`;
+      if (territorioB && rumboB) {
+        generado.orbital_2 = `Ahora ${territorioB.nombre}, ${rumboB.territorio_texto}. ${rumboB.rumbo_texto} está ${rumboB.estado_marca}.`;
+      }
+    }
+
+    const { segmentos, avisos: avisosEns } = ensamblarSecuencia({
+      actos, generado, patron,
+      narracionesRespaldo: permanentes.narraciones_respaldo ?? [],
+      ctx,
+    });
+    avisos.push(...avisosEns);
     if (avisos.length) console.log('    ⚠ ' + avisos.join(' | '));
     const m = segmentosABloques(segmentos);
+
+    // El celular recibe la SECUENCIA COMPLETA de una vez. Si el hotspot se
+    // corta mientras caminás, el teléfono sigue mostrando los textos que
+    // faltan por su cuenta y se re-sincroniza al volver al alcance.
+    await emitirSecuencia(segmentos, { agente: agente.agente, patron: patron.id });
 
     console.log('\n' + '─'.repeat(70));
     console.log(`MANIFIESTO ${idx + 1} · ${agente.agente} · ACTO: ${acto.toUpperCase()}`);
@@ -279,8 +404,9 @@ async function funcion() {
     // SECUENCIA ENTRELAZADA: ya no son tres bloques fijos. Los segmentos se
     // alternan para que PROTOUSUARIO pueda EJECUTAR una acción mientras siguen
     // sonando datos orbitales o memoria, en vez de esperar de pie.
-    const etiqueta = { orbital: 'DATO ORBITAL', memoria: 'MEMORIA EPISÓDICA',
-                       prompt: 'PROMPT', reflexion: '· reflexión ·' };
+    console.log(`    patrón ${patron.id} · memoria después de: ${patron.memoria_despues_de} · ${actos.length} actos`);
+    const etiqueta = { orbital: 'DATO ORBITAL', memoria: '· memoria episódica ·',
+                       prompt: 'PROMPT', narracion: '· narración NatGeo ·' };
     for (let k = 0; k < segmentos.length; k++) {
       const seg = segmentos[k];
       console.log(`\n— ${etiqueta[seg.tipo] ?? seg.tipo.toUpperCase()} —\n`);
@@ -304,6 +430,10 @@ async function funcion() {
       satelite: dato.satelite,
       region: territorio.nombre,
       region_id: territorio.id,
+      region_b: territorioB?.nombre ?? null,
+      region_b_id: territorioB?.id ?? null,
+      estado_rumbo_b: rumboB?.estado ?? null,
+      patron: patron.id,
       cardinal: rumbo.cardinal,
       azimut: rumbo.azimut,
       estado_rumbo: rumbo.estado,
@@ -338,7 +468,114 @@ async function funcion() {
   rl.close();
 }
 
-funcion().catch((e) => {
+// ═══════════════════════════════════════════════════════════════════════
+//  MODO DERIVA — el pasaje final
+//  PROTOUSUARIO se retira en cuatro patas, se quita las prótesis, y la voz
+//  sigue sonando sobre el cuerpo ausente. Textos nuevos, nunca usados, que
+//  se reproducen solos, sin botones, hasta que alguien pulse TERMINAR.
+//  También es la red de seguridad si perdés el hotspot caminando: pulsás
+//  DERIVA antes de alejarte y el sistema queda autónomo.
+// ═══════════════════════════════════════════════════════════════════════
+async function modoDeriva() {
+  console.log('\n' + '◈'.repeat(70));
+  console.log('  DERIVA — monólogo final. El cuerpo se retira, las preguntas siguen.');
+  console.log('  PAUSA retiene · TERMINAR cierra.');
+  console.log('◈'.repeat(70) + '\n');
+
+  await emitirDeriva(true);
+  await informarControl({ agente: 'DERIVA', progreso: 'MONÓLOGO FINAL — AUTÓNOMO',
+                          estado_marca: '◈ DERIVA' });
+
+  // ── Espera con oreja puesta. Devuelve 'sigue' cuando vence el reloj, o el
+  //    comando que llegó del celular. PAUSA retiene indefinidamente.
+  async function respirar(ms) {
+    while (true) {
+      const ctrl = new AbortController();
+      const reloj = new Promise((r) => setTimeout(() => r('sigue'), ms));
+      const boton = esperarCelular(ctrl.signal);
+      const cmd = await Promise.race([reloj, boton]);
+      ctrl.abort();
+      if (cmd === 'terminar') throw new TerminarPerformance();
+      if (cmd === 'pausa') {
+        console.log('\n  ⏸  DERIVA EN PAUSA\n');
+        await informarControl({ estado_marca: '⏸ DERIVA EN PAUSA' });
+        const c2 = new AbortController();
+        const otro = await esperarCelular(c2.signal);
+        c2.abort();
+        if (otro === 'terminar') throw new TerminarPerformance();
+        await informarControl({ estado_marca: '◈ DERIVA' });
+        return 'sigue';
+      }
+      return 'sigue';   // avanzar / repetir: simplemente adelanta la pregunta
+    }
+  }
+
+  async function decir(texto, i) {
+    console.log('\n◈ ' + texto);
+    await emitirSegmento('narracion', texto, i);
+    await respirar(DERIVA_MS);
+  }
+
+  let i = 0;
+
+  // ── 1. Apertura: dos líneas que no son preguntas. Instalan la ausencia.
+  for (const t of deriva.apertura ?? []) await decir(t, i++);
+
+  // ── 2. NÚCLEO, en orden. Está escrito como curva, no como lista: el orden
+  //       es la dramaturgia. Cada tres preguntas entra un respiro, para que
+  //       el monólogo tenga aire y no se vuelva una ametralladora.
+  const respiros = [...(deriva.respiros ?? [])];
+  let r = 0;
+  const nucleo = deriva.nucleo ?? [];
+  for (let n = 0; n < nucleo.length; n++) {
+    await decir(nucleo[n], i++);
+    if ((n + 1) % 3 === 0 && respiros.length) {
+      await decir(respiros[r++ % respiros.length], i++);
+    }
+  }
+
+  // ── 3. Extensión de Gemini, en el mismo registro. Se pide DESPUÉS del
+  //       núcleo para que la deriva pueda durar lo que tenga que durar. Si no
+  //       hay red, no pasa nada: se salta directo a la reserva.
+  let extra = [];
+  try {
+    const res = await llamarGemini(construirPromptDeriva({
+      ejemplos: [...(deriva.nucleo ?? []).slice(0, 6), ...(deriva.reserva ?? []).slice(0, 4)],
+      territoriosNombrados: regiones.filter((x) => x.agente).map((x) => x.nombre),
+      cuantos: 14,
+    }), 2);
+    extra = (res?.textos ?? []).filter((t) => typeof t === 'string' && t.trim().includes('?'));
+    console.log(`\n  ✓ ${extra.length} preguntas nuevas generadas.\n`);
+  } catch {
+    console.warn('\n  ⚠ Sin red para extender la deriva: sigue con la reserva escrita.\n');
+  }
+  for (const t of extra) await decir(t, i++);
+
+  // ── 4. Reserva barajada, en bucle abierto. La deriva no tiene final propio:
+  //       el final lo pone el botón TERMINAR.
+  let cola = barajar(deriva.reserva ?? []);
+  if (!cola.length) cola = [...nucleo];
+  if (!cola.length) cola = ['¿Alguien va a venir a recoger esto?'];
+  let j = 0;
+  while (true) {
+    if (j > 0 && j % cola.length === 0) cola = barajar(cola);
+    await decir(cola[j % cola.length], i++);
+    j++;
+    if (j % 4 === 0 && respiros.length) await decir(respiros[r++ % respiros.length], i++);
+  }
+}
+
+funcion().catch(async (e) => {
+  if (e instanceof EntrarEnDeriva) {
+    try { await modoDeriva(); }
+    catch (e2) {
+      if (e2 instanceof TerminarPerformance) {
+        console.log('\n\n■  DERIVA CERRADA desde el celular.\n');
+      } else { console.error(e2); }
+    }
+    rl.close();
+    process.exit(0);
+  }
   if (e instanceof TerminarPerformance) {
     console.log('\n\n■  PERFORMANCE TERMINADA desde el celular.');
     console.log('   El estado quedó guardado: podés retomar donde ibas.\n');

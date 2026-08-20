@@ -261,16 +261,41 @@ function pintarSatelites(){
 // ══════════════════════════════════════════════════════════════════════
 //  CÁMARA: retorno lento tras tocar el globo
 // ══════════════════════════════════════════════════════════════════════
-let ultimaInteraccion = 0;
-const ESPERA_RETORNO = 2500, DURACION_RETORNO = 4000;
-for (const ev of ['mousedown','wheel','touchstart','touchmove'])
+// v4.1 — TRES ARREGLOS AL REGRESO BRUSCO:
+//  1. Espera 8 s desde tu última interacción (antes 2,5 s: te arrebataba el
+//     globo mientras aún lo estabas mirando).
+//  2. El viaje dura 9 s con curva suave (antes 4 s: era un tirón).
+//  3. Solo re-centra si el objetivo se movió de verdad (>4°). Antes lo hacía
+//     en CADA actualización, así que el tween se reiniciaba a medio camino y
+//     eso es lo que se sentía como salto.
+let ultimaInteraccion = 0, pendiente = null, ultimoCentro = null;
+const ESPERA_RETORNO = 8000, DURACION_RETORNO = 9000, UMBRAL_GRADOS = 4;
+for (const ev of ['mousedown','wheel','touchstart','touchmove','pointerdown'])
   el('globo').addEventListener(ev, ()=>{ ultimaInteraccion = Date.now(); }, {passive:true});
 
-function centrar(lat, lon){
-  const hacer = () => globo.pointOfView({lat, lng:lon, altitude:1.9}, DURACION_RETORNO);
+function lejos(lat, lon){
+  if (!ultimoCentro) return true;
+  const dLat = Math.abs(lat - ultimoCentro.lat);
+  let dLon = Math.abs(lon - ultimoCentro.lon); if (dLon > 180) dLon = 360 - dLon;
+  return Math.hypot(dLat, dLon) > UMBRAL_GRADOS;
+}
+
+function centrar(lat, lon, forzar = false){
+  // El plano detalle sí sigue siempre al satélite: es su trabajo.
+  globoZoom.pointOfView({lat, lng:lon, altitude:0.55}, 3500);
+  if (!forzar && !lejos(lat, lon)) return;
+  clearTimeout(pendiente);
+  const hacer = () => {
+    // Si volviste a tocar el globo mientras esperaba, se reprograma en vez
+    // de robarte la vista de golpe.
+    if (Date.now() - ultimaInteraccion < ESPERA_RETORNO) {
+      pendiente = setTimeout(hacer, 1500); return;
+    }
+    ultimoCentro = {lat, lon};
+    globo.pointOfView({lat, lng:lon, altitude:1.9}, DURACION_RETORNO);
+  };
   const falta = ESPERA_RETORNO - (Date.now() - ultimaInteraccion);
-  falta > 0 ? setTimeout(hacer, falta) : hacer();
-  globoZoom.pointOfView({lat, lng:lon, altitude:0.55}, 2500);
+  pendiente = setTimeout(hacer, Math.max(0, falta));
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -296,8 +321,41 @@ let promptYaRotulado = false;
 const ROTULO = {
   orbital: 'DATO ORBITAL',
   prompt:  'PROMPT · PROTOUSUARIO',
-  // memoria y narracion: SIN rótulo, a propósito.
+  // memoria, narracion y pregunta: SIN rótulo, a propósito.
 };
+
+// Estilos que llegan con v5 (pregunta y pausa). Se inyectan desde aquí para no
+// tener que tocar styles.css otra vez a horas de la función.
+(function estilosV5(){
+  const css = document.createElement('style');
+  css.textContent = `
+    /* PREGUNTA — el pasaje final. Grande, centrada, sin rótulo, con aire.
+       Es lo último que se escucha: tiene que leerse desde el fondo del patio. */
+    .seg[data-tipo="pregunta"] .rotulo{display:none;}
+    .seg[data-tipo="pregunta"]{margin:2.2em 0;}
+    .seg[data-tipo="pregunta"] .cuerpo{
+      display:block; text-align:center; max-width:100%;
+      font-family:'Iowan Old Style','Palatino Linotype',Georgia,serif;
+      font-size:clamp(20px,2.1vw,38px); line-height:1.34;
+      font-style:normal; letter-spacing:.005em;
+      color:var(--text); text-shadow:var(--glow);
+      border:none; padding:0;
+    }
+    /* PAUSA — visible pero sin gritar. Si el sistema está detenido a propósito,
+       tiene que notarse; si no, parece colgado. */
+    html[data-pausa="1"] .panel-texto{opacity:.55;}
+    html[data-pausa="1"] .escena::after{
+      content:'⏸ PAUSA'; position:fixed; top:14px; left:50%;
+      transform:translateX(-50%); z-index:99;
+      font-family:var(--font-hud); font-size:11px; letter-spacing:.32em;
+      color:var(--alert); border:1px solid var(--alert);
+      padding:5px 14px; border-radius:3px;
+      animation:latidoPausa 2.2s ease-in-out infinite;
+    }
+    @keyframes latidoPausa{0%,100%{opacity:.35}50%{opacity:1}}
+  `;
+  document.head.appendChild(css);
+})();
 // 'reflexion' es el nombre viejo de 'narracion'. Se mantiene como alias
 // para que los logs y scripts antiguos no rompan la pantalla.
 const normalizar = (t) => (t === 'reflexion' ? 'narracion' : t);
@@ -364,6 +422,16 @@ function actualizarPosiciones(d){
   satelites = (d.todos||[]).map(s=>({...s, esProtagonista: d.protagonista && s.nombre===d.protagonista.nombre}));
   protagonista = d.protagonista || null;
   pintarSatelites();
+  // TICK RÁPIDO (cada ~0,9 s): solo repinta los puntos para que la nube se
+  // vea moverse. No toca telemetría ni cámara: si lo hiciera, el globo estaría
+  // reencuadrando cada segundo y eso es justo lo que se sentía brusco.
+  if (d.tick) {
+    if (protagonista) {
+      el('tCoords').textContent = `${protagonista.lat.toFixed(2)}, ${protagonista.lon.toFixed(2)}`;
+      globoZoom.pointOfView({lat:protagonista.lat, lng:protagonista.lon, altitude:0.55}, 900);
+    }
+    return;
+  }
   if(protagonista){
     el('tSatelite').textContent = protagonista.nombre;
     el('tCoords').textContent = `${protagonista.lat.toFixed(2)}, ${protagonista.lon.toFixed(2)}`;
@@ -415,6 +483,15 @@ function conectar(){
       limpiarPantalla();                       // cada agente entra con pantalla limpia
       el('cabAgente').textContent=d.nombre||'';
       nuevoSegmento('narracion', d.texto||'');
+    }
+    if(m.tipo==='pausa'){
+      document.documentElement.setAttribute('data-pausa', d.activa ? '1' : '0');
+    }
+    if(m.tipo==='deriva' && d.activa){
+      limpiarPantalla();
+      el('cabAgente').textContent = '◈  D E R I V A';
+      el('cabMarca').textContent = '';
+      el('cabMarca').className = 'marca';
     }
     if(m.tipo==='control_estado'){
       if(d.agente) el('cabAgente').textContent = d.agente;

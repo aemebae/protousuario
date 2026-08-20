@@ -34,12 +34,31 @@ export const emitirAgenteId  = (nombre, texto) => emitirEvento('agente_id', { no
 
 // ---------- Segmento entrelazado ----------
 /**
- * @param {'orbital'|'memoria'|'prompt'|'reflexion'} tipo
+ * @param {'orbital'|'memoria'|'prompt'|'narracion'} tipo
  * @param {string} texto
  * @param {number} indice  posición en la secuencia (para depurar)
  */
 export const emitirSegmento = (tipo, texto, indice) =>
   emitirEvento('segmento', { tipo, texto, indice });
+
+// ---------- Secuencia completa (respaldo del celular) ----------
+/**
+ * Manda al servidor la secuencia ENTERA del manifiesto en cuanto se ensambla.
+ * El celular la guarda: si el hotspot se corta mientras PROTOUSUARIO camina,
+ * el teléfono sigue avanzando los textos por su cuenta y se re-sincroniza al
+ * volver al alcance. Es el seguro contra la pérdida de red en escena.
+ */
+export const emitirSecuencia = (segmentos, meta = {}) =>
+  emitirEvento('secuencia', { segmentos, ...meta });
+
+// ---------- Pausa ----------
+// Congela la función sin perder el punto. La pantalla y el celular lo muestran
+// para que sepas, a oscuras y sin mirar la laptop, que el sistema está detenido
+// a propósito y no colgado.
+export const emitirPausa = (activa) => emitirEvento('pausa', { activa });
+
+// ---------- Deriva (pasaje final autónomo) ----------
+export const emitirDeriva = (activa) => emitirEvento('deriva', { activa });
 
 // ---------- Compatibilidad con la versión de bloques ----------
 export const emitirBloqueOrbital = (texto) => emitirSegmento('orbital', texto);

@@ -1,0 +1,32 @@
+{
+  "_uso": "El dinamismo de la secuencia, escrito a mano en vez de aleatorio. Cada manifiesto toma UN patrón de esta lista, en orden, rotando. Así los 5 agentes de una misma función nunca comparten forma, la función siguiente arranca en otro punto de la rueda, y TODO es ensayable (no hay azar que te sorprenda en escena).",
+
+  "_estructura_fija": [
+    "1. DATO ORBITAL (territorio A) — siempre primero, con rótulo, generado una sola vez.",
+    "2. Los ACTOS son tuyos (instrucciones_permanentes.json) y son intocables. El rótulo PROMPT sale solo en el primero.",
+    "3. Cada acto arrastra su NARRACIÓN NATGEO detrás. Sin rótulo. Es su cola: nunca se separan.",
+    "4. DATO ORBITAL 2 (territorio B) — después de al menos dos actos. Sin rótulo repetido.",
+    "5. MEMORIA EPISÓDICA — una sola, sin rótulo. ES LA ÚNICA PIEZA MÓVIL: su lugar lo decide el patrón."
+  ],
+
+  "_valores_de_memoria_despues_de": {
+    "orbital": "justo después del primer Dato Orbital, antes de que aparezca el rótulo PROMPT",
+    "acto1": "entre el primer acto y su propia narración — parte la cola en dos",
+    "narracion1": "después de la primera narración, antes del segundo acto",
+    "orbital2": "después del segundo Dato Orbital",
+    "final": "al cierre de todo, como última palabra del manifiesto"
+  },
+
+  "patrones": [
+    { "id": "p1", "memoria_despues_de": "orbital",
+      "nota": "El recuerdo irrumpe antes de cualquier orden. El agente empieza hablando de sí." },
+    { "id": "p2", "memoria_despues_de": "narracion1",
+      "nota": "El recuerdo entra cuando el documental ya explicó el primer gesto. Contraste seco." },
+    { "id": "p3", "memoria_despues_de": "final",
+      "nota": "El recuerdo cierra. El cuerpo ya terminó y la voz se queda sola." },
+    { "id": "p4", "memoria_despues_de": "acto1",
+      "nota": "El recuerdo corta la acción a la mitad, entre la orden y su narración. El más incómodo." },
+    { "id": "p5", "memoria_despues_de": "orbital2",
+      "nota": "El recuerdo llega tras el segundo territorio: la memoria se contamina de geografía ajena." }
+  ]
+}

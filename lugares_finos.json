@@ -1,0 +1,120 @@
+{
+  "_uso": "Ciudades y distritos dentro de los territorios curados. Sirve para que el banner de la escena compuesta diga 'Goma · Kivu del Norte' encima de 'República Democrática del Congo', y para que Gemini pueda nombrar un lugar concreto en vez de un país entero. No necesita ningún dataset externo: es curaduría, igual que regiones_conflicto.json.",
+  "_formato": "cada entrada: { region_id, lugares: [ { nombre, tipo, lat, lon } ] }. tipo = 'ciudad' | 'distrito' | 'sitio'.",
+  "_como_funciona": "resolver_lugar.js toma la posición del satélite y devuelve el lugar más cercano DENTRO de un radio máximo. Si el satélite está sobre el mar o lejos de todo, no devuelve nada y el banner solo muestra el país (comportamiento actual, sin regresión).",
+  "entradas": [
+    { "region_id": "rdc_este", "lugares": [
+      { "nombre": "Goma", "tipo": "ciudad", "lat": -1.678, "lon": 29.221 },
+      { "nombre": "Bukavu", "tipo": "ciudad", "lat": -2.508, "lon": 28.842 },
+      { "nombre": "Rutshuru", "tipo": "distrito", "lat": -1.186, "lon": 29.446 },
+      { "nombre": "Walikale", "tipo": "distrito", "lat": -1.416, "lon": 28.036 },
+      { "nombre": "Minas de coltán de Rubaya", "tipo": "sitio", "lat": -1.500, "lon": 28.933 },
+      { "nombre": "Beni", "tipo": "ciudad", "lat": 0.492, "lon": 29.472 }
+    ]},
+    { "region_id": "frontera_mex_eeuu", "lugares": [
+      { "nombre": "Ciudad Juárez", "tipo": "ciudad", "lat": 31.690, "lon": -106.424 },
+      { "nombre": "El Paso, Texas", "tipo": "ciudad", "lat": 31.759, "lon": -106.487 },
+      { "nombre": "Nogales", "tipo": "ciudad", "lat": 31.309, "lon": -110.943 },
+      { "nombre": "Tijuana", "tipo": "ciudad", "lat": 32.514, "lon": -117.038 },
+      { "nombre": "Desierto de Sonora", "tipo": "sitio", "lat": 32.000, "lon": -113.000 },
+      { "nombre": "Piedras Negras", "tipo": "ciudad", "lat": 28.700, "lon": -100.523 },
+      { "nombre": "Chihuahua", "tipo": "ciudad", "lat": 28.632, "lon": -106.069 }
+    ]},
+    { "region_id": "atacama", "lugares": [
+      { "nombre": "San Pedro de Atacama", "tipo": "ciudad", "lat": -22.911, "lon": -68.200 },
+      { "nombre": "Salar de Atacama", "tipo": "sitio", "lat": -23.500, "lon": -68.250 },
+      { "nombre": "Calama", "tipo": "ciudad", "lat": -22.454, "lon": -68.929 },
+      { "nombre": "Chuquicamata", "tipo": "sitio", "lat": -22.302, "lon": -68.900 },
+      { "nombre": "Toconao", "tipo": "distrito", "lat": -23.190, "lon": -68.010 },
+      { "nombre": "Antofagasta", "tipo": "ciudad", "lat": -23.650, "lon": -70.400 }
+    ]},
+    { "region_id": "cabo_verde", "lugares": [
+      { "nombre": "Praia", "tipo": "ciudad", "lat": 14.933, "lon": -23.513 },
+      { "nombre": "Cidade Velha", "tipo": "sitio", "lat": 14.915, "lon": -23.605 },
+      { "nombre": "Mindelo, São Vicente", "tipo": "ciudad", "lat": 16.886, "lon": -24.988 },
+      { "nombre": "Isla de Sal", "tipo": "distrito", "lat": 16.736, "lon": -22.933 },
+      { "nombre": "Isla de Fogo", "tipo": "distrito", "lat": 14.950, "lon": -24.350 }
+    ]},
+    { "region_id": "amazonia_peruana", "lugares": [
+      { "nombre": "Iquitos, Loreto", "tipo": "ciudad", "lat": -3.749, "lon": -73.253 },
+      { "nombre": "Pucallpa, Ucayali", "tipo": "ciudad", "lat": -8.379, "lon": -74.553 },
+      { "nombre": "Puerto Maldonado, Madre de Dios", "tipo": "ciudad", "lat": -12.593, "lon": -69.189 },
+      { "nombre": "La Pampa, Madre de Dios", "tipo": "sitio", "lat": -12.900, "lon": -70.000 },
+      { "nombre": "Nauta, Loreto", "tipo": "distrito", "lat": -4.505, "lon": -73.578 },
+      { "nombre": "Atalaya, Ucayali", "tipo": "distrito", "lat": -10.729, "lon": -73.762 },
+      { "nombre": "Río Chambira", "tipo": "sitio", "lat": -3.500, "lon": -75.000 },
+      { "nombre": "Contamana", "tipo": "distrito", "lat": -7.343, "lon": -75.010 }
+    ]},
+    { "region_id": "gaza", "lugares": [
+      { "nombre": "Ciudad de Gaza", "tipo": "ciudad", "lat": 31.505, "lon": 34.464 },
+      { "nombre": "Rafah", "tipo": "ciudad", "lat": 31.297, "lon": 34.244 },
+      { "nombre": "Jan Yunis", "tipo": "ciudad", "lat": 31.348, "lon": 34.306 },
+      { "nombre": "Campo de Yabalia", "tipo": "distrito", "lat": 31.529, "lon": 34.483 },
+      { "nombre": "Deir al-Balah", "tipo": "ciudad", "lat": 31.418, "lon": 34.351 }
+    ]},
+    { "region_id": "sudan", "lugares": [
+      { "nombre": "Jartum", "tipo": "ciudad", "lat": 15.501, "lon": 32.559 },
+      { "nombre": "Omdurmán", "tipo": "ciudad", "lat": 15.644, "lon": 32.478 },
+      { "nombre": "El Fasher, Darfur del Norte", "tipo": "ciudad", "lat": 13.627, "lon": 25.349 },
+      { "nombre": "Nyala, Darfur del Sur", "tipo": "ciudad", "lat": 12.050, "lon": 24.882 },
+      { "nombre": "Puerto Sudán", "tipo": "ciudad", "lat": 19.617, "lon": 37.217 },
+      { "nombre": "Wad Madani", "tipo": "ciudad", "lat": 14.401, "lon": 33.519 },
+      { "nombre": "Zalingei", "tipo": "distrito", "lat": 12.906, "lon": 23.474 }
+    ]},
+    { "region_id": "antartida", "lugares": [
+      { "nombre": "Estación Machu Picchu, Isla Rey Jorge", "tipo": "sitio", "lat": -62.092, "lon": -58.472 },
+      { "nombre": "Bahía Almirantazgo", "tipo": "sitio", "lat": -62.150, "lon": -58.450 },
+      { "nombre": "Base Frei, Isla Rey Jorge", "tipo": "sitio", "lat": -62.201, "lon": -58.963 },
+      { "nombre": "Estrecho de Bransfield", "tipo": "sitio", "lat": -63.200, "lon": -59.500 },
+      { "nombre": "Península Antártica", "tipo": "distrito", "lat": -65.000, "lon": -62.500 }
+    ]},
+    { "region_id": "peru_sur", "lugares": [
+      { "nombre": "Ayacucho", "tipo": "ciudad", "lat": -13.159, "lon": -74.224 },
+      { "nombre": "Juliaca, Puno", "tipo": "ciudad", "lat": -15.500, "lon": -70.133 },
+      { "nombre": "Puno", "tipo": "ciudad", "lat": -15.840, "lon": -70.022 },
+      { "nombre": "Andahuaylas, Apurímac", "tipo": "distrito", "lat": -13.656, "lon": -73.387 },
+      { "nombre": "Cusco", "tipo": "ciudad", "lat": -13.532, "lon": -71.967 },
+      { "nombre": "Chumbivilcas", "tipo": "distrito", "lat": -14.450, "lon": -71.900 },
+      { "nombre": "Macusani, Carabaya", "tipo": "distrito", "lat": -14.070, "lon": -70.430 }
+    ]},
+    { "region_id": "taiwan_formosa", "lugares": [
+      { "nombre": "Hsinchu", "tipo": "ciudad", "lat": 24.804, "lon": 120.972 },
+      { "nombre": "Parque Científico de Hsinchu", "tipo": "sitio", "lat": 24.783, "lon": 121.006 },
+      { "nombre": "Taipéi", "tipo": "ciudad", "lat": 25.033, "lon": 121.565 },
+      { "nombre": "Kaohsiung", "tipo": "ciudad", "lat": 22.627, "lon": 120.302 },
+      { "nombre": "Taichung", "tipo": "ciudad", "lat": 24.148, "lon": 120.674 },
+      { "nombre": "Islas Kinmen", "tipo": "distrito", "lat": 24.437, "lon": 118.318 }
+    ]},
+    { "region_id": "chancay", "lugares": [
+      { "nombre": "Chancay, Huaral", "tipo": "distrito", "lat": -11.571, "lon": -77.271 },
+      { "nombre": "Terminal portuario de Chancay", "tipo": "sitio", "lat": -11.590, "lon": -77.290 },
+      { "nombre": "Huaral", "tipo": "ciudad", "lat": -11.495, "lon": -77.207 }
+    ]},
+    { "region_id": "ucrania_este", "lugares": [
+      { "nombre": "Bajmut", "tipo": "ciudad", "lat": 48.596, "lon": 38.000 },
+      { "nombre": "Járkov", "tipo": "ciudad", "lat": 49.994, "lon": 36.231 },
+      { "nombre": "Donetsk", "tipo": "ciudad", "lat": 48.015, "lon": 37.803 },
+      { "nombre": "Mariúpol", "tipo": "ciudad", "lat": 47.096, "lon": 37.543 },
+      { "nombre": "Pokrovsk", "tipo": "ciudad", "lat": 48.279, "lon": 37.176 }
+    ]},
+    { "region_id": "sahara_occidental", "lugares": [
+      { "nombre": "El Aaiún", "tipo": "ciudad", "lat": 27.154, "lon": -13.203 },
+      { "nombre": "Bu Craa", "tipo": "sitio", "lat": 26.336, "lon": -12.856 },
+      { "nombre": "Dajla", "tipo": "ciudad", "lat": 23.685, "lon": -15.958 },
+      { "nombre": "Smara", "tipo": "distrito", "lat": 26.739, "lon": -11.681 }
+    ]},
+    { "region_id": "xinjiang", "lugares": [
+      { "nombre": "Ürümqi", "tipo": "ciudad", "lat": 43.826, "lon": 87.617 },
+      { "nombre": "Kashgar", "tipo": "ciudad", "lat": 39.470, "lon": 75.990 },
+      { "nombre": "Hotan", "tipo": "ciudad", "lat": 37.111, "lon": 79.930 },
+      { "nombre": "Turpán", "tipo": "ciudad", "lat": 42.951, "lon": 89.190 },
+      { "nombre": "Desierto de Taklamakán", "tipo": "sitio", "lat": 38.500, "lon": 82.000 }
+    ]},
+    { "region_id": "guayana_francesa", "lugares": [
+      { "nombre": "Kourou", "tipo": "ciudad", "lat": 5.160, "lon": -52.650 },
+      { "nombre": "Centro Espacial Guayanés", "tipo": "sitio", "lat": 5.239, "lon": -52.768 },
+      { "nombre": "Cayena", "tipo": "ciudad", "lat": 4.933, "lon": -52.330 },
+      { "nombre": "Saint-Laurent-du-Maroni", "tipo": "ciudad", "lat": 5.500, "lon": -54.033 }
+    ]}
+  ]
+}

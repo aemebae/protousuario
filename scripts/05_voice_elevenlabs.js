@@ -29,11 +29,11 @@ import { exec } from "node:child_process";
 // Voz "Rachel", una de las voces default históricas de ElevenLabs.
 // Corre primero 00_listar_voces_elevenlabs.js para confirmar que esta (u otra)
 // está disponible en TU cuenta, y cambia el ID si prefieres otra voz.
-const VOICE_ID = "cgSgspJ2msm6clMCkdW9"; // Jessica (default)
+const VOICE_ID = "0Ou6QL46aeiJmEnSWUxP"; // Sarcástica NatGeo
 
 // El modelo de menor latencia (~75ms de inferencia según ElevenLabs), el
 // recomendado para voz en vivo. Soporta español entre sus idiomas.
-const MODEL_ID = "eleven_flash_v2_5";
+const MODEL_ID = "eleven_multilingual_v2";
 
 // Forzar español reduce el riesgo de que la voz "default" (entrenada
 // mayormente en inglés) suene con acento marcado.
@@ -111,7 +111,13 @@ function hablar(texto, { guardarComo } = {}) {
       ws.send(
         JSON.stringify({
           text: " ",
-          voice_settings: { stability: 0.5, similarity_boost: 0.8 },
+          voice_settings: {
+          stability: 0.0,          // tu slider está al extremo "Más variable"
+          similarity_boost: 1.0,   // tu slider está al extremo "Alta"
+          style: 1.0,              // tu "Exageración de estilo" al máximo
+          use_speaker_boost: true, // tu "Aumento de altavoz" está encendido
+          speed: 1.10               // ← pon aquí el número exacto que veas en la web
+          },
           xi_api_key: API_KEY,
           language_code: LANGUAGE_CODE,
         })

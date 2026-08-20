@@ -1,0 +1,55 @@
+{
+  "_uso": "TUS PROMPTS. Gemini NO los toca, NO los reescribe, NO los resume. Los lee solo para saber qué está haciendo el cuerpo y poder narrarlo encima. Se imprimen tal cual los escribas aquí.",
+  "_como_editar": "Cada agente tiene 'actos': una lista de 2 o 3 textos. Escribe cada acto como una instrucción concreta en tercera persona. Si pones 3, habrá 3 narraciones NatGeo. Si pones 2, habrá 2. Nada más que cambiar.",
+  "_fichas": "Puedes usar estas fichas dentro de tus textos y el sistema las reemplaza en vivo: {ESTADO} → '★ AUTORIZADO' o '✖ DESPLAZADO' · {TERRITORIO} → 'el este de la República Democrática del Congo' · {UBICACION} → 'al este (94°) desde el MINCUL, Lima, Perú' · {RUMBO} → 'PROTOUSUARIO desde el norte' · {SATELITE} → 'ISS (Zarya)'",
+
+  "agentes": {
+    "donald-prompt": {
+      "actos": [
+        "PROTOUSUARIO {ESTADO}, ubica al público. Se acerca a cada persona enmascarada, les saca las máscaras y las pone bajo la suya, una por una, absorbiendo y acumulando especies dentro de él.",
+        "PROTOUSUARIO {ESTADO} intercala ahora las caras del poder: magnates de la tecnología, nazis renacidos, políticos de la corrupción. Se las prueba de a una, frente al público, sin explicar.",
+        "PROTOUSUARIO {ESTADO} elige a una sola persona del público y le sostiene la mirada mientras cuenta en voz alta hasta diez. Al llegar a diez, le entrega una de las máscaras acumuladas."
+      ]
+    },
+    "ternura-binaria": {
+      "actos": [
+        "PROTOUSUARIO {ESTADO} REEMPLAZA ESTE TEXTO POR TU PRIMER ACTO DE TERNURA-BINARIA.",
+        "PROTOUSUARIO {ESTADO} REEMPLAZA ESTE TEXTO POR TU SEGUNDO ACTO DE TERNURA-BINARIA.",
+        "PROTOUSUARIO {ESTADO} REEMPLAZA ESTE TEXTO POR TU TERCER ACTO DE TERNURA-BINARIA."
+      ]
+    },
+    "rio-digital": {
+      "actos": [
+        "PROTOUSUARIO {ESTADO} toma el insecticida Raid Max y se lo aplica, como quien se echa perfume de Chanel 5, pero se lo gatillea obsesivamente, en grandes cantidades.",
+        "PROTOUSUARIO {ESTADO}, aturdido, se echa boca arriba sobre el taburete bajo de cinco ruedas y se deja rodar por el patio, sin corregir la dirección.",
+        "PROTOUSUARIO {ESTADO} REEMPLAZA ESTE TEXTO POR TU TERCER ACTO DE RÍO-DIGITAL."
+      ]
+    },
+    "eco-satelital": {
+      "actos": [
+        "PROTOUSUARIO {ESTADO} REEMPLAZA ESTE TEXTO POR TU PRIMER ACTO DE ECO-SATELITAL.",
+        "PROTOUSUARIO {ESTADO} REEMPLAZA ESTE TEXTO POR TU SEGUNDO ACTO DE ECO-SATELITAL.",
+        "PROTOUSUARIO {ESTADO} REEMPLAZA ESTE TEXTO POR TU TERCER ACTO DE ECO-SATELITAL."
+      ]
+    },
+    "agente-transespecie": {
+      "actos": [
+        "PROTOUSUARIO {ESTADO} REEMPLAZA ESTE TEXTO POR TU PRIMER ACTO DE QUIMERA-TRANSESPECIE.",
+        "PROTOUSUARIO {ESTADO} REEMPLAZA ESTE TEXTO POR TU SEGUNDO ACTO DE QUIMERA-TRANSESPECIE.",
+        "PROTOUSUARIO {ESTADO} REEMPLAZA ESTE TEXTO POR TU TERCER ACTO DE QUIMERA-TRANSESPECIE."
+      ]
+    }
+  },
+
+  "_respaldo": "Si Gemini no responde (sin red, cupo agotado), el sistema usa estas plantillas para la Narración NatGeo. No son buenas, son un salvavidas: el cuerpo sigue teniendo su acto y la voz sigue sonando.",
+  "narraciones_respaldo": [
+    "Lo que aquí parece un gesto aislado se repite, a esta misma hora, en miles de cuerpos que nunca se verán entre sí. La especie ensaya, sin saberlo, una coreografía que la excede.",
+    "Bajo la piel, el sistema nervioso todavía obedece a un manual escrito hace doscientos millones de años. La orden llega en formato nuevo; el reflejo que la ejecuta es antiquísimo.",
+    "Desde {SATELITE}, este movimiento no existe: es demasiado pequeño para el sensor. Y sin embargo es exactamente esto lo que la órbita vino a vigilar.",
+    "El gesto se propaga como se propaga una imagen: por imitación, sin comprensión, hasta que nadie recuerda quién lo hizo primero. Así se instala una costumbre. Así se instala un virus.",
+    "En {TERRITORIO}, el mismo movimiento tendría otro nombre y otra pena. La geografía decide qué conducta es rito y cuál es delito.",
+    "El organismo destina a esta acción una fracción de energía que no podrá recuperar. Ningún animal hace esto sin motivo; el motivo, aquí, no es alimenticio.",
+    "Toda máquina que observa termina por modificar aquello que observa. El cuerpo que se sabe filmado ya no se mueve como se movía.",
+    "La memoria de la especie no está en el cerebro: está en los objetos que deja atrás. Esto que vemos es, ya, un fósil en formación."
+  ]
+}

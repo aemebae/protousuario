@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>· </title>
+<style>
+  /* Capa de bloqueo para la pantalla de la laptop.
+     Se abre en Chrome modo kiosco (pantalla completa sin barras) y se queda
+     encima. Cualquier tecla o clic queda absorbido aquí. Para salir hay que
+     teclear la clave secreta: no hay botón, no hay pista visible. */
+  html,body{margin:0;height:100%;background:#000;color:#111;overflow:hidden;
+    font-family:ui-monospace,Consolas,monospace;cursor:none;user-select:none;}
+  .marco{position:fixed;inset:0;display:grid;place-items:center;}
+  .latido{width:7px;height:7px;border-radius:50%;background:#1a1a1a;
+    animation:pulso 4.5s ease-in-out infinite;}
+  @keyframes pulso{0%,100%{opacity:.12;transform:scale(1)}50%{opacity:.5;transform:scale(1.9)}}
+  .aviso{position:fixed;bottom:26px;left:0;right:0;text-align:center;
+    font-size:10px;letter-spacing:.35em;color:#1c1c1c;text-transform:uppercase;}
+  .fallo{animation:sacudir .28s;}
+  @keyframes sacudir{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+</style>
+</head>
+<body>
+  <div class="marco" id="marco">
+    <div class="latido"></div>
+  </div>
+  <div class="aviso">sistema en ejecución · no intervenir</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════
+//  CLAVE DE SALIDA — cámbiala por la tuya antes de la función.
+//  Se teclea a ciegas, sin campo de texto y sin retroalimentación visible.
+//  Si te equivocas, la pantalla tiembla una vez y el buffer se borra.
+// ═══════════════════════════════════════════════════════════════════════
+const CLAVE = 'mowgli';        // ← CÁMBIALA. Minúsculas, sin espacios.
+
+let buffer = '';
+let reloj = null;
+
+addEventListener('keydown', (e) => {
+  // Se bloquea todo lo que se pueda bloquear desde la página.
+  if (e.key === 'F11' || e.key === 'Escape' || e.key === 'F5' ||
+      (e.ctrlKey && ['w','r','t','n','p','s'].includes(e.key.toLowerCase()))) {
+    e.preventDefault();
+  }
+  if (e.key.length === 1) {
+    buffer = (buffer + e.key.toLowerCase()).slice(-40);
+    clearTimeout(reloj);
+    reloj = setTimeout(() => { buffer = ''; }, 4000);   // se olvida a los 4 s
+    if (buffer.endsWith(CLAVE)) {
+      // Desbloqueo: se va a la escena compuesta. Alt+F4 o Ctrl+W cierran.
+      document.title = 'desbloqueado';
+      location.replace('/');
+    }
+  }
+}, true);
+
+// Absorbe clics, ruedas, gestos y menú contextual.
+for (const ev of ['click','dblclick','mousedown','mouseup','wheel','contextmenu',
+                  'touchstart','touchmove','dragstart','selectstart'])
+  addEventListener(ev, (e) => e.preventDefault(), {capture:true, passive:false});
+
+// Si algo intenta quitarle el foco, lo recupera.
+addEventListener('blur', () => setTimeout(() => window.focus(), 120));
+
+// Aviso si alguien intenta cerrar la pestaña.
+addEventListener('beforeunload', (e) => { e.preventDefault(); e.returnValue = ''; });
+</script>
+</body>
+</html>

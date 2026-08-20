@@ -32,7 +32,9 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { networkInterfaces } from 'node:os';
-import { obtenerDatoOrbital } from './capa2_dato_orbital_v3.js';
+import { obtenerDatoOrbital, repropagarNube } from './capa2_dato_orbital_v3.js';
+// Distrito / ciudad bajo el satélite (curaduría propia, offline, 0 MB extra).
+import { resolverLugar } from './resolver_lugar.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const RAIZ = join(__dirname, '..');
@@ -42,6 +44,10 @@ const PUERTO = process.env.PUERTO_VISUAL || 3000;
 const GRUPO_SATELITAL = process.env.GRUPO_SATELITAL || 'active';
 const POLL_MS = Number(process.env.POLL_MS || 10000); // ciclo de espera (10 s: menos carga)
 const SILENCIO_MS = 120000;  // si el orquestador calla 2 min, vuelve el ciclo de espera
+// TICK RÁPIDO: cada cuánto se recalculan SOLO las posiciones ya elegidas, para
+// que los satélites se vean moverse de forma continua. Cuesta <2 ms porque los
+// satrec están memorizados. Súbelo a 2000 si tu laptop sufre; 0 lo desactiva.
+const TICK_MS = Number(process.env.TICK_MS || 900);
 
 // ---------- Índice país -> posición en el GeoJSON (para resaltar en el cliente) ----------
 const paisesGeoJSON = JSON.parse(
@@ -74,6 +80,9 @@ wss.on('connection', (ws) => {
   enviarA(ws, 'salud', { modo: ultimoEstado.salud });
   if (ultimoEstado.posiciones) enviarA(ws, 'posiciones', ultimoEstado.posiciones);
   if (ultimoEstado.territorio) enviarA(ws, 'territorio', ultimoEstado.territorio);
+  if (ultimoEstado.secuencia) enviarA(ws, 'secuencia', ultimoEstado.secuencia);
+  if (ultimoEstado.deriva) enviarA(ws, 'deriva', { activa: true });
+  if (ultimoEstado.control) enviarA(ws, 'control_estado', ultimoEstado.control);
   ws.on('close', () => clientes.delete(ws));
 });
 
@@ -110,16 +119,20 @@ app.post('/evento', (req, res) => {
     if (d.lat != null) {
       const protagonista = {
         nombre: d.satelite, nombreEnunciable: d.satelite_enunciable,
+        k: d.protagonista_k,
         lat: d.lat, lon: d.lon, altKm: d.altKm,
         elevacionDeg: d.elevacionDeg, rangeKm: d.rangeKm,
       };
       ultimoEstado.posiciones = { todos: d.todos || [], protagonista };
       emitir('posiciones', ultimoEstado.posiciones);
 
+      const lug = resolverLugar(d.lat, d.lon);
       ultimoEstado.territorio = {
         tipo: d.pais_tipo, nombre: d.pais,
         paisIdx: indiceDePais(d.pais, d.pais_tipo),
         region: d.region, region_real: d.region_real,
+        distrito: lug?.tipo === 'distrito' || lug?.tipo === 'sitio' ? lug.nombre : null,
+        ciudad: lug?.tipo === 'ciudad' ? lug.nombre : null,
       };
       emitir('territorio', ultimoEstado.territorio);
     }
@@ -127,6 +140,10 @@ app.post('/evento', (req, res) => {
   }
 
   if (tipo === 'afecto' && datos?.estado) ultimoEstado.afecto = datos.estado;
+  // La secuencia completa se guarda: un celular que se reconecta a media
+  // función recupera de golpe todos los textos que faltan.
+  if (tipo === 'secuencia') ultimoEstado.secuencia = datos ?? null;
+  if (tipo === 'deriva') ultimoEstado.deriva = !!datos?.activa;
 
   emitir(tipo, datos ?? {});
   res.json({ ok: true });
@@ -162,7 +179,7 @@ function entregarComando(cmd) {
 // El celular manda un comando.
 app.post('/control', (req, res) => {
   const cmd = req.body?.comando;
-  const validos = ['avanzar', 'repetir', 'saltar_agente', 'terminar', 'pausa'];
+  const validos = ['avanzar', 'repetir', 'saltar_agente', 'terminar', 'pausa', 'deriva'];
   if (!validos.includes(cmd)) return res.status(400).json({ error: 'comando inválido', validos });
   console.log(`[control] ${cmd.toUpperCase()}`);
   entregarComando(cmd);
@@ -196,16 +213,20 @@ async function cicloEspera() {
     if (dato.lat != null) {
       const protagonista = {
         nombre: dato.satelite, nombreEnunciable: dato.satelite_enunciable,
+        k: dato.protagonista_k,
         lat: dato.lat, lon: dato.lon, altKm: dato.altKm,
         elevacionDeg: dato.elevacionDeg, rangeKm: dato.rangeKm,
       };
       ultimoEstado.posiciones = { todos: dato.todos, protagonista };
       emitir('posiciones', ultimoEstado.posiciones);
 
+      const lug = resolverLugar(dato.lat, dato.lon);
       ultimoEstado.territorio = {
         tipo: dato.pais_tipo, nombre: dato.pais,
         paisIdx: indiceDePais(dato.pais, dato.pais_tipo),
         region: dato.region, region_real: dato.region_real,
+        distrito: lug?.tipo === 'distrito' || lug?.tipo === 'sitio' ? lug.nombre : null,
+        ciudad: lug?.tipo === 'ciudad' ? lug.nombre : null,
       };
       emitir('territorio', ultimoEstado.territorio);
     }
@@ -232,6 +253,23 @@ function direccionesLan() {
 // 0.0.0.0 explícito: escucha en TODAS las interfaces (Wi-Fi, hotspot,
 // ethernet). Sin esto, algunas configuraciones de Windows solo abren el
 // puerto en loopback y el celular nunca llega.
+// ---------- TICK RÁPIDO: movimiento continuo de la nube ----------
+// No vuelve a decidir nada: repropaga las MISMAS posiciones ya elegidas, para
+// que el globo no dé saltos cada 10 s. Manda { tick: true } para que el
+// cliente actualice los puntos sin volver a mover la cámara.
+function tickRapido() {
+  const pos = ultimoEstado.posiciones;
+  if (!pos || !pos.todos?.length) return;
+  const ahora = new Date();
+  const todos = repropagarNube(pos.todos, ahora);
+  let protagonista = pos.protagonista;
+  if (protagonista?.k) {
+    const p = repropagarNube([{ nombre: protagonista.nombre, k: protagonista.k }], ahora)[0];
+    if (p) protagonista = { ...protagonista, lat: p.lat, lon: p.lon, altKm: p.altKm };
+  }
+  emitir('posiciones', { todos, protagonista, tick: true });
+}
+
 server.listen(PUERTO, '0.0.0.0', () => {
   const ips = direccionesLan();
   console.log('\n════════════════════════════════════════════════════');
@@ -251,4 +289,5 @@ server.listen(PUERTO, '0.0.0.0', () => {
   console.log('  Esperando al orquestador...\n');
   cicloEspera();
   setInterval(cicloEspera, POLL_MS);
+  if (TICK_MS > 0) setInterval(tickRapido, TICK_MS);
 });

@@ -192,6 +192,7 @@ export async function obtenerDatoOrbital({
 
       candidatos.push({
         nombre: omm.OBJECT_NAME,
+        k,                       // clave para repropagar rápido (ver repropagarNube)
         lat, lon, altKm: geo.height,
         elevacionDeg, rangeKm,
         regionConflicto,
@@ -247,6 +248,44 @@ export async function obtenerDatoOrbital({
     // Nube RECORTADA (ver recortarNube): el navegador no necesita 13.000
     // puntos para verse lleno, y con 13.000 no se ve: se atraganta.
     todos: recortarNube(candidatos, elegido, MAX_SATELITES)
-      .map((c) => ({ nombre: c.nombre, lat: c.lat, lon: c.lon, altKm: c.altKm })),
+      .map((c) => ({ nombre: c.nombre, k: c.k, lat: c.lat, lon: c.lon, altKm: c.altKm })),
+    protagonista_k: elegido.k,
   };
+}
+
+
+/**
+ * REPROPAGACIÓN RÁPIDA — para que los satélites se vean MOVERSE.
+ *
+ * El ciclo completo (obtenerDatoOrbital) es caro porque propaga los ~13.000
+ * objetos del grupo para poder elegir protagonista. Pero una vez elegida la
+ * nube de 200-400, recalcular SOLO esas posiciones cuesta menos de 2 ms,
+ * porque sus satrec ya están en MEMO_SATREC.
+ *
+ * Así el servidor puede refrescar posiciones cada ~800 ms (movimiento
+ * continuo y visible) sin volver a hacer el trabajo pesado.
+ *
+ * @param {Array<{nombre:string,k:string}>} nube  la lista 'todos' anterior
+ * @param {Date} [fecha]
+ * @returns {Array<{nombre,k,lat,lon,altKm}>}  posiciones frescas
+ */
+export function repropagarNube(nube, fecha = new Date()) {
+  const gmst = satellite.gstime(fecha);
+  const salida = [];
+  for (const s of nube || []) {
+    const satrec = MEMO_SATREC.get(s.k);
+    if (!satrec) { salida.push(s); continue; }   // sin satrec: se queda quieto
+    try {
+      const pv = satellite.propagate(satrec, fecha);
+      if (!pv || !pv.position) { salida.push(s); continue; }
+      const geo = satellite.eciToGeodetic(pv.position, gmst);
+      salida.push({
+        nombre: s.nombre, k: s.k,
+        lat: satellite.degreesLat(geo.latitude),
+        lon: satellite.degreesLong(geo.longitude),
+        altKm: geo.height,
+      });
+    } catch { salida.push(s); }
+  }
+  return salida;
 }

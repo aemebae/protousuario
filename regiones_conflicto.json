@@ -95,7 +95,8 @@
       },
       "azimut_desde_observador": 78,
       "cardinal": "este",
-      "linea_rumbo": "PROTOUSUARIO desde el este"
+      "linea_rumbo": "PROTOUSUARIO desde el este",
+      "agente": "eco-satelital"
     },
     {
       "id": "ucrania_este",
@@ -255,14 +256,14 @@
         -77.1
       ],
       "contexto": "puerto de aguas profundas de capital chino inaugurado en 2024 a 80 km al norte de Lima; nueva cabecera del comercio transpacífico y punto de reordenamiento de las rutas de extracción sudamericanas",
-      "agente": "eco-satelital",
       "centro": {
         "lat": -11.575,
         "lon": -77.275
       },
       "azimut_desde_observador": 334,
       "cardinal": "noroeste",
-      "linea_rumbo": "PROTOUSUARIO desde el noroeste"
+      "linea_rumbo": "PROTOUSUARIO desde el noroeste",
+      "_nota": "Reserva. Salió de eco-satelital el 19-08-2026 por decisión de Mowgli."
     },
     {
       "id": "antartida",
