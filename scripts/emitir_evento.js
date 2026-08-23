@@ -30,7 +30,7 @@ async function emitirEvento(tipo, datos) {
 
 // ---------- Ceremoniales (pantalla completa, una sola vez) ----------
 export const emitirPreludio  = (titulo, texto) => emitirEvento('preludio', { titulo, texto });
-export const emitirAgenteId  = (nombre, texto) => emitirEvento('agente_id', { nombre, texto });
+export const emitirAgenteId  = (nombre, texto, audio = null) => emitirEvento('agente_id', { nombre, texto, audio });
 
 // ---------- Segmento entrelazado ----------
 /**
@@ -38,8 +38,11 @@ export const emitirAgenteId  = (nombre, texto) => emitirEvento('agente_id', { no
  * @param {string} texto
  * @param {number} indice  posición en la secuencia (para depurar)
  */
-export const emitirSegmento = (tipo, texto, indice) =>
-  emitirEvento('segmento', { tipo, texto, indice });
+// `audio` es el nombre del mp3 (huella.mp3). El navegador lo pide a
+// /audio/<nombre> y lo reproduce mientras escribe el texto. Si va null, el
+// bloque sale en silencio: la escena no se detiene por falta de voz.
+export const emitirSegmento = (tipo, texto, indice, audio = null) =>
+  emitirEvento('segmento', { tipo, texto, indice, audio });
 
 // ---------- Secuencia completa (respaldo del celular) ----------
 /**
@@ -59,6 +62,11 @@ export const emitirPausa = (activa) => emitirEvento('pausa', { activa });
 
 // ---------- Deriva (pasaje final autónomo) ----------
 export const emitirDeriva = (activa) => emitirEvento('deriva', { activa });
+
+// ---------- Preludio ----------
+// Va UNA sola vez, antes de todos los IDs. No lo genera la IA.
+export const emitirPreludio = (texto, audio = null) =>
+  emitirEvento('preludio', { texto, audio });
 
 // ---------- Compatibilidad con la versión de bloques ----------
 export const emitirBloqueOrbital = (texto) => emitirSegmento('orbital', texto);

@@ -315,8 +315,93 @@ function aplicarEstado(estado){
 //  'memoria' y 'narracion' entran sin título: se distinguen por tipografía.
 // ══════════════════════════════════════════════════════════════════════
 const VEL = 22;                        // ms por carácter
-let escribiendo = null, terminarAnterior = null;
+
+// ═══ PAUSA REAL: congela en la LETRA, no al final del párrafo ═══
+// Antes, PAUSA solo tenía efecto entre bloques, porque el orquestador estaba
+// esperando un comando. El texto, en cambio, se escribe AQUÍ, en el navegador.
+// Ahora la máquina de escribir consulta `pausado` en cada tic: si está activa,
+// el tic no avanza ni un carácter y no pierde el sitio. Al reanudar, sigue
+// exactamente donde se quedó, aunque sea a mitad de una palabra.
+let escribiendo = null;
+let pausado = false;
+let segActivo = null;   // { div, cuerpo, texto, i }
 let promptYaRotulado = false;
+
+// ═══════════════════════════════════════════════════════════════════════
+//  LA VOZ
+//  El audio suena AQUÍ, en el navegador de la escena compuesta, no en Node.
+//  Motivo: Node no reproduce sonido sin librerías nativas; el navegador sí,
+//  con dos líneas. La salida de audio de la laptop va al equipo de sala.
+//
+//  SINCRONÍA: cuando el mp3 informa cuánto dura, esa duración se reparte entre
+//  las letras del texto. Así la última letra cae justo cuando la voz termina
+//  la frase. Sin audio, se usa la velocidad fija de siempre.
+// ═══════════════════════════════════════════════════════════════════════
+let vozActual = null;
+let audioDesbloqueado = false;
+
+// Los navegadores no dejan sonar audio hasta que alguien toca la página una
+// vez. Se desbloquea con el primer clic o tecla.
+function desbloquearAudio(){
+  if (audioDesbloqueado) return;
+  audioDesbloqueado = true;
+  el('avisoAudio')?.remove();
+}
+for (const ev of ['click','keydown','touchstart'])
+  addEventListener(ev, desbloquearAudio, { passive:true });
+
+function mostrarAvisoAudio(){
+  if (el('avisoAudio')) return;
+  const d = document.createElement('div');
+  d.id = 'avisoAudio';
+  d.textContent = 'TOCA LA PANTALLA PARA ACTIVAR EL AUDIO';
+  d.style.cssText = 'position:fixed;left:0;right:0;bottom:24px;text-align:center;'
+    + 'z-index:200;font:11px/1 ui-monospace,monospace;letter-spacing:.3em;color:#ffc65f;';
+  document.body.appendChild(d);
+}
+
+function sonar(archivo){
+  if (vozActual) { try { vozActual.pause(); } catch {} vozActual = null; }
+  if (!archivo) return null;
+  const a = new Audio('/audio/' + archivo);
+  a.preload = 'auto';
+  vozActual = a;
+  a.play().catch((e) => {
+    if (!audioDesbloqueado) mostrarAvisoAudio();
+    console.warn('[voz] no se pudo reproducir:', e.message);
+  });
+  return a;
+}
+
+/** Reparte la duración del mp3 entre las letras del texto. */
+function sincronizarConVoz(audio, texto){
+  if (!audio || !texto?.length) return;
+  const ajustar = () => {
+    const dur = audio.duration;
+    if (!isFinite(dur) || dur <= 0) return;
+    // ×0.92: el texto termina un pelín antes que la voz, nunca después.
+    const porLetra = Math.min(90, Math.max(12, (dur * 1000 * 0.92) / texto.length));
+    arrancarEscritura(porLetra);
+  };
+  if (audio.readyState >= 1) ajustar();
+  else audio.addEventListener('loadedmetadata', ajustar, { once:true });
+}
+
+/** Congela / descongela la escena entera: texto, cursor y audio. */
+function aplicarPausa(activa) {
+  pausado = !!activa;
+  document.documentElement.setAttribute('data-pausa', pausado ? '1' : '0');
+  // La voz se detiene con el mismo botón. Sin esto, el texto se congelaría
+  // en la letra y la voz seguiría hablando sola.
+  if (vozActual) {
+    if (pausado) { try { vozActual.pause(); } catch {} }
+    else { vozActual.play?.().catch(() => {}); }
+  }
+  document.querySelectorAll('audio, video').forEach((a) => {
+    if (pausado) { try { a.pause(); } catch {} }
+    else { a.play?.().catch(() => {}); }
+  });
+}
 
 const ROTULO = {
   orbital: 'DATO ORBITAL',
@@ -360,12 +445,46 @@ const ROTULO = {
 // para que los logs y scripts antiguos no rompan la pantalla.
 const normalizar = (t) => (t === 'reflexion' ? 'narracion' : t);
 
-function nuevoSegmento(tipoCrudo, texto){
+/** Arranca (o retoma) la máquina de escribir sobre el segmento activo. */
+function arrancarEscritura(velocidad = VEL){
+  clearInterval(escribiendo);
+  const corrido = el('corrido');
+  escribiendo = setInterval(()=>{
+    if (pausado) return;              // ← congelado: no avanza, no pierde el sitio
+    const s = segActivo; if(!s) { clearInterval(escribiendo); return; }
+    s.cuerpo.textContent = s.texto.slice(0, ++s.i);
+    corrido.scrollTop = corrido.scrollHeight;
+    if(s.i >= s.texto.length){
+      clearInterval(escribiendo);
+      s.cuerpo.classList.remove('cursor');
+    }
+  }, velocidad);
+}
+
+function nuevoSegmento(tipoCrudo, texto, archivoVoz){
   const tipo = normalizar(tipoCrudo);
   const corrido = el('corrido');
 
+  // REPETIR manda el MISMO texto. En vez de apilar otro párrafo idéntico, se
+  // reinicia el que ya está en pantalla desde la primera letra. Así REPETIR
+  // es "volver al inicio del párrafo", que es justo lo que hace falta cuando
+  // pausaste a mitad y quieres oírlo entero otra vez.
+  if (segActivo && segActivo.texto === texto) {
+    segActivo.i = 0;
+    segActivo.cuerpo.textContent = '';
+    segActivo.cuerpo.classList.add('cursor');
+    const a = sonar(archivoVoz ?? segActivo.voz);   // REPETIR lo vuelve a decir
+    arrancarEscritura();
+    sincronizarConVoz(a, texto);
+    return;
+  }
+
   // Cierra de golpe el segmento anterior en vez de truncarlo a medias.
-  if (terminarAnterior) { terminarAnterior(); terminarAnterior = null; }
+  if (segActivo && segActivo.i < segActivo.texto.length) {
+    clearInterval(escribiendo);
+    segActivo.cuerpo.textContent = segActivo.texto;
+    segActivo.cuerpo.classList.remove('cursor');
+  }
   corrido.querySelectorAll('.seg.activo').forEach(n=>n.classList.remove('activo'));
 
   const div = document.createElement('div');
@@ -380,24 +499,16 @@ function nuevoSegmento(tipoCrudo, texto){
     (rotulo ? `<span class="rotulo">${rotulo}</span>` : '') +
     `<span class="cuerpo cursor"></span>`;
   corrido.appendChild(div);
-  const cuerpo = div.querySelector('.cuerpo');
-
-  clearInterval(escribiendo);
-  let i = 0;
-  const cerrar = () => {
-    clearInterval(escribiendo);
-    cuerpo.textContent = texto;
-    cuerpo.classList.remove('cursor');
-  };
-  terminarAnterior = cerrar;
-  escribiendo = setInterval(()=>{
-    cuerpo.textContent = texto.slice(0, ++i);
-    corrido.scrollTop = corrido.scrollHeight;
-    if(i >= texto.length){ cerrar(); terminarAnterior = null; }
-  }, VEL);
+  segActivo = { div, cuerpo: div.querySelector('.cuerpo'), texto, i: 0, voz: archivoVoz };
+  const a = sonar(archivoVoz);
+  arrancarEscritura();
+  sincronizarConVoz(a, texto);
 }
 
 function limpiarPantalla(){
+  clearInterval(escribiendo);
+  if (vozActual) { try { vozActual.pause(); } catch {} vozActual = null; }
+  segActivo = null;
   el('corrido').innerHTML = '';
   promptYaRotulado = false;
 }
@@ -473,20 +584,18 @@ function conectar(){
     if(m.tipo==='afecto')       aplicarEstado(d.estado);
     if(m.tipo==='salud')        actualizarSalud(d.modo);
     if(m.tipo==='rumbo')        actualizarRumbo(d);
-    if(m.tipo==='segmento')     nuevoSegmento(d.tipo, d.texto);
+    if(m.tipo==='segmento')     nuevoSegmento(d.tipo, d.texto, d.audio);
     if(m.tipo==='preludio'){
       limpiarPantalla();
       el('cabAgente').textContent='PRELUDIO';
-      nuevoSegmento('narracion', d.texto||'');
+      nuevoSegmento('narracion', d.texto||'', d.audio);
     }
     if(m.tipo==='agente_id'){
       limpiarPantalla();                       // cada agente entra con pantalla limpia
       el('cabAgente').textContent=d.nombre||'';
-      nuevoSegmento('narracion', d.texto||'');
+      nuevoSegmento('narracion', d.texto||'', d.audio);
     }
-    if(m.tipo==='pausa'){
-      document.documentElement.setAttribute('data-pausa', d.activa ? '1' : '0');
-    }
+    if(m.tipo==='pausa') aplicarPausa(d.activa);
     if(m.tipo==='deriva' && d.activa){
       limpiarPantalla();
       el('cabAgente').textContent = '◈  D E R I V A';

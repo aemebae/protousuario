@@ -48,12 +48,9 @@
   body[data-pausa="1"] #btnPausa{background:#ffc65f;color:var(--bg);border-color:#ffc65f;}
   body[data-pausa="1"] #btnAvanzar{opacity:.3;}
   body[data-pausa="1"] .estado{border-bottom-color:#ffc65f;}
-  #btnPausa{background:transparent;color:#ffc65f;border:1px solid #8a6520;
-    padding:18px;font-size:16px;letter-spacing:.1em;}
-  body[data-pausa="1"] #btnPausa{background:#ffc65f;color:var(--bg);}
+  /* (el bloque de arriba ya define #btnPausa; aquí solo lo que faltaba) */
   body[data-pausa="1"] #btnPausa::after{content:' · ACTIVA';}
   body[data-pausa="1"] .segmento{border-color:#ffc65f;opacity:.55;}
-  body[data-pausa="1"] #btnAvanzar{opacity:.35;}
   #btnDeriva{background:transparent;color:#c9a6ff;border:1px solid #6b4f96;
     padding:16px;font-size:14px;letter-spacing:.1em;}
   body[data-deriva="1"] #btnDeriva{background:#c9a6ff;color:var(--bg);}
@@ -80,7 +77,6 @@
   <div class="botonera">
     <button id="btnAvanzar">▶  AVANZAR</button>
     <button id="btnPausa">⏸  PAUSA</button>
-    <button id="btnPausa">⏸ PAUSA</button>
     <div class="fila">
       <button id="btnRepetir">↺ REPETIR</button>
       <button id="btnSaltar">⏭ SALTAR AGENTE</button>

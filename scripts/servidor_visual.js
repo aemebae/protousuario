@@ -28,9 +28,9 @@
 import express from 'express';
 import { WebSocketServer } from 'ws';
 import { createServer } from 'node:http';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { networkInterfaces } from 'node:os';
 import { obtenerDatoOrbital, repropagarNube } from './capa2_dato_orbital_v3.js';
 // Distrito / ciudad bajo el satélite (curaduría propia, offline, 0 MB extra).
@@ -175,6 +175,24 @@ function entregarComando(cmd) {
   }
   emitir('control', { comando: cmd, t: Date.now() });
 }
+
+// ───────── AUDIO ─────────
+// El navegador pide /audio/<huella>.mp3 y el servidor lo busca primero en
+// audio_respaldo/ (lo que grabaste en casa) y después en audio_cache/ (lo
+// generado en vivo). Se sirve desde la laptop, así que en el patio esto NO
+// consume datos móviles: viaja por el hotspot, que es red local.
+app.get('/audio/:archivo', (req, res) => {
+  const nombre = String(req.params.archivo).replace(/[^a-z0-9._-]/gi, '');
+  for (const dir of ['audio_respaldo', 'audio_cache']) {
+    const ruta = resolve(process.cwd(), dir, nombre);
+    if (existsSync(ruta)) {
+      res.type('audio/mpeg');
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+      return res.sendFile(ruta);
+    }
+  }
+  res.status(404).end();
+});
 
 // El celular manda un comando.
 app.post('/control', (req, res) => {

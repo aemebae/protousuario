@@ -22,8 +22,11 @@ import { obtenerDatoOrbital } from './capa2_dato_orbital_v3.js';
 import { crearMotorRumbo, elegirTerritorio } from './rumbo_territorial.js';
 import {
   emitirAgenteId, emitirSegmento, emitirSatelite, emitirRumbo,
-  emitirAfecto, emitirSecuencia, emitirDeriva, emitirPausa,
+  emitirAfecto, emitirSecuencia, emitirDeriva, emitirPausa, emitirPreludio,
 } from './emitir_evento.js';
+// LA VOZ. voz(texto) devuelve el nombre del mp3 (de disco o recién grabado).
+// Nunca lanza error: si no hay voz, el bloque sale en silencio.
+import { voz, vozLote } from './voz.js';
 
 const URL_VISUAL = process.env.URL_VISUAL || 'http://localhost:3000';
 const DERIVA_MS = Number(process.env.DERIVA_MS || 13000);
@@ -37,6 +40,30 @@ let PREGUNTAS_DERIVA = [];
 try { PREGUNTAS_DERIVA = JSON.parse(fs.readFileSync('preguntas_deriva.json', 'utf8')).preguntas ?? []; } catch {}
 let RESPALDO = [];
 try { RESPALDO = JSON.parse(fs.readFileSync('instrucciones_permanentes.json', 'utf8')).narraciones_respaldo ?? []; } catch {}
+
+// ── CORPUS TEÓRICO ──
+// Haraway, Mbembe, Preciado, Quijano, Rivera Cusicanqui. NO son citas: cada
+// marco es una OPERACIÓN que Gemini ejecuta sin nombrarla. Se elige UNO por
+// agente, rotando, para que ninguno se repita en la misma función. Sin este
+// bloque, las narraciones salen bonitas pero sin espina dorsal conceptual.
+let MARCOS = [];
+try { MARCOS = JSON.parse(fs.readFileSync('corpus_teorico.json', 'utf8')).marcos ?? []; } catch {}
+const marcosUsados = [];
+function elegirMarco(agenteId) {
+  if (!MARCOS.length) return null;
+  const suyos = MARCOS.filter((m) => (m.agentes ?? []).includes(agenteId));
+  const pool = suyos.length ? suyos : MARCOS;
+  const frescos = pool.filter((m) => !marcosUsados.includes(m.id));
+  const elegido = (frescos.length ? frescos : pool)[0];
+  marcosUsados.push(elegido.id);
+  return elegido;
+}
+
+// ── PRELUDIO ──
+// Va UNA sola vez, al principio de todo, antes de cualquier agente. No lo
+// genera la IA. Para saltarlo en un ensayo: SIN_PRELUDIO=1
+let PRELUDIO = null;
+try { PRELUDIO = JSON.parse(fs.readFileSync('preludio.json', 'utf8')); } catch {}
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 const motorRumbo = crearMotorRumbo({ sostenerLecturas: 1 });
@@ -74,11 +101,13 @@ async function esperar(msg = '[ENTER o AVANZAR en el celular]') {
     ctrl.abort();
     if (cmd === 'pausa') {
       enPausa = !enPausa;
-      await emitirPausa(enPausa);
+      // NO se emite nada desde aquí: el servidor ya avisó a la pantalla en el
+      // instante en que recibió el botón. Si además emitiéramos, la pantalla
+      // recibiría dos avisos y podría quedar en el estado contrario.
       console.log(enPausa ? '\n  ⏸  PAUSA' : '\n  ▶  reanudado');
       continue;
     }
-    if (enPausa) { enPausa = false; await emitirPausa(false); }
+    if (enPausa) enPausa = false;
     if (cmd === 'terminar') throw new Terminar();
     if (cmd === 'saltar_agente') throw new Saltar();
     if (cmd === 'deriva') throw new Deriva();
@@ -104,7 +133,7 @@ async function llamarGemini(prompt, maxIntentos = 3) {
 // ═══════════════════════════════════════════════════════════════════════
 //  UNA SOLA LLAMADA POR AGENTE — devuelve todos sus huecos de golpe
 // ═══════════════════════════════════════════════════════════════════════
-function promptDeAgente({ ficha, bloques, dato, territorio, rumbo, nOrb, nNar, nMem }) {
+function promptDeAgente({ ficha, bloques, dato, territorio, rumbo, marco, nOrb, nNar, nMem }) {
   // Gemini ve TODA la partitura del agente para saber qué está narrando y en
   // qué momento entra cada pieza. Pero los actos son intocables.
   const partitura = bloques.map((b, i) => {
@@ -121,6 +150,7 @@ function promptDeAgente({ ficha, bloques, dato, territorio, rumbo, nOrb, nNar, n
 
 AGENTE ACTIVO: ${ficha.agente} — ${ficha.caracter}
 SESGO: ${ficha.sesgo_manifiestos}
+${marco ? `\nOPERACIÓN CONCEPTUAL DE ESTE PASAJE (ejecutala en todo lo que escribas; NO la expliques, NO la nombres, NO cites autores):\n${marco.operacion}\n` : ''}
 
 DATOS DUROS DE ESTE MOMENTO (no los contradigas):
 - Satélite: ${dato.satelite_enunciable ?? dato.satelite}, a ${dato.altKm != null ? Math.round(dato.altKm) : '—'} km de altitud, sobrevolando ${dato.pais ?? 'aguas internacionales'}.
@@ -166,6 +196,28 @@ async function funcion() {
   console.log('='.repeat(72));
   await esperar('[ENTER o AVANZAR para empezar]');
 
+  // ═══ PRELUDIO ═══
+  // Se parte en párrafos: cada uno es un bloque con su propio AVANZAR y su
+  // propia voz. Un preludio de 400 palabras de un solo golpe no se puede
+  // sostener en escena; en párrafos, sí.
+  if (PRELUDIO?.texto && process.env.SIN_PRELUDIO !== '1') {
+    const parrafos = PRELUDIO.texto.split(/\n+/).map((t) => t.trim()).filter(Boolean);
+    console.log('\n' + '─'.repeat(72));
+    console.log(`  PRELUDIO  (${parrafos.length} párrafos)`);
+    console.log('─'.repeat(72));
+    await emitirAfecto('LIMINAL');
+    const vozPre = await vozLote(parrafos, { etiqueta: 'preludio' });
+    await emitirSecuencia(parrafos.map((t) => ({ tipo: 'narracion', texto: t })), { agente: 'PRELUDIO' });
+    for (let i = 0; i < parrafos.length; i++) {
+      console.log(`\n  [${i + 1}/${parrafos.length}] PRELUDIO`);
+      console.log('  ' + parrafos[i].replace(/(.{88})/g, '$1\n  '));
+      await emitirPreludio(parrafos[i], vozPre.get(parrafos[i]) ?? null);
+      await informarControl({ agente: 'PRELUDIO', progreso: `${i + 1}/${parrafos.length}` });
+      const cmd = await esperar(`[preludio ${i + 1}/${parrafos.length}] AVANZAR`);
+      if (cmd === 'repetir') i--;
+    }
+  }
+
   for (const ag of GUION.agentes) {
     const ficha = FICHAS.find((f) => f.id === ag.id) ?? { agente: ag.nombre, caracter: '', sesgo_manifiestos: '' };
     try {
@@ -191,7 +243,9 @@ async function funcion() {
       let gen = { dato_orbital: [], narracion: [], memoria: [] };
       if (nOrb + nNar + nMem > 0) {
         try {
-          const r = await llamarGemini(promptDeAgente({ ficha, bloques: ag.bloques, dato, territorio, rumbo, nOrb, nNar, nMem }));
+          const marco = elegirMarco(ag.id);
+          if (marco) console.log(`    marco teórico: ${marco.id}`);
+          const r = await llamarGemini(promptDeAgente({ ficha, bloques: ag.bloques, dato, territorio, rumbo, marco, nOrb, nNar, nMem }));
           gen = {
             dato_orbital: (r?.dato_orbital ?? []).filter(Boolean),
             narracion: (r?.narracion ?? []).filter(Boolean),
@@ -219,6 +273,12 @@ async function funcion() {
         tipo: b.tipo === 'id_agente' ? 'prompt' : b.tipo,
         texto: b.gemini ? (cola[b.tipo].shift() ?? '') : b.texto,
       }));
+      // ── VOZ DE TODO EL AGENTE, DE UNA SOLA VEZ ──
+      // Se graba AHORA, mientras el público aún no vio nada de este agente,
+      // y no a mitad de una frase. Lo que ya está en disco no se vuelve a
+      // pedir: tus textos fijos ni siquiera tocan la red.
+      const vozAg = await vozLote(segmentos.map((x) => x.texto), { etiqueta: ag.nombre });
+
       await emitirSecuencia(segmentos, { agente: ag.nombre });
       await informarControl({ agente: ag.nombre, estado_marca: rumbo.estado_marca,
                               territorio: `${territorio.nombre} — ${rumbo.territorio_texto}` });
@@ -230,8 +290,9 @@ async function funcion() {
         console.log(`\n  [${i + 1}/${ag.bloques.length}] ${rotulo[b.tipo]}`);
         console.log('  ' + texto.replace(/(.{88})/g, '$1\n  '));
 
-        if (b.tipo === 'id_agente') await emitirAgenteId(ag.nombre, texto);
-        else await emitirSegmento(b.tipo, texto, i);
+        const mp3 = vozAg.get(texto) ?? null;
+        if (b.tipo === 'id_agente') await emitirAgenteId(ag.nombre, texto, mp3);
+        else await emitirSegmento(b.tipo, texto, i, mp3);
 
         await informarControl({ agente: ag.nombre, progreso: `${i + 1}/${ag.bloques.length}` });
         const cmd = await esperar(`[${i + 1}/${ag.bloques.length}] AVANZAR`);
@@ -283,7 +344,11 @@ Devuelve SOLO: { "textos": ["¿...?"] }`, 2);
     if (i >= cola.length) { cola = [...PREGUNTAS_DERIVA, ...barajar(extra), GUION.cierre].filter(Boolean); i = 0; }
     const texto = cola[i];
     console.log('\n◈ ' + texto);
-    await emitirSegmento(/\?\s*$/.test(texto) ? 'pregunta' : 'narracion', texto, i);
+    // La voz de la deriva: tus preguntas ya están grabadas en audio_respaldo
+    // (prerender_voz.js las incluye), así que suenan sin tocar la red. Solo
+    // las que generó Gemini piden ElevenLabs, y una a una, sin prisa.
+    const mp3 = await voz(texto);
+    await emitirSegmento(/\?\s*$/.test(texto) ? 'pregunta' : 'narracion', texto, i, mp3);
     i++;
     const ctrl = new AbortController();
     const reloj = new Promise((r) => setTimeout(() => { ctrl.abort(); r('sigue'); }, DERIVA_MS));
