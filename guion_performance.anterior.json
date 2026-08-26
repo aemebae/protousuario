@@ -1,5 +1,5 @@
 {
-  "_uso": "GENERADO por scripts/compilar_guion.js el 2026-08-26 08:18 desde instrucciones_permanentes.txt. NO EDITAR A MANO.",
+  "_uso": "GENERADO por scripts/compilar_guion.js el 2026-08-26 08:17 desde instrucciones_permanentes.txt. NO EDITAR A MANO.",
   "_tipos": "id_agente · orbital(gemini) · prompt(tuyo) · narracion(gemini) · pregunta(tuya) · memoria(gemini)",
   "_avanzar": "cada bloque espera un AVANZAR del celular",
   "agentes": [
@@ -8,11 +8,6 @@
       "nombre": "Donald-Prompt",
       "estado": "PANOPTICO",
       "bloques": [
-        {
-          "tipo": "orbital",
-          "gemini": true,
-          "texto": ""
-        },
         {
           "tipo": "id_agente",
           "texto": "▸ Soy [Donald-Prompt] tu agente IA autoritario supremacista."

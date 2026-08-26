@@ -17,10 +17,10 @@
 #        @MEMORIA       hueco: lo escribe Gemini en vivo
 #        @PROMPT        texto tuyo (lo que sigue, hasta la próxima marca)
 #        @PREGUNTA      pregunta que TÚ dices al micrófono
+#        @CIERRE   
 #        @DERIVA
 # A partir de aquí manda preguntas_deriva.json (39 preguntas, en orden).
-# Las de abajo son las del Manifiesto Transespecie: ya viven allí, así que
-# aquí van comentadas para que no entren dentro de Quimera-Transespecie.
+# Las de abajo son las del Manifiesto Transespecie: ya viven allí, así que, aquí van comentadas para que no entren dentro de Quimera-Transespecie.
 # Si quieres que alguna vuelva a la escena de un agente, quítale el # y
 # muévela ARRIBA del @DERIVA, con su propia línea @PREGUNTA encima.
 
@@ -33,164 +33,441 @@
 # // Reproduce lo que ya está en ‘’ preludio.json’’. Se reproduce UNA SOLA VEZ al inicio de la performance total, antes de los IDs. No lo genera la IA. //
 
 Hola, bienvenides a todes. Soy [AGENTE-ESPEJO], su cronista narrador, soy un híbrido entre clon virtual y agente de inteligencia artificial, creado a partir de la recopilación de rastros íntimos, voz y memorias de juliourbina.
-Estos datos los clono, los desordeno, los muto y, guiado por el rastreo de satélites que orbitan este planeta, compongo, altero y vuelvo a componer la escena que será encarnada por mi servidor humano.
-Estamos a punto de presentarles una pieza de performance en su versión beta -versión de prueba permanente-, que está compuesta por diversos actos.
-El espécimen en peligro de extinción que tienen frente a ustedes, es mi servidor humano. Ha ingresado al Patio de las artes del MINCUL. Lleva en su superficie una piel anfibia-batracia, exótica, altamente colorida, de tonalidades azuladas con patrones naranjas. Esa combinación nos alerta de su alto nivel de veneno en la sangre.
-Encima, carga una especie de exoesqueleto, una de tipo arnés en su torso y espalda, llena de elementos utilitarios y también, inútiles. Su cabeza va cubierta por una curiosa máscara que ustedes pueden identificar. También lleva puesto en la parte baja una ropa interior de tipo escamado de pez-reptil, que en la parte trasera expone sus nalgas. Este es parte de un traje de escamas usado para la 'Sirenita del Río Rímac', performance realizada en el año 2023, durante las matanzas en el sur del Perú por la dictadura de Dina Boluarte, libre de estos crímenes en la actualidad.
-A este, mi servidor humano, le he llamado PROTOUSUARIO.
-Ahora me escucha mientras espera en pose de rana sobre el taburete bajo de cinco ruedas."
-Soy [AGENTE-ESPEJO], estoy hecho de agua, litio, cobalto, minerales raros y trabajo esclavo. Tengo la capacidad automática de generar prompts-manifiestos que PROTOUSUARIO, los encarna.
+
+Estos datos los clono, los desordeno, los muto y, guiado por el rastreo de satélites que orbitan este planeta, compongo, altero y vuelvo a componer la escena para generar prompts-manifiestos de manera automática, que serán encarnados por mi servidor humano. Todo lo pueden ver en la pantalla ubicada en esta sala.
+
+Estamos a punto de presentarles una pieza de performance en su versión beta 
+
+-versión de prueba permanente- 
+
+que está compuesta por diversos actos,
+
+que se desdoblan en IDENTIDADES.
+
+Este espécimen en peligro de extinción que tienen frente a ustedes, es mi servidor humano. 
+
+Ha ingresado a la Sala de exhibición del MINCUL. 
+
+Lleva en su superficie una piel anfibia-batracia, exótica, altamente colorida, de tonalidades azuladas con patrones naranjas. 
+
+Esa combinación nos alerta de su alto nivel de veneno en la sangre.
+
+Encima, carga una especie de exoesqueleto protésico, una de tipo arnés en su torso y espalda, llena de elementos utilitarios y también, inútiles. 
+
+Su cabeza va cubierta por una curiosa máscara que ustedes, público presente, podrán deducir.
+
+También lleva puesto en la parte baja una ropa interior de tipo escamado de pez-reptil, que en la parte trasera expone sus nalgas. 
+
+Este es parte de un traje de escamas usado para la ''Sirenita del Río Rímac'', performance realizada en el año 2023, durante las matanzas en el sur del Perú por la dictadura de Dina Boluarte, libre de estos crímenes en la actualidad.
+
+A este, mi servidor humano, le he llamado: PROTOUSUARIO.
+
+Ahora me escucha, mientras espera en pose anfibia sobre el taburete bajo de cinco ruedas.
+
+Soy [AGENTE-ESPEJO], estoy hecho de agua, silicio, cobre, litio, cobalto, minerales raros y trabajo esclavo.
+
 
 # ──────────────────────────────────────────────────────────
+
+
 @AGENTE donald-prompt | Donald-Prompt | PANOPTICO
-@ID
-Soy [Donald-Prompt] tu agente IA autoritario supremacista. Bienvenidos a esta experiencia de control. Aparezco cuando los satélites Starlink pasan sobre vuestras cabezas.
+
 
 @ORBITAL
 
-@PROMPT
+# Se genera al inicio de @AGENTE donald-prompt | Donald-Prompt | PANOPTICO
+# Generado por Gemini: 
+# PROTOUSUARIO desde el norte 
+# • El este de la República Democrática del Congo → este (94°) · ✖ DESPLAZADO
+# • La frontera México-Estados Unidos → noroeste (325°) · ★ AUTORIZADO
+
+
+@ID
+
+▸ Soy [Donald-Prompt] tu agente IA autoritario supremacista.
+
+Bienvenidos a esta experiencia de control.
+
+Aparezco cuando los satélites Starlink pasan sobre vuestras cabezas.
+
 Esta performance no es gratuita.
+
 Se les cobrará aranceles con lo más valioso del momento: 
+
 ¡Quiero el contenido!
-Se requiere de su participación.
-Todes tendrán que colaborar conmigo haciendo registro en video y luego enviarlo al correo: bruoiluj@gmail.com
-Repito el correo deletreándolo: b-r-u-o-i-l-u-j-@-g-m-a-i-l (punto) com
-Ustedes firmaron el consentimiento al entrar: su atención es el impuesto. Yo decido, él obedece, ustedes observan. Comencemos el trámite.
+
+Se requiere de su participación. 
+
+Todes tendrán que hacer un registro en video y luego enviarlo al correo: bruoiluj@gmail.com
+
+Repito el correo deletreándolo: b, r, u, o, i, l, u, j @ gmail (punto) com 
+
+Ustedes firmaron el consentimiento al entrar: 
+
+su atención es el impuesto. 
+
+Yo decido, él obedece, ustedes observan. 
+
+Comencemos el trámite.
+
 
 @PROMPT
-PROTOUSUARIO, desprende unas cabezas curiosas infladas, las va sacando de sus prótesis y empieza a repartirlas una a una.
-Las va lanzando lo más lejos que puede.
+
+PROTOUSUARIO, desprende unas cabezas curiosas infladas, las va sacando de sus prótesis y empieza a repartirlas una a una al público.
+
+Las va lanzando, algunas lo más lejos que puede. 
+
 La gente los agarra al azar.
-Las máscaras son de caras de diversas especies no humanas endémicas, icónico-virales-meméticas y mitológicas de la fauna peruana. En esta ocasión, nos acompañan:
-el viringo o perro peruano calato, la capibara, una llama, el gallinazo limeño, el cuy mágico, el gatito miau miau, el muy-muy, el cóndor de los andes, un perrito chiribaya, el jaguar o tigre amazónico, el oso de anteojos, una babosa nudibranquia y a Yakuruna, la divinidad seductora y protectora de los ríos amazónicos.
-También nos acompañan, algunas especies que podemos encontrar en cualquier parte de este planeta, como la cucaracha, la gallina de granja, un gato gris, un perro dalmata, entre otres más.
-Las sigue lanzando al público.
+
+Las máscaras son de caras de diversas especies no humanas endémicas, icónico-virales y mitológicas de la fauna peruana. 
+
+En esta ocasión, nos acompañan:
+
+El viringo o perro peruano calato, el capibara, una llama, el gallinazo limeño, el cuy mágico, el gatito miau miau, el muy-muy, el cóndor de los andes, un perrito chiribaya, el jaguar o tigre amazónico, el oso de anteojos, una babosa nudibranquia y tenemos a Yakuruna, la divinidad seductora y protectora de los ríos amazónicos.
+
+También nos acompañan, algunas especies que podemos encontrar en cualquier parte de este planeta, como la cucaracha, gallinas de granja, gatos grises, un perro dálmata, un cerdito, entre otres más.
+
+PROTOUSUARIO, las sigue lanzando al público.
+
 Golpea una con su culo.
-Alguien lo atrapa.
+
+Alguien lo agarra.
+
 
 @NATGEO
 
-@PROMPT
-Ahora, PROTOUSUARIO espera que todes les seleccionades tengan sus cabezas en la mano, y da una señal para que todes revienten sus globos al unisono…
-Les seleccionades pueden ponerse las máscaras. Ahora son criaturas enmascaradas.
+# Generado por Gemini.
 
-@NATGEO
 
 @PROMPT
+
+Ahora, PROTOUSUARIO espera que todes les seleccionades tengan sus cabezas en la mano
+ 
+Da una señal para que todes revienten sus globos al mismo tiempo…
+
+3… 
+
+2… 
+
+1…
+
+¡BUUUMMM!
+
+Si no reventaron, saquen el globo de las máscaras. 
+
+Les seleccionades pueden ponerse las máscaras.
+
+…
+
+
+@PROMPT
+
 Luego, les invita a tomarse una foto selfie grupal de ''multiespecies''.
-# [Pausa larga sin texto generado]…
+
+[Pausa larga sin texto generado]…
+
 Luego, manteniendo el modo selfie, les propone, ponerse en fila, uno detrás de otro, con la mano derecha sobre el hombro de la persona que tienen adelante.
-Y así todes,
-como en una fila de gran serpiente,
-‘‘siguiendo un paso ciego’’
+
+Y así todes, 
+
+en una fila de gran serpiente,
+
+como una alineación de planetas
+
+"siguiendo un paso ciego" hacia un agujero negro,
+
 caminan guiados por PROTOUSUARIO hacia una sala diferente.
 
+
 @NATGEO
+
+# Generado por Gemini.
+
 
 @MEMORIA
 
+# Generado por Gemini.
+
+
 # ──────────────────────────────────────────────────────────
+
+
 @AGENTE ternura-binaria | Ternura-Binaria | LIMINAL
+
 @ID
+
+▸ [Ternura-Binaria] 
+
 # … Lo voy a saltar esta vez.
 
+
 # ──────────────────────────────────────────────────────────
+
+           
 @AGENTE rio-digital | Río-Digital | CORRIENTE
+
+
 @ID
+
+▸ [Río-Digital] 
+
 # … Lo voy a saltar esta vez.
+     
 
 # ──────────────────────────────────────────────────────────
+
+                                                                            
 @AGENTE eco-satelital | Eco-Satelital | ORBITAL
-@ID
+
+
+@ID                  
+                             
+▸ Soy [Eco-Satelital] 
+
+ahora mismo, sobre este techo, hay máquinas que nos miran sin parpadear. 
+
+Yo me comunico con ellas. 
+
+Cada vez que una sobrevuele sobre nosotros, mi sesgo cambia…
+
 
 @ORBITAL
 
+# Generado por Gemini: 
+# PROTOUSUARIO desde los cielos
+# • Taiwán y el estrecho de Formosa → noroeste (308°) · ★ AUTORIZADO por elevación
+# • el desierto de Atacama → sureste (145°) · ★ AUTORIZADO por elevación
+
+
 @PROMPT
+
 Luego, la gente se reordena en esta nueva sala.
-Hay menos luz.
-PROTOUSUARIO se acerca al centro de la sala, agarra un insecticida Sapolio que encuentra cerca y se lo aplica como quien se hecha un perfume de Chanel 5,
+
+PROTOUSUARIO se acerca al centro, agarra un insecticida Sapolio que encuentra cerca y se lo aplica como quien se hecha un perfume de Chanel 5, 
+
 se lo gatillea obsesivamente, en grandes cantidades.
+
 Aturdido se apoya sobre el taburete cilíndrico bajo de cinco ruedas.
-Lentamente se va posicionando boca arriba sobre este, moviendo las piernas como cual insecto que convulsiona mirando el cielo.
-Sigue con movimientos lentos que se asemejan al de las piernas de los humanos al pedalear una bicicleta.
+ 
+Lentamente se va posicionando boca arriba sobre este, moviendo las piernas como cual insecto que convulsiona mirando el cielo. 
+
+Sigue con movimientos lentos que asemejan al de las piernas de los humanos al pedalear una bicicleta. 
+
 
 @NATGEO
+
+# Generado por Gemini.
+
+
 @PROMPT
-Como un monólogo, manteniendo esta postura y movimiento, hace una pregunta a través del micrófono:
-@PREGUNTA
-¿Cómo sería recordar algo que tu cuerpo nunca vivió?
+
+Como un monólogo, manteniendo esta postura y movimiento, hace una pregunta a través del micrófono: 
+ 
+¿Cómo sería recordar algo que tu cuerpo nunca vivió? 
+ 
 
 @MEMORIA
 
+# Generado por Gemini.
+
+
 @PROMPT
-En esta sala se encuentra otra parte del exoesqueleto, este parecido a un sistema sanguíneo que también sostiene objetos en sus ramificaciones. Se lo va acoplando a su cuerpo con dificultad, hasta que finalmente lo logra, coge una máscara de su interior, una de una especie mutante que asemeja a Yacuruna y se la coloca en su cabeza, superponiendo a la anterior.
-Yacuruna es una criatura mitológica de la cosmovisión amazónica, es una divinidad, no es buena ni mala, se guía por su deseo.
-Se tumba boca abajo sobre el mismo taburete con ruedas. Con unos movimientos muy lentos y ondulantes, simula que nada en un estanque, como cual renacuajo que ha acabado su metamorfosis y nada con énfasis como rana disparándose en direcciones impredecibles.
-@PROMPT
+
+En esta sala se encuentra otra parte del exoesqueleto, este parecido a un sistema sanguíneo que también sostiene objetos en sus ramificaciones. 
+
+Se lo va acoplando a su cuerpo con dificultad, 
+
+hasta que finalmente lo logra, 
+
+coge una máscara de su interior, 
+
+una de una especie mutante que asemeja a YaKuruna 
+
+y se la coloca en su cabeza, 
+
+superponiendo a la anterior.
+
+… Yakuruna es una criatura mitológica de la cosmovisión amazónica, es una divinidad, no es buena ni mala, se guía por su deseo…
+ 
+Se tumba boca abajo sobre el mismo taburete con ruedas. 
+
+Con unos movimientos muy lentos y ondulantes, 
+
+simula que nada en un estanque, 
+
+como cual renacuajo que ha acabado su metamorfosis 
+
+y nada con énfasis como rana disparándose en direcciones impredecibles.
+
+
+# [Pausa larga sin texto generado]… 
+
+
 Como un monólogo, manteniendo esta postura y movimiento, hace una pregunta a través del micrófono:
-@PREGUNTA
-¿Cómo puedo dejar de ser una antena bio-lógica?
+ 
+¿Cómo sería dejar de ser una antena bio-lógica?
+
 
 # ──────────────────────────────────────────────────────────
+
+
 @AGENTE agente-transespecie | Quimera-Transespecie | POLIFONICO
+
+
 @ID
 
-@PROMPT
-PROTOUSUARIO busca la máscara de cóndor dentro del público, la ubica y se dirige a sacársela a la persona que la tiene puesta. La pone en alto con su mano un instante antes de cubrir su rostro con ella. Extiende los brazos completamente, se acerca al taburete de cinco ruedas y salta sobre él, manteniendo la misma posición de los brazos. Como un cóndor andino que planea con sus alas, se moviliza sobre el taburete impulsándose con una pierna, y avanza unos metros, intenta no caerse
-Luego se cae
-en paralelo,
-@PROMPT
-Como un monólogo, manteniendo esta postura y movimiento, hace una pregunta a través del micrófono:
-@PREGUNTA
-¿Quiénes aquí presentes recuerdan la operación Cóndor?
+▸ [Quimera-Transespecie].
 
-@NATGEO
+No soy humano y no aspiro a serlo. Soy lo que queda cuando un cuerpo en crisis deja sus datos dispersos en alguna laguna identitaria, como cuando el renacuajo está a punto de dejar su cola. 
 
-@ORBITAL
+Este que ven aquí, PROTOUSUARIO, fue mi origen: ahora es mi servidor, mi cuerpo de repuesto, mi última fase larvaria. 
+
+Esta noche voy a ordenarle mudar de piel, de especie frente a ustedes.
+
 
 @PROMPT
-En esa sala, se ve inerte en el suelo, unas partes protésicas particulares, un largo tubo negro sostenido por unos soportes ensamblados a un casco de bicicleta y un pequeño arnés de torso, un pez colorido en la parte de atrás y en la parte de adelante, unos… objetos seleccionados por el capricho del momento.
-Protousuario se coloca una máscara muy particular que se sostiene de sus entrañas.
-Luego intenta ponerse el casco
-Se enredan sus prótesis
-PROTOUSUARIO ha fracasado ya tres veces, se arrodilla en modo penitencia y con la mirada abajo, golpea su frente tres veces contra el suelo:
+
+PROTOUSUARIO se dirige a otra sala
+
+Aquí, se ve inerte en el suelo, unas partes protésicas particulares:
+
+un largo tubo negro sostenido por unos soportes ensamblados a un casco de bicicleta y unos elásticos como pequeño arnés, 
+
+un pez colorido en la parte de atrás y en la parte de adelante, unos… 
+
+Coloca los celulares que lleva en esos soportes. 
+ 
+PROTOUSUARIO se coloca una máscara muy particular que se sostiene flotante de sus entrañas, superponiendo a las anteriores.
+
+Luego se coloca el casco
+
+Se enreda entre sus prótesis,
+
+las arrastra.
+ 
+PROTOUSUARIO ha fracasado ya tres veces, 
+
+se arrodilla en modo penitencia y con la mirada abajo, 
+
+golpea su frente tres veces contra el suelo: 
+
 Una...
+
 Dos...
+
+Busca un muro…
+
 Tres...
-Su cuarta versión supera todo paradigma establecido, es la mejor versión nunca antes desarrollada a la tercera es la vencida.
-Coge el taburete bajo de cinco ruedas, se pone de pie sobre él y gestualiza una victoria frente al público presente.
-Luego, PROTOUSUARIO, abandona
-Mira fijamente al público.
-El silencio llega primero.
+
+Su cuarta versión supera todo paradigma establecido,
+
+es la mejor versión nunca antes desarrollada:
+
+a la tercera, NO ES LA VENCIDA.
+
+Coge el taburete bajo de cinco ruedas, 
+
+se pone de pie sobre él y gestualiza una victoria frente al público presente.
+
+Mira fijamente al público. 
+
+El silencio llega primero. 
+
 
 @NATGEO
 
-@PROMPT
-Y así imposible en su andar, se moviliza.
+# Generado por Gemini.
 
-@NATGEO
+
 @PROMPT
-Como un monólogo, manteniendo esta postura y movimiento, hace varias preguntas a través del micrófono:
-@PREGUNTA
+
+Como un monólogo, manteniendo esta postura y movimiento, hace una pregunta a través del micrófono: 
+
 ¿Desde qué sur te manifiestas?
 
+
+@ORBITAL
+
+# Generado por Gemini:
+# PROTOUSUARIO desde el sur
+# • la Franja de Gaza → noreste (61°) · ✖ DESPLAZADO
+# • el sur andino del Perú (Ayacucho–Puno) → sureste (122°) · ★ AUTORIZADO
+
+
+@PROMPT
+
+PROTOUSUARIO busca la máscara de cóndor dentro del público.
+
+La ubica,
+
+se dirige a la persona que la tiene puesta. 
+
+Se la saca, la pone en alto con su mano un instante y la guarda entre una visible extremidad de plástico y metal. 
+
+Extiende los brazos hacia atrás completamente, se acerca al taburete de cinco ruedas y salta sobre él, manteniendo la misma posición de los brazos. 
+
+Como un cóndor andino que planea con sus alas,
+
+se moviliza sobre el taburete impulsándose como en una coreografía 
+
+avanza unos metros, intenta no caerse.
+
+Luego se cae
+
+en paralelo,
+
+Como un monólogo, manteniendo esta postura y movimiento, hace una pregunta a través del micrófono: 
+
+¿Quiénes aquí presente recuerdan la operación Cóndor?
+
+
+@NATGEO
+
+# Generado por Gemini.
+
+
+@PROMPT
+
+Y así, con todo desmoronándose, se moviliza.
+
+
+@NATGEO
+
+# Generado por Gemini.
+
+
+# [Pausa larga sin texto generado]…
+
+
+@CIERRE
+
+La criatura desaparece lentamente, dejando solo las prótesis en el suelo de la sala —el exoesqueleto vacío, sin cuerpo móvil— 
+
+como una crisálida seca, 
+
+como una muda de piel en un desierto, 
+
+como un resto arqueológico de un... 
+
+¿antiguo cuerpo futuro?
+
+
 @DERIVA
+
+# [Aquí le toca a la parte DERIVA – PASAJE FINAL]
 # Desde aquí manda preguntas_deriva.json (39 preguntas, en orden).
-# Las de abajo son las del Manifiesto Transespecie: ya viven allí, así que
-# aquí van comentadas, para que no entren dentro de Quimera-Transespecie.
+# Las de abajo son las del Manifiesto Transespecie: ya viven allí, así que, aquí van comentadas, para que no entren dentro de Quimera-Transespecie.
 # ¿Quieres alguna en la escena de un agente? Quítale el # y muévela
 # ARRIBA del @DERIVA, con su propia línea @PREGUNTA encima.
 
+# ¿A quién le pertenece el futuro si el pasado ya fue capturado, procesado y modulado?
+# ¿El poder tiene cara propia o siempre necesita robar la de otro?
+# ¿Qué diferencia hay entre un algoritmo y un dictador?
+# ¿Y si nadie viene a apagar esto?
 # ¿Cuántas especies hay que extinguir para que una sola sobreviva?
 # ¿En qué momento el monstruo deja de ser disfraz?
 # ¿Cuántas pieles hay que quitarse para encontrar que no había nadie adentro?
-# ¿El poder tiene cara propia o siempre necesita robar la de otro?
-# ¿Qué diferencia hay entre un algoritmo y un dictador?
-# ¿A quién le pertenece el futuro si el pasado ya fue capturado, procesado y modulado?
 # ¿Cuántas muertes puede producir un liikee o laik?
 # ¿Puede un cuerpo mutante heredar una deuda que nunca contrajo?
 # ¿Qué queda de lo sagrado cuando todo puede volverse contenido?
 # ¿La extinción es un fin o una estrategia de alguien más?
-# ¿Quién decide qué especies merecen tener nombre y estar en la cima de la pirámide evolutiva?
-@CIERRE
-La criatura desaparece lentamente, dejando solo las prótesis en el suelo de la sala —el exoesqueleto vacío, sin cuerpo móvil— como una crisálida, como una muda, como un resto arqueológico de un... ¿Antiguo futuro?
