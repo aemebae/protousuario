@@ -38,14 +38,16 @@ const añadir = (grupo, tipo, texto) => {
 };
 
 // El preludio se graba PÁRRAFO A PÁRRAFO, igual que se dice en escena.
-if (PRE?.texto) {
-  PRE.texto.split(/\n+/).map((t) => t.trim()).filter(Boolean)
+if (PRE?.texto || PRE?.parrafos) {
+  (PRE.parrafos?.length ? PRE.parrafos : PRE.texto.split(/\n+/)).map((t) => t.trim()).filter(Boolean)
     .forEach((t, i) => añadir('PRELUDIO', `párrafo ${i + 1}`, t));
 }
 
 for (const a of G?.agentes ?? []) {
   for (const b of a.bloques ?? []) {
-    if (!b.gemini) añadir(a.nombre, b.tipo, b.texto);   // gemini:true = cambia cada vez
+    // gemini:true cambia cada vez → no se puede pre-grabar.
+    // sin_voz:true lo dice PROTOUSUARIO al micrófono → no lleva voz clonada.
+    if (!b.gemini && !b.sin_voz) añadir(a.nombre, b.tipo, b.texto);
   }
 }
 añadir('CIERRE', 'narracion', G?.cierre);

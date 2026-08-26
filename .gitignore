@@ -3,3 +3,6 @@ node_modules
 corpus.json
 corpus.redacted.json
 redaction-report.json
+audio_cache/
+audio_respaldo/*.mp3
+tomas/

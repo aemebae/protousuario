@@ -201,7 +201,9 @@ async function funcion() {
   // propia voz. Un preludio de 400 palabras de un solo golpe no se puede
   // sostener en escena; en párrafos, sí.
   if (PRELUDIO?.texto && process.env.SIN_PRELUDIO !== '1') {
-    const parrafos = PRELUDIO.texto.split(/\n+/).map((t) => t.trim()).filter(Boolean);
+    // El compilador ya deja los párrafos partidos; si no, se parten aquí.
+    const parrafos = (PRELUDIO.parrafos?.length ? PRELUDIO.parrafos
+      : PRELUDIO.texto.split(/\n+/)).map((t) => t.trim()).filter(Boolean);
     console.log('\n' + '─'.repeat(72));
     console.log(`  PRELUDIO  (${parrafos.length} párrafos)`);
     console.log('─'.repeat(72));
@@ -272,12 +274,38 @@ async function funcion() {
       const segmentos = ag.bloques.map((b) => ({
         tipo: b.tipo === 'id_agente' ? 'prompt' : b.tipo,
         texto: b.gemini ? (cola[b.tipo].shift() ?? '') : b.texto,
+        sin_voz: !!b.sin_voz,
+        gemini: !!b.gemini,
       }));
+
+      // ── REGISTRO ──
+      // Todo lo que escribe Gemini queda guardado en manifiestos_log.jsonl,
+      // una línea por agente. Sirve para tres cosas: releer después de la
+      // función lo que dijo el sistema, alimentar el veto de repeticiones, y
+      // tener el material publicable de la obra sin depender de la memoria.
+      try {
+        fs.appendFileSync('manifiestos_log.jsonl', JSON.stringify({
+          fecha: new Date().toISOString(),
+          agente: ag.id, agente_nombre: ag.nombre, estado: ag.estado,
+          satelite: dato.satelite, satelite_enunciable: dato.satelite_enunciable,
+          lat: dato.lat, lon: dato.lon, altKm: dato.altKm, elevacionDeg: dato.elevacionDeg,
+          pais: dato.pais, territorio: territorio.nombre, territorio_id: territorio.id,
+          rumbo: rumbo.rumbo_texto, ubicacion: rumbo.territorio_texto,
+          estado_rumbo: rumbo.estado, estado_marca: rumbo.estado_marca,
+          marco_teorico: marco?.id ?? null,
+          generado: gen,                 // SOLO lo que escribió Gemini
+          segmentos,                     // la partitura completa, en orden
+        }) + '\n', 'utf8');
+      } catch (e) { console.warn(`  ⚠ no se pudo escribir manifiestos_log.jsonl: ${e.message}`); }
       // ── VOZ DE TODO EL AGENTE, DE UNA SOLA VEZ ──
       // Se graba AHORA, mientras el público aún no vio nada de este agente,
       // y no a mitad de una frase. Lo que ya está en disco no se vuelve a
       // pedir: tus textos fijos ni siquiera tocan la red.
-      const vozAg = await vozLote(segmentos.map((x) => x.texto), { etiqueta: ag.nombre });
+      // Los bloques marcados sin_voz NO se graban: son las preguntas que
+      // PROTOUSUARIO dice con su propia boca al micrófono. Si el clon también
+      // las dijera, se pisarían. Se cambia en compilar_guion.js (VOZ_EN_PREGUNTAS).
+      const vozAg = await vozLote(
+        segmentos.filter((x) => !x.sin_voz).map((x) => x.texto), { etiqueta: ag.nombre });
 
       await emitirSecuencia(segmentos, { agente: ag.nombre });
       await informarControl({ agente: ag.nombre, estado_marca: rumbo.estado_marca,
@@ -290,7 +318,7 @@ async function funcion() {
         console.log(`\n  [${i + 1}/${ag.bloques.length}] ${rotulo[b.tipo]}`);
         console.log('  ' + texto.replace(/(.{88})/g, '$1\n  '));
 
-        const mp3 = vozAg.get(texto) ?? null;
+        const mp3 = segmentos[i].sin_voz ? null : (vozAg.get(texto) ?? null);
         if (b.tipo === 'id_agente') await emitirAgenteId(ag.nombre, texto, mp3);
         else await emitirSegmento(b.tipo, texto, i, mp3);
 
@@ -349,6 +377,11 @@ Devuelve SOLO: { "textos": ["¿...?"] }`, 2);
     // las que generó Gemini piden ElevenLabs, y una a una, sin prisa.
     const mp3 = await voz(texto);
     await emitirSegmento(/\?\s*$/.test(texto) ? 'pregunta' : 'narracion', texto, i, mp3);
+    try {
+      fs.appendFileSync('manifiestos_log.jsonl', JSON.stringify({
+        fecha: new Date().toISOString(), agente: 'deriva', texto,
+      }) + '\n', 'utf8');
+    } catch {}
     i++;
     const ctrl = new AbortController();
     const reloj = new Promise((r) => setTimeout(() => { ctrl.abort(); r('sigue'); }, DERIVA_MS));

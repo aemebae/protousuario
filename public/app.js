@@ -76,6 +76,19 @@ function crearGlobo(contenedor, opts = {}) {
     // encima de algo. Aquí nadie va a pasar el mouse: es puro costo.
     .enablePointerInteraction(false);
   try { g.globeMaterial().color.set(MAR); } catch {}
+  // LUZ. Por defecto hay una luz direccional: la mitad de atrás del globo
+  // queda negra. En la captura que mandaste se ve exactamente eso — el
+  // planeta casi apagado, con tierra visible solo en el borde. Se sube la luz
+  // ambiental (la que ilumina por igual desde todos lados) y se baja la
+  // direccional, para que el planeta se lea entero desde cualquier ángulo.
+  try {
+    const luces = g.lights();
+    for (const l of luces) {
+      if (l.type === 'AmbientLight') l.intensity = 2.4;
+      else l.intensity = 0.55;
+    }
+    g.lights(luces);
+  } catch {}
   try { g.renderer().setPixelRatio(Math.min(window.devicePixelRatio || 1, PIXEL_RATIO_MAX)); } catch {}
   return g;
 }
@@ -133,14 +146,20 @@ function aplicarTextura(){
 }
 
 // ══════════════════════════════════════════════════════════════════════
-//  PAÍSES
-//  Se carga el 110m (el MISMO archivo que usa servidor_visual.js). El 50m
-//  pesaba 3 MB y, peor, sus índices NO coincidían con los que manda el
-//  servidor: el país resaltado podía ser otro. Con la textura satelital
-//  encima, las islas chicas se ven igual aunque el contorno no las tenga.
+//  PAÍSES  ·  v5: se vuelve al 50m
+//
+//  POR QUÉ. El 110m solo trae 177 países y SE COME LOS CHICOS: no tiene
+//  Cabo Verde, ni Malta, ni Maldivas, ni Seychelles, ni Comoras. El 50m trae
+//  242 e incluye además Rapa Nui dentro de la geometría de Chile.
+//  Pesa 3 MB en vez de 838 KB, pero se carga una sola vez al abrir la escena
+//  y no vuelve a tocarse: no afecta a los fotogramas.
+//
+//  EL RIESGO QUE TENÍA ANTES: los índices del 50m no coinciden con los que
+//  calcula el servidor (que usa 110m). Por eso ahora el país resaltado se
+//  busca SOLO POR NOMBRE (propiedad ADMIN) y el índice se ignora.
 // ══════════════════════════════════════════════════════════════════════
 let paises = [];
-fetch('data/ne_110m_admin_0_countries.geojson').then(r=>r.json()).then(geo=>{
+fetch('data/ne_50m_admin_0_countries.geojson').then(r=>r.json()).then(geo=>{
   paises = geo.features; pintarPoligonos();
 }).catch(e=>console.error('GeoJSON:', e));
 
@@ -182,27 +201,41 @@ function pintarPoligonos(){
   if (firma === firmaPoligonos) return;
   firmaPoligonos = firma;
 
-  const esResaltado = (f, i) =>
-    (paisNombre && f.properties && f.properties.ADMIN === paisNombre) || i === paisIdx;
+  // Solo por nombre. El índice del servidor viene del 110m y aquí usamos 50m:
+  // mezclarlos resaltaba el país equivocado.
+  const esResaltado = (f) =>
+    !!(paisNombre && f.properties && f.properties.ADMIN === paisNombre);
 
   const datos = MOSTRAR_BORDES ? paises : paises.filter(esResaltado);
 
   globo.polygonsData(datos)
-    .polygonCapColor((f,i)=> {
-      if (esResaltado(f, i)) return hex(p.accent) + (hayTextura ? '55' : '99');
+    // ── EL ARREGLO DE GROENLANDIA ──
+    // Un polígono es un contorno plano (lat/lon) que hay que "pegar" sobre una
+    // esfera. Para eso se parte en triángulos. Si los triángulos son grandes,
+    // sus caras rectas se hunden POR DEBAJO de la superficie curva y la esfera
+    // se los come: eso son las astillas negras y los agujeros que viste, y por
+    // eso pasaba justo en Groenlandia, que es enorme y tiene pocos vértices.
+    // Esta línea obliga a subdividir cada 1,5° en vez de cada 5°: más
+    // triángulos, más pequeños, y la tapa abraza la curva sin hundirse.
+    .polygonCapCurvatureResolution(1.5)
+    .polygonCapColor((f)=> {
+      if (esResaltado(f)) return hex(p.accent) + (hayTextura ? '55' : '99');
       return hayTextura ? 'rgba(0,0,0,0)' : colorTierra(f);
     })
     .polygonSideColor(()=> 'rgba(0,0,0,0.12)')
-    .polygonStrokeColor((f,i)=> esResaltado(f,i) ? hex(p.accent) : hex(p.grid))
-    .polygonAltitude((f,i)=> esResaltado(f,i) ? 0.014 : 0.003);
+    .polygonStrokeColor((f)=> esResaltado(f) ? hex(p.accent) : hex(p.grid))
+    // Un pelo más alto que antes: aleja la tapa de la esfera y elimina el
+    // parpadeo entre las dos superficies (lo que se llama "z-fighting").
+    .polygonAltitude((f)=> esResaltado(f) ? 0.016 : 0.005);
 
   // El globo pequeño ("plano satélite") solo dibuja el país sobrevolado:
   // no necesita el planeta entero y así deja de costar.
   globoZoom.polygonsData(paises.filter(esResaltado))
+    .polygonCapCurvatureResolution(1.5)
     .polygonCapColor(()=> hex(p.accent) + (hayTextura ? '44' : '88'))
     .polygonSideColor(()=> 'rgba(0,0,0,0.12)')
     .polygonStrokeColor(()=> hex(p.accent))
-    .polygonAltitude(()=> 0.014);
+    .polygonAltitude(()=> 0.016);
 }
 
 // ══════════════════════════════════════════════════════════════════════

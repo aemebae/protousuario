@@ -112,7 +112,7 @@
     },
     {
      "tipo": "pregunta",
-     "texto": "¿Recuerdas el Plan Cóndor?"
+     "texto": "¿Quiénes aquí presentes recuerdan la operación Cóndor?"
     },
     {
      "tipo": "narracion",
@@ -124,15 +124,15 @@
     },
     {
      "tipo": "prompt",
-     "texto": "En esa sala se ven inertes en el suelo unas partes protésicas particulares: un largo tubo negro sostenido por unos soportes ensamblados a un casco de bicicleta y un pequeño arnés de torso, un pez colorido en la parte de atrás y, en la parte de adelante, unos objetos seleccionados por el capricho del momento. PROTOUSUARIO se coloca una máscara muy particular que se sostiene de sus ramificaciones protésicas o de sus entrañas."
+    "texto": "En esa sala se ven inertes en el suelo unas partes protésicas particulares: un largo tubo negro sostenido por unos soportes ensamblados a un casco de bicicleta y un pequeño arnés de torso, un pez colorido en la parte de atrás y, en la parte de adelante, unos objetos seleccionados por el capricho del momento.\nPROTOUSUARIO se coloca una máscara muy particular que se sostiene de sus ramificaciones protésicas o de sus entrañas."
     },
     {
      "tipo": "prompt",
-     "texto": "Luego intenta ponerse el casco. Se enredan sus prótesis. PROTOUSUARIO ha fracasado ya tres veces, se arrodilla en modo penitencia y con la mirada abajo golpea su frente tres veces contra el suelo: Una... Dos... Tres... Su cuarta versión supera todo paradigma establecido, es la mejor versión nunca antes desarrollada: a la tercera es la vencida."
+     "texto": "Luego intenta ponerse el casco.\nSe enredan sus prótesis. \nPROTOUSUARIO ha fracasado ya tres veces, se arrodilla en modo penitencia y con la mirada abajo golpea su frente tres veces contra el suelo: \nUna... \nDos... \nTres... \nSu cuarta versión supera todo paradigma establecido, es la mejor versión nunca antes desarrollada: a la tercera es la vencida."
     },
     {
      "tipo": "prompt",
-     "texto": "Coge el taburete bajo de cinco ruedas, se pone de pie sobre él y gestualiza una victoria frente al público presente. Mira fijamente al público. El silencio llega primero."
+     "texto": "Coge el taburete bajo de cinco ruedas, se pone de pie sobre él y gestualiza una victoria frente al público presente. \nMira fijamente al público. \nEl silencio llega primero."
     },
     {
      "tipo": "narracion",
