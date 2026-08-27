@@ -1,5 +1,5 @@
 {
-  "_uso": "GENERADO por scripts/compilar_guion.js el 2026-08-27 10:56 desde instrucciones_permanentes.txt. NO EDITAR A MANO.",
+  "_uso": "GENERADO por scripts/compilar_guion.js el 2026-08-27 21:46 desde instrucciones_permanentes.txt. NO EDITAR A MANO.",
   "_tipos": "id_agente · orbital(gemini) · prompt(tuyo) · narracion(gemini) · pregunta(tuya) · memoria(gemini)",
   "_avanzar": "cada bloque espera un AVANZAR del celular",
   "agentes": [
@@ -19,7 +19,7 @@
         },
         {
           "tipo": "id_agente",
-          "texto": "▸ Soy [Donald-Prompt] tu agente IA autoritario supremacista."
+          "texto": "▸ Soy [Donald-Prompt] tu agente de IA autoritario supremacista."
         },
         {
           "tipo": "id_agente",
@@ -43,7 +43,7 @@
         },
         {
           "tipo": "id_agente",
-          "texto": "Ahora, PROTOUSUARIO se pone en cuatro, a la espera."
+          "texto": "Ahora, PROTOUSUARIO se Fpone en cuatro, apoyando sus extremidades superiores sobre el taburete... a la espera."
         },
         {
           "tipo": "id_agente",
@@ -51,11 +51,11 @@
         },
         {
           "tipo": "id_agente",
-          "texto": "Todes tendrán que hacer un registro en video y luego enviarlo al correo: bruoiluj@gmail.com"
+          "texto": "Todes tendrán que hacer un registro en video y luego enviarlo al correo: bruoiluj (arroba) gmail (punto) com"
         },
         {
           "tipo": "id_agente",
-          "texto": "Repito el correo deletreándolo: b, r, u, o, i, l, u, j @ gmail (punto) com"
+          "texto": "Repito el correo deletreándolo: b, r, u, o, i, l, u, j (arroba) gmail (punto) com"
         },
         {
           "tipo": "id_agente",
@@ -75,7 +75,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "PROTOUSUARIO, desprende unas curiosas cabezas infladas con globos, las va sacando de sus prótesis y empieza a repartirlas una a una al público."
+          "texto": "PROTOUSUARIO desprende unas curiosas cabezas infladas con globos, las va sacando de sus prótesis y empieza a repartirlas una a una al público."
         },
         {
           "tipo": "prompt",
@@ -103,7 +103,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "PROTOUSUARIO, las sigue lanzando al público."
+          "texto": "PROTOUSUARIO las sigue lanzando al público."
         },
         {
           "tipo": "prompt",
@@ -120,7 +120,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "Ahora, PROTOUSUARIO espera que todes les seleccionades tengan sus cabezas en la mano"
+          "texto": "Ahora, PROTOUSUARIO espera que todes les seleccionades tengan sus cabezas en la mano."
         },
         {
           "tipo": "prompt",
@@ -128,19 +128,20 @@
         },
         {
           "tipo": "prompt",
-          "texto": "3…"
+          "texto": "3"
         },
         {
           "tipo": "prompt",
-          "texto": "2…"
+          "texto": "2"
         },
         {
           "tipo": "prompt",
-          "texto": "1…"
+          "texto": "1"
         },
         {
-          "tipo": "prompt",
-          "texto": "¡BUUUMMM!"
+          "tipo": "sonido",
+          "sonido": "WOW",
+          "texto": ""
         },
         {
           "tipo": "prompt",
@@ -152,7 +153,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "Luego, les invita a tomarse una foto selfie grupal de ''multiespecies''."
+          "texto": "Luego, les invita a tomarse una foto selfie grupal de multiespecies."
         },
         {
           "tipo": "prompt",
@@ -177,11 +178,6 @@
         {
           "tipo": "prompt",
           "texto": "caminan guiados por PROTOUSUARIO hacia una sala diferente."
-        },
-        {
-          "tipo": "narracion",
-          "gemini": true,
-          "texto": ""
         },
         {
           "tipo": "memoria",
@@ -209,7 +205,7 @@
         },
         {
           "tipo": "id_agente",
-          "texto": "Cada vez que una sobrevuele sobre nosotros, mi sesgo cambia…"
+          "texto": "Cada vez que una sobrevuele sobre nosotros, mi sesgo cambia"
         },
         {
           "tipo": "orbital",
@@ -284,15 +280,11 @@
         },
         {
           "tipo": "prompt",
-          "texto": "y se la coloca en su cabeza,"
+          "texto": "y se la coloca en su cabeza, superponiendo a la anterior."
         },
         {
           "tipo": "prompt",
-          "texto": "superponiendo a la anterior."
-        },
-        {
-          "tipo": "prompt",
-          "texto": "… Yakuruna es una criatura mitológica de la cosmovisión amazónica, es una divinidad, no es buena ni mala, se guía por sus deseos…"
+          "texto": "… Yakuruna es una criatura mitológica de la cosmovisión amazónica, es una divinidad, no es buena ni mala, se guía por sus deseos."
         },
         {
           "tipo": "prompt",
@@ -300,19 +292,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "Con unos movimientos lentos y ondulantes,"
-        },
-        {
-          "tipo": "prompt",
-          "texto": "simula que nada en un estanque,"
-        },
-        {
-          "tipo": "prompt",
-          "texto": "como cual renacuajo que ha acabado su metamorfosis"
-        },
-        {
-          "tipo": "prompt",
-          "texto": "y nada con énfasis como rana disparándose en direcciones impredecibles."
+          "texto": "Con unos movimientos lentos y ondulantes, simula que nada en un estanque, como cual renacuajo que ha acabado su metamorfosis y nada con énfasis como rana disparándose en direcciones impredecibles."
         },
         {
           "tipo": "prompt",
@@ -347,7 +327,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "PROTOUSUARIO se dirige a otra sala"
+          "texto": "PROTOUSUARIO está ya de pie, en otra sala"
         },
         {
           "tipo": "prompt",
@@ -371,7 +351,22 @@
         },
         {
           "tipo": "prompt",
-          "texto": "Es de la Señora ¡Kruack!"
+          "texto": "¡Es de la Señora!"
+        },
+        {
+          "tipo": "sonido",
+          "sonido": "Cuak",
+          "texto": ""
+        },
+        {
+          "tipo": "sonido",
+          "sonido": "Rana Croar",
+          "texto": ""
+        },
+        {
+          "tipo": "sonido",
+          "sonido": "Rana Croar",
+          "texto": ""
         },
         {
           "tipo": "prompt",
@@ -391,7 +386,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "PROTOUSUARIO ha fracasado ya tres veces,"
+          "texto": "PROTOUSUARIO ha fallado ya tres veces,"
         },
         {
           "tipo": "prompt",
@@ -481,7 +476,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "Se la saca, la pone en alto con su mano un instante y la guarda dentro de sí, como si se la comiera."
+          "texto": "Se la saca, la levanta con su mano un instante y la coloca en su cabeza, sobre las anteriores"
         },
         {
           "tipo": "prompt",
@@ -532,5 +527,5 @@
       ]
     }
   ],
-  "cierre": "La criatura va desapareciendo lentamente, dejando solo las prótesis en el suelo de la sala —el exoesqueleto vacío, sin cuerpo móvil— como una crisálida seca, como una muda de piel en un desierto, como un resto arqueológico de un... ¿ancestral cuerpo futuro?"
+  "cierre": "La criatura va desapareciendo lentamente, dejando solo las prótesis en el suelo de la sala —el exoesqueleto vacío, sin cuerpo móvil— como una crisálida seca, como una muda de piel en un desierto, como un resto arqueológico de un... ¿ancestral cuerpo futuro? \"¿A quién le pertenece el futuro si el pasado ya fue capturado, procesado y modulado?\", \"¿El poder tiene cara propia o siempre necesita robar la de otro?\", \"¿Qué diferencia hay entre un algoritmo y un dictador?\", \"¿Y si nadie viene a apagar esto?\", \"¿Cuántas especies hay que extinguir para que una sola sobreviva?\", \"¿En qué momento el monstruo deja de ser disfraz?\", \"¿Cuántas pieles hay que quitarse para encontrar que no había nadie adentro?\", \"¿Qué parte de la memoria es la que nos hace humanos?\", \"¿Cuántas muertes puede producir un liikee o laik?\", \"¿Puede un cuerpo mutante heredar una deuda que nunca contrajo?\", \"¿Qué queda de lo sagrado cuando todo puede volverse contenido?\", \"¿La extinción es un fin o una estrategia de alguien más?\", \"¿Quién decide qué especies merecen tener nombre y estar en la cima de la pirámide evolutiva?\", \"¿Cuántas prótesis hay que quitarse para que quede algo que no sea prótesis?\", \"¿El exoesqueleto sostenía al cuerpo, o el cuerpo sostenía al exoesqueleto?\", \"¿Qué queda de una especie cuando se apagan las pantallas que la nombraban?\", \"¿Cuánto pesa una orden después de ejecutada?\", \"¿A quién obedece un cuerpo cuando ya nadie le da instrucciones?\", \"¿De quién es una voz cuando aprende a sonar sin pulmones?\", \"¿Cuántas conversaciones hay que entregar para fabricar a alguien que hable como uno?\", \"¿El clon es la copia, o es lo que quedó afuera de la copia?\", \"¿Qué parte de mí no cabía en el archivo?\", \"¿Un recuerdo sigue siendo mío después de que otro lo pronuncia?\", \"¿Y si nadie viene a apagar esto?\", \"¿Qué diferencia hay entre una instrucción y una profecía?\", \"¿Quién escribió la primera orden que nadie recuerda haber pedido?\", \"¿Obedecer literalmente es la forma más honesta de desobedecer?\", \"¿Cuántas veces hay que repetir un gesto para que deje de ser tuyo?\", \"¿El error es una falla del sistema, o la única parte viva que le queda?\", \"¿Cuántos ojos hacen falta sobre un techo para que el techo deje de ser refugio?\", \"¿La máquina que registra sin juzgar es inocente, o solamente paciente?\", \"¿Desde qué altura un territorio deja de tener nombre y pasa a tener coordenadas?\", \"¿Cuántos kilómetros de distancia hacen falta para que una matanza se vea como un dato?\", \"¿Quién decide qué se ve desde arriba y qué se queda debajo de la nube?\", \"¿Un satélite que ya no transmite sigue siendo un satélite, o ya es basura con órbita?\", \"¿Cuánta agua del desierto cabe en una batería?\", \"¿De qué río es el mercurio que tiene esta mano?\", \"¿Cuántos niños en una mina caben dentro de un modelo de lenguaje?\", \"¿Por qué el futuro siempre se fabrica en el norte con lo que se saca del sur?\", \"¿Quién le puso 'recursos' a lo que antes tenía nombre propio?\", \"¿A qué distancia del hambre se firma un contrato de exploración?\", \"¿Qué cordillera hubo que moler para que esta pantalla encienda?\", \"¿Quién firma la autorización para estar en el lugar donde uno nació?\", \"¿Estar desplazado es una condición, o es el único domicilio que nos dejaron?\", \"¿Cuántos permisos hay que pedir para volver a un sitio que nunca se abandonó?\", \"¿La frontera está en el mapa, o está adentro?\", \"¿La muda que queda en el suelo es un final, o solo la parte que no supo seguir?\", \"¿Qué hace una voz cuando ya no queda cuerpo que la obedezca?\", \"¿Esto que sigue sonando es memoria, o es apenas inercia?\", \"¿Alguien se llevó al espécimen, o el espécimen se llevó a alguien?\", \"¿El antiguo futuro ya pasó, o todavía está esperando que alguien lo ejecute?\", \"¿Y si nadie viene a apagar esto?\""
 }

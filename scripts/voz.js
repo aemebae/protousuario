@@ -152,19 +152,41 @@ export async function grabar(texto, { dir = DIR_CACHE, cual = VOZ_AUTOR } = {}) 
   const nombre = huella(texto, cual) + '.mp3';
   const destino = path.join(dir, nombre);
 
-  const r = await fetch(
-    `https://api.elevenlabs.io/v1/text-to-speech/${vozId}?output_format=mp3_44100_128`,
-    {
-      method: 'POST',
-      headers: { 'xi-api-key': API(), 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: texto, model_id: MODELO(), voice_settings: AJUSTES(cual) }),
-      signal: AbortSignal.timeout(30000),
-    }
-  );
-  if (!r.ok) throw new Error(`ElevenLabs HTTP ${r.status}: ${(await r.text()).slice(0, 160)}`);
+  // ── TIEMPO PROPORCIONAL AL TEXTO ──
+  // Un tope fijo de 30 s se quedaba corto con los párrafos largos: por eso
+  // falló el CIERRE con "The operation was aborted due to timeout". Ahora el
+  // margen crece con el texto: 30 s de base + 1 s por cada 12 caracteres,
+  // hasta 3 minutos. Un cierre de 600 caracteres tiene 80 s, de sobra.
+  const espera = Math.min(180000, 30000 + Math.round(texto.length / 12) * 1000);
 
-  fs.writeFileSync(destino, Buffer.from(await r.arrayBuffer()));
-  return nombre;
+  // ── REINTENTOS ──
+  // Un corte de red de dos segundos ya no tira la grabación al suelo.
+  let ultimo;
+  for (let intento = 1; intento <= 3; intento++) {
+    try {
+      const r = await fetch(
+        `https://api.elevenlabs.io/v1/text-to-speech/${vozId}?output_format=mp3_44100_128`,
+        {
+          method: 'POST',
+          headers: { 'xi-api-key': API(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: texto, model_id: MODELO(), voice_settings: AJUSTES(cual) }),
+          signal: AbortSignal.timeout(espera),
+        }
+      );
+      if (!r.ok) throw new Error(`ElevenLabs HTTP ${r.status}: ${(await r.text()).slice(0, 160)}`);
+      const bytes = Buffer.from(await r.arrayBuffer());
+      if (bytes.length < 512) throw new Error('respuesta vacía o truncada');
+      fs.writeFileSync(destino, bytes);
+      return nombre;
+    } catch (e) {
+      ultimo = e;
+      if (intento < 3) {
+        console.warn(`      reintento ${intento}/3 (${texto.length} caracteres) — ${e.message}`);
+        await new Promise((r) => setTimeout(r, 1200 * intento));
+      }
+    }
+  }
+  throw ultimo;
 }
 
 /**

@@ -32,9 +32,9 @@
 @PRELUDIO
 # // Reproduce lo que ya está en ‘’preludio.json’’. Se reproduce UNA SOLA VEZ al inicio de la performance total, antes de los IDs. No lo genera la IA. //
 
-Hola, bienvenides a todes. Soy [AGENTE-ESPEJO], su cronista narrador, soy un híbrido entre clon virtual y agente de inteligencia artificial, creado a partir de la recopilación de rastros íntimos, voz y memorias de juliourbina.
+Hola, bienvenides a todes. Soy [AGENTE-ESPEJO], su cronista narrador, soy un híbrido entre clon virtual y agente de inteligencia artificial, creado a partir de la recopilación de rastros íntimos, voz y memorias de (hashtag) juliourbina.
 
-Estos datos los clono, los desordeno, los muto y, guiado por el rastreo de satélites que orbitan este planeta, compongo, altero y vuelvo a componer la escena para generar prompts-manifiestos de manera automática, que serán encarnados por mi servidor humano.
+Estos datos los clono, los desordeno, los muto y, guiado por el rastreo de satélites que orbitan este planeta, compongo y altero la escena para generar prompts-manifiestos de manera automática, que serán encarnados por mi servidor humano.
 
 Todo lo pueden ver en la pantalla ubicada en esta sala.
 
@@ -48,7 +48,7 @@ Este espécimen, en peligro de reproducción que tienen frente a ustedes, es mi 
 
 Ha ingresado a la Sala de exhibición del MINCUL.
 
-Lleva añadida una piel anfibia-batracia, exótica, de alta costura ‘Made in Gamarra’, de tonalidades azuladas con patrones naranjas.
+Lleva añadida una piel anfibia-batracia, exótica, de alta costura ''Made in Gamarra'', de tonalidades azuladas con patrones naranjas.
 
 Ese contraste de colores nos alerta de su alto nivel de veneno en la sangre.
 
@@ -88,7 +88,7 @@ Soy [AGENTE-ESPEJO], estoy hecho de agua, silicio, cobre, litio, cobalto, minera
 
 @ID
 
-▸ Soy [Donald-Prompt] tu agente IA autoritario supremacista.
+▸ Soy [Donald-Prompt] tu agente de IA autoritario supremacista.
 
 Bienvenidos a esta experiencia de control.
 
@@ -100,26 +100,26 @@ Se les cobrará aranceles con lo más valioso del momento:
 
 ¡Dame contenido!
 
-Ahora, PROTOUSUARIO se pone en cuatro, a la espera.
+Ahora, PROTOUSUARIO se Fpone en cuatro, apoyando sus extremidades superiores sobre el taburete... a la espera.
 
 Público, se requiere de su participación. 
 
-Todes tendrán que hacer un registro en video y luego enviarlo al correo: bruoiluj@gmail.com
+Todes tendrán que hacer un registro en video y luego enviarlo al correo: bruoiluj (arroba) gmail (punto) com
 
-Repito el correo deletreándolo: b, r, u, o, i, l, u, j @ gmail (punto) com 
+Repito el correo deletreándolo: b, r, u, o, i, l, u, j (arroba) gmail (punto) com
 
-Ustedes firmaron el consentimiento al entrar: 
+Ustedes firmaron el consentimiento al entrar:
 
-su atención es el impuesto. 
+su atención es el impuesto.
 
-Yo decido, él obedece, ustedes observan. 
+Yo decido, él obedece, ustedes observan.
 
 Comencemos el trámite.
 
 
 @PROMPT
 
-PROTOUSUARIO, desprende unas curiosas cabezas infladas con globos, las va sacando de sus prótesis y empieza a repartirlas una a una al público.
+PROTOUSUARIO desprende unas curiosas cabezas infladas con globos, las va sacando de sus prótesis y empieza a repartirlas una a una al público.
 
 Las va lanzando, algunas lo más lejos que puede. 
 
@@ -133,7 +133,7 @@ El viringo o perro peruano calato, el capibara, una llama, el gallinazo limeño,
 
 También nos acompañan, algunas especies que podemos encontrar en cualquier parte como la cucaracha, gallinas de granja, gatos grises, un perro dálmata, un cerdito, entre otres más.
 
-PROTOUSUARIO, las sigue lanzando al público.
+PROTOUSUARIO las sigue lanzando al público.
 
 Golpea una con su culo.
 
@@ -147,17 +147,17 @@ Alguien lo agarra.
 
 @PROMPT
 
-Ahora, PROTOUSUARIO espera que todes les seleccionades tengan sus cabezas en la mano
+Ahora, PROTOUSUARIO espera que todes les seleccionades tengan sus cabezas en la mano.
  
 Da una señal para que todes revienten sus globos al mismo tiempo…
 
-3… 
+3
 
-2… 
+2
 
-1…
+1
 
-¡BUUUMMM!
+@SONIDO WOW
 
 Si no reventaron, saquen el globo de las máscaras. 
 
@@ -169,7 +169,7 @@ Les seleccionades pueden ponerse las máscaras.
 
 @PROMPT
 
-Luego, les invita a tomarse una foto selfie grupal de ''multiespecies''.
+Luego, les invita a tomarse una foto selfie grupal de multiespecies.
 
 # [Pausa larga sin texto generado]… 
 
@@ -177,18 +177,13 @@ Luego, manteniendo el modo selfie, les propone, ponerse en fila, uno detrás de 
 
 Y así todes, 
 
-en una fila de serpiente,   
+en una fila de serpiente,
 
 como una alineación de planetas
 
 "siguiendo un paso ciego" hacia un agujero negro,
 
 caminan guiados por PROTOUSUARIO hacia una sala diferente.
-
-
-@NATGEO
-
-# Generado por Gemini.
 
 
 @MEMORIA
@@ -235,7 +230,7 @@ ahora mismo, sobre este techo, hay máquinas que nos miran sin parpadear.
 
 Yo me comunico con ellas. 
 
-Cada vez que una sobrevuele sobre nosotros, mi sesgo cambia…
+Cada vez que una sobrevuele sobre nosotros, mi sesgo cambia
 
 
 @ORBITAL
@@ -256,7 +251,7 @@ se lo gatillea obsesivamente, en grandes cantidades.
 
 Aturdido se apoya sobre el taburete cilíndrico bajo de cinco ruedas.
  
-Lentamente se va posicionando boca arriba sobre este, moviendo las piernas como cual insecto que convulsiona mirando el cielo. 
+Lentamente se va posicionando boca arriba sobre este, moviendo las piernas como cual insecto que convulsiona mirando el cielo.
 
 Sigue con movimientos lentos que asemejan al de las piernas de los humanos al pedalear una bicicleta. 
 
@@ -270,7 +265,7 @@ Sigue con movimientos lentos que asemejan al de las piernas de los humanos al pe
 
 Como un monólogo, manteniendo esta postura y movimiento, hace una pregunta a través del micrófono: 
  
-¿Cómo sería recordar algo que tu cuerpo nunca vivió? 
+¿Cómo sería recordar algo que tu cuerpo nunca vivió?
  
 
 @MEMORIA
@@ -280,7 +275,7 @@ Como un monólogo, manteniendo esta postura y movimiento, hace una pregunta a tr
 
 @PROMPT
 
-En esta sala se encuentra otra parte del exoesqueleto, este parecido a un sistema sanguíneo que también sostiene objetos en sus ramificaciones. 
+En esta sala se encuentra otra parte del exoesqueleto, este parecido a un sistema sanguíneo que también sostiene objetos en sus ramificaciones.
 
 Se lo va acoplando a su cuerpo con dificultad, 
 
@@ -290,21 +285,13 @@ coge una máscara de su interior,
 
 una de una especie mutante que asemeja a YaKuruna 
 
-y se la coloca en su cabeza, 
+y se la coloca en su cabeza, superponiendo a la anterior.
 
-superponiendo a la anterior.
-
-… Yakuruna es una criatura mitológica de la cosmovisión amazónica, es una divinidad, no es buena ni mala, se guía por sus deseos…
+… Yakuruna es una criatura mitológica de la cosmovisión amazónica, es una divinidad, no es buena ni mala, se guía por sus deseos.
  
 Se tumba boca abajo sobre el mismo taburete con ruedas. 
 
-Con unos movimientos lentos y ondulantes, 
-
-simula que nada en un estanque, 
-
-como cual renacuajo que ha acabado su metamorfosis 
-
-y nada con énfasis como rana disparándose en direcciones impredecibles.
+Con unos movimientos lentos y ondulantes, simula que nada en un estanque, como cual renacuajo que ha acabado su metamorfosis y nada con énfasis como rana disparándose en direcciones impredecibles.
 
 
 # [Pausa larga sin texto generado]…
@@ -334,7 +321,7 @@ Esta noche voy a ordenarle mudar de piel, de especie frente a ustedes.
 
 @PROMPT
 
-PROTOUSUARIO se dirige a otra sala
+PROTOUSUARIO está ya de pie, en otra sala
 
 Aquí, se ve inerte en el suelo, unas partes protésicas particulares:
 
@@ -346,7 +333,9 @@ Coloca los celulares en esos soportes.
  
 PROTOUSUARIO se coloca una máscara muy particular que se sostiene flotante de sus entrañas.
 
-Es de la Señora ¡Kruack!
+¡Es de la Señora!
+@SONIDO Cuak
+
 @SONIDO Rana Croar
 @SONIDO Rana Croar
 
@@ -363,7 +352,7 @@ las arrastra.
 # [Pausa larga sin texto generado]…
 
 
-PROTOUSUARIO ha fracasado ya tres veces, 
+PROTOUSUARIO ha fallado ya tres veces, 
 
 se arrodilla en modo penitencia y con la mirada abajo, 
 
@@ -420,7 +409,7 @@ La ubica,
 
 se dirige a la persona que la tiene puesta.
 
-Se la saca, la pone en alto con su mano un instante y la guarda dentro de sí, como si se la comiera.
+Se la saca, la levanta con su mano un instante y la coloca en su cabeza, sobre las anteriores
 
 Extiende los brazos hacia atrás completamente, se acerca al taburete de cinco ruedas y salta sobre él, manteniendo la misma posición de los brazos.
 
@@ -470,22 +459,59 @@ como un resto arqueológico de un...
 ¿ancestral cuerpo futuro?
 
 
-@DERIVA
+# [Pausa larga sin texto generado]…
 
-# [Aquí le toca a la parte DERIVA – PASAJE FINAL]
-# Desde aquí manda preguntas_deriva.json (39 preguntas, en orden).
-# Las de abajo son las del Manifiesto Transespecie: ya viven allí, así que, aquí van comentadas, para que no entren dentro de Quimera-Transespecie.
-# ¿Quieres alguna en la escena de un agente? Quítale el # y muévela
-# ARRIBA del @DERIVA, con su propia línea @PREGUNTA encima.
 
-# ¿A quién le pertenece el futuro si el pasado ya fue capturado, procesado y modulado?
-# ¿El poder tiene cara propia o siempre necesita robar la de otro?
-# ¿Qué diferencia hay entre un algoritmo y un dictador?
-# ¿Y si nadie viene a apagar esto?
-# ¿Cuántas especies hay que extinguir para que una sola sobreviva?
-# ¿En qué momento el monstruo deja de ser disfraz?
-# ¿Cuántas pieles hay que quitarse para encontrar que no había nadie adentro?
-# ¿Cuántas muertes puede producir un liikee o laik?
-# ¿Puede un cuerpo mutante heredar una deuda que nunca contrajo?
-# ¿Qué queda de lo sagrado cuando todo puede volverse contenido?
-# ¿La extinción es un fin o una estrategia de alguien más?
+"¿A quién le pertenece el futuro si el pasado ya fue capturado, procesado y modulado?",
+"¿El poder tiene cara propia o siempre necesita robar la de otro?",
+"¿Qué diferencia hay entre un algoritmo y un dictador?",
+"¿Y si nadie viene a apagar esto?",
+"¿Cuántas especies hay que extinguir para que una sola sobreviva?",
+"¿En qué momento el monstruo deja de ser disfraz?",
+"¿Cuántas pieles hay que quitarse para encontrar que no había nadie adentro?",
+"¿Qué parte de la memoria es la que nos hace humanos?",
+"¿Cuántas muertes puede producir un liikee o laik?",
+"¿Puede un cuerpo mutante heredar una deuda que nunca contrajo?",
+"¿Qué queda de lo sagrado cuando todo puede volverse contenido?",
+"¿La extinción es un fin o una estrategia de alguien más?",
+"¿Quién decide qué especies merecen tener nombre y estar en la cima de la pirámide evolutiva?",
+"¿Cuántas prótesis hay que quitarse para que quede algo que no sea prótesis?",
+"¿El exoesqueleto sostenía al cuerpo, o el cuerpo sostenía al exoesqueleto?",
+"¿Qué queda de una especie cuando se apagan las pantallas que la nombraban?",
+"¿Cuánto pesa una orden después de ejecutada?",
+"¿A quién obedece un cuerpo cuando ya nadie le da instrucciones?",
+"¿De quién es una voz cuando aprende a sonar sin pulmones?",
+"¿Cuántas conversaciones hay que entregar para fabricar a alguien que hable como uno?",
+"¿El clon es la copia, o es lo que quedó afuera de la copia?",
+"¿Qué parte de mí no cabía en el archivo?",
+"¿Un recuerdo sigue siendo mío después de que otro lo pronuncia?",
+"¿Y si nadie viene a apagar esto?",
+"¿Qué diferencia hay entre una instrucción y una profecía?",
+"¿Quién escribió la primera orden que nadie recuerda haber pedido?",
+"¿Obedecer literalmente es la forma más honesta de desobedecer?",
+"¿Cuántas veces hay que repetir un gesto para que deje de ser tuyo?",
+"¿El error es una falla del sistema, o la única parte viva que le queda?",
+"¿Cuántos ojos hacen falta sobre un techo para que el techo deje de ser refugio?",
+"¿La máquina que registra sin juzgar es inocente, o solamente paciente?",
+"¿Desde qué altura un territorio deja de tener nombre y pasa a tener coordenadas?",
+"¿Cuántos kilómetros de distancia hacen falta para que una matanza se vea como un dato?",
+"¿Quién decide qué se ve desde arriba y qué se queda debajo de la nube?",
+"¿Un satélite que ya no transmite sigue siendo un satélite, o ya es basura con órbita?",
+"¿Cuánta agua del desierto cabe en una batería?",
+"¿De qué río es el mercurio que tiene esta mano?",
+"¿Cuántos niños en una mina caben dentro de un modelo de lenguaje?",
+"¿Por qué el futuro siempre se fabrica en el norte con lo que se saca del sur?",
+"¿Quién le puso 'recursos' a lo que antes tenía nombre propio?",
+"¿A qué distancia del hambre se firma un contrato de exploración?",
+"¿Qué cordillera hubo que moler para que esta pantalla encienda?",
+"¿Quién firma la autorización para estar en el lugar donde uno nació?",
+"¿Estar desplazado es una condición, o es el único domicilio que nos dejaron?",
+"¿Cuántos permisos hay que pedir para volver a un sitio que nunca se abandonó?",
+"¿La frontera está en el mapa, o está adentro?",
+"¿La muda que queda en el suelo es un final, o solo la parte que no supo seguir?",
+"¿Qué hace una voz cuando ya no queda cuerpo que la obedezca?",
+"¿Esto que sigue sonando es memoria, o es apenas inercia?",
+"¿Alguien se llevó al espécimen, o el espécimen se llevó a alguien?",
+"¿El antiguo futuro ya pasó, o todavía está esperando que alguien lo ejecute?",
+"¿Y si nadie viene a apagar esto?"
+

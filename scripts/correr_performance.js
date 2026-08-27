@@ -403,7 +403,14 @@ async function funcion() {
   // Se parte en párrafos: cada uno es un bloque con su propio AVANZAR y su
   // propia voz. Un preludio de 400 palabras de un solo golpe no se puede
   // sostener en escena; en párrafos, sí.
-  if (PRELUDIO?.texto && process.env.SIN_PRELUDIO !== '1') {
+  // ── AQUÍ ESTABA EL FALLO ──
+  // La condición era `PRELUDIO?.texto`, pero el compilador dejó de escribir
+  // ese campo (era una copia redundante de `parrafos`, y lo quitamos). Al no
+  // existir `texto`, la condición daba falso y el preludio ENTERO se saltaba
+  // en silencio, sin un solo aviso. Ahora se mira `parrafos` primero.
+  const hayPreludio = (PRELUDIO?.parrafos?.length || PRELUDIO?.texto);
+  if (!hayPreludio) console.warn('  ⚠ preludio.json vacío o ausente: no habrá preludio.');
+  if (hayPreludio && process.env.SIN_PRELUDIO !== '1') {
     // El compilador ya deja los párrafos partidos; si no, se parten aquí.
     const parrafos = (PRELUDIO.parrafos?.length ? PRELUDIO.parrafos
       : PRELUDIO.texto.split(/\n+/)).map((t) => t.trim()).filter(Boolean);
@@ -499,6 +506,25 @@ async function funcion() {
       throw e;
     }
   }
+
+  // ═══ CIERRE ═══
+  // Antes solo aparecía DENTRO de la deriva, así que si no entrabas en deriva
+  // nunca se decía. Ahora es un bloque propio, el último de la partitura, con
+  // su AVANZAR y su voz, justo donde lo escribiste en el .txt.
+  if (GUION.cierre && GUION.cierre.trim()) {
+    console.log('\n' + '─'.repeat(72));
+    console.log('  CIERRE');
+    console.log('─'.repeat(72));
+    const textoCierre = GUION.cierre.trim();
+    const mp3Cierre = await voz(textoCierre, { cual: VOZ_AUTOR });
+    await emitirAfecto('LIMINAL');
+    await emitirSecuencia([{ tipo: 'narracion', texto: textoCierre }], { agente: 'CIERRE' });
+    console.log('\n  ' + textoCierre.replace(/(.{88})/g, '$1\n  '));
+    await emitirSegmento('narracion', textoCierre, 0, mp3Cierre, null);
+    await informarControl({ agente: 'CIERRE', progreso: '1/1' });
+    await esperar('[cierre] AVANZAR', esperaDe(textoCierre, mp3Cierre));
+  }
+
   throw new Deriva();   // al terminar la partitura, entra sola la deriva
 }
 

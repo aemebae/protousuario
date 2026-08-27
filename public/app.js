@@ -537,7 +537,17 @@ function nuevoSegmento(tipoCrudo, texto, archivoVoz, sonidoExterno){
   // reinicia el que ya está en pantalla desde la primera letra. Así REPETIR
   // es "volver al inicio del párrafo", que es justo lo que hace falta cuando
   // pausaste a mitad y quieres oírlo entero otra vez.
-  if (segActivo && segActivo.texto === texto) {
+  // ── AQUÍ ESTABA EL BUG DE LOS TRES "CUAK" ──
+  // Los bloques @SONIDO no tienen texto: los tres valían ''. Como este atajo
+  // comparaba SOLO el texto, el segundo y el tercero se tomaban por "el mismo
+  // bloque otra vez" (que es lo que hace REPETIR) y volvían a disparar el
+  // sonido del PRIMERO. De ahí que Cuak sonara tres veces.
+  // Ahora se compara también el sonido, y un bloque sin texto NUNCA entra por
+  // este atajo: cada @SONIDO es un bloque distinto aunque digan lo mismo.
+  const mismoBloque = segActivo
+    && texto && segActivo.texto === texto
+    && (segActivo.sonido ?? null) === (sonidoExterno ?? null);
+  if (mismoBloque) {
     segActivo.i = 0;
     segActivo.cuerpo.textContent = '';
     segActivo.cuerpo.classList.add('cursor');

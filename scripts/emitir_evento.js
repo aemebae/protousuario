@@ -29,7 +29,6 @@ async function emitirEvento(tipo, datos) {
 }
 
 // ---------- Ceremoniales (pantalla completa, una sola vez) ----------
-export const emitirPreludio  = (titulo, texto) => emitirEvento('preludio', { titulo, texto });
 export const emitirAgenteId  = (nombre, texto, audio = null) => emitirEvento('agente_id', { nombre, texto, audio });
 
 // ---------- Segmento entrelazado ----------

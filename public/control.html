@@ -37,12 +37,50 @@
   .fila{display:flex;gap:9px;}
   .fila button{flex:1;padding:15px;font-size:13px;background:transparent;
     color:var(--accent);border:1px solid var(--dim);}
-  /* v7 — botones más chicos: el texto manda, no la botonera */
-  button{padding:11px 8px;font-size:13px;letter-spacing:.05em;}
-  #btnAvanzar{padding:15px;font-size:16px;}
-  #btnRetro{padding:15px;font-size:16px;background:transparent;
+  /* v8 — la botonera ocupa lo mínimo; el texto se lo lleva todo */
+  button{padding:8px 6px;font-size:12px;letter-spacing:.04em;}
+  #btnAvanzar{padding:13px;font-size:15px;}
+  #btnRetro{padding:13px;font-size:15px;background:transparent;
     color:var(--accent);border:1px solid var(--dim);}
-  .fila{gap:7px;}
+  #btnArrancar{padding:15px;font-size:15px;letter-spacing:.12em;
+    background:var(--accent);color:var(--bg);font-weight:600;}
+  body[data-corriendo="1"] #btnArrancar{display:none;}
+  body:not([data-corriendo="1"]) .durante{opacity:.35;pointer-events:none;}
+  .fila{gap:6px;}
+  .grupo{padding:6px;margin:0;}
+  .rotulo{font-size:8px;margin-bottom:4px;}
+  .segmentado button{padding:8px 4px;font-size:11px;}
+  .vel{gap:6px;}
+  .vel button{width:44px;padding:8px 0;font-size:17px;}
+  #velValor{font-size:15px;}
+  #velValor small{font-size:8px;}
+  #btnTerminar{padding:8px;font-size:11px;}
+  .conexion{padding-bottom:2px;font-size:10px;}
+  .buffer{display:none;}
+
+  /* ── EN LA LAPTOP (pantalla ancha) ──
+     El control también lo ve el público en la pantalla extendida, así que
+     ahí todo crece: el texto se lee de lejos y la botonera se reparte. */
+  @media (min-width: 700px){
+    body{max-width:none;padding:18px 26px;}
+    .lista{font-size:19px;padding:8px;}
+    .lin{padding:13px 16px;font-size:19px;line-height:1.5;}
+    .lin.ahora{font-size:22px;}
+    .lin .t{font-size:11px;letter-spacing:.22em;margin-bottom:5px;}
+    .cabecera{font-size:15px;}
+    button{font-size:15px;padding:12px;}
+    #btnAvanzar,#btnRetro{font-size:19px;padding:17px;}
+    #btnArrancar{font-size:19px;padding:20px;}
+    .botonera{max-width:920px;margin:0 auto;}
+    .segmentado button{font-size:13px;padding:11px;}
+    .vel button{width:60px;font-size:21px;padding:11px 0;}
+    #velValor{font-size:20px;}
+  }
+  @media (min-width: 1100px){
+    .lista{font-size:22px;}
+    .lin{font-size:22px;}
+    .lin.ahora{font-size:26px;}
+  }
 
   /* ── LISTA NAVEGABLE (tipo Speechify) ──
      Todo el texto del agente queda impreso. Se recorre con el dedo y se toca
@@ -113,11 +151,12 @@
   </div>
 
   <div class="botonera">
-    <div class="fila">
+    <button id="btnArrancar">▶  EMPEZAR LA PERFORMANCE</button>
+    <div class="fila durante">
       <button id="btnRetro">◀  ATRÁS</button>
       <button id="btnAvanzar">AVANZAR  ▶</button>
     </div>
-    <div class="fila">
+    <div class="fila durante">
       <button id="btnPausa">⏸ PAUSA</button>
       <button id="btnRepetir">↺ REPETIR</button>
     </div>
@@ -224,6 +263,17 @@ el('velMenos').onclick = () => { if(iVel>0){ iVel--; mandarVel(); } };
 el('velMas').onclick   = () => { if(iVel<PASOS.length-1){ iVel++; mandarVel(); } };
 el('velValor').onclick = () => { iVel = PASOS.indexOf(1.00); mandarVel(); };
 
+// ── EMPEZAR ──
+// Lanza `correr_performance.js` en la laptop sin tocarla. El servidor lo
+// arranca como proceso hijo, con la misma terminal: sigues viendo su salida.
+// El botón desaparece en cuanto la performance está corriendo.
+el('btnArrancar').onclick = () => {
+  if(!confirm('▶ ¿EMPEZAR la performance?\n\nSe lanzará el orquestador en la laptop.')) return;
+  if (navigator.vibrate) navigator.vibrate([50,40,50]);
+  el('btnArrancar').textContent = 'arrancando…';
+  enviar('arrancar');
+};
+
 el('btnRepetir').onclick = () => enviar('repetir');
 // ATRÁS: vuelve al bloque anterior. Es lo que faltaba cuando apretabas
 // AVANZAR varias veces por impaciencia y se te iban tres líneas de golpe.
@@ -327,6 +377,11 @@ function conectar(){
     }
     if(m.tipo==='pausa'){ document.body.dataset.pausa = m.datos.activa ? '1' : ''; }
     if(m.tipo==='modo') pintarModo(!!m.datos.auto);
+    if(m.tipo==='orquestador'){
+      document.body.dataset.corriendo = m.datos.corriendo ? '1' : '';
+      if(!m.datos.corriendo) el('btnArrancar').textContent = '▶  EMPEZAR LA PERFORMANCE';
+      if(m.datos.aviso) el('btnArrancar').textContent = '▶  EMPEZAR (ya corría)';
+    }
     if(m.tipo==='bloque' && typeof m.datos.i === 'number'){
       bloqueActual = m.datos.i; pintarLista();
     }
