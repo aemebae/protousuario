@@ -19,7 +19,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { grabar, huella, buscarEnDisco, DIR_RESPALDO } from './voz.js';
+import { grabar, buscarEnDisco, DIR_RESPALDO, VOZ_AUTOR, VOZ_IA } from './voz.js';
 
 const SOLO_FIJOS = process.env.SOLO_FIJOS === '1';
 const REGRABAR = process.env.REGRABAR === '1';
@@ -32,9 +32,9 @@ const PD = leer('preguntas_deriva.json');
 
 // ── Reunir todo lo que hay que grabar ──
 const cola = [];
-const añadir = (grupo, tipo, texto) => {
+const añadir = (grupo, tipo, texto, cual = VOZ_AUTOR) => {
   const t = (texto ?? '').trim();
-  if (t) cola.push({ grupo, tipo, texto: t });
+  if (t) cola.push({ grupo, tipo, texto: t, cual });
 };
 
 // El preludio se graba PÁRRAFO A PÁRRAFO, igual que se dice en escena.
@@ -51,7 +51,8 @@ for (const a of G?.agentes ?? []) {
   }
 }
 añadir('CIERRE', 'narracion', G?.cierre);
-if (!SOLO_FIJOS) (PD?.preguntas ?? []).forEach((q) => añadir('DERIVA', 'pregunta', q));
+// La deriva la dice la voz IA: PROTOUSUARIO ya no está para repetirla.
+if (!SOLO_FIJOS) (PD?.preguntas ?? []).forEach((q) => añadir('DERIVA', 'pregunta', q, VOZ_IA));
 
 // ── Grabar ──
 console.log(`\n${cola.length} textos fijos en el guion.\n`);
@@ -59,14 +60,14 @@ let nuevos = 0, saltados = 0, fallos = 0;
 const hechos = [];
 
 for (const item of cola) {
-  const yaEsta = buscarEnDisco(item.texto);
+  const yaEsta = buscarEnDisco(item.texto, item.cual);
   if (yaEsta && !REGRABAR) {
     saltados++;
     hechos.push({ ...item, archivo: yaEsta });
     continue;
   }
   try {
-    const archivo = await grabar(item.texto, { dir: DIR_RESPALDO });
+    const archivo = await grabar(item.texto, { dir: DIR_RESPALDO, cual: item.cual });
     nuevos++;
     hechos.push({ ...item, archivo });
     console.log(`  ✓ ${item.grupo} · ${item.tipo}  →  ${archivo}`);

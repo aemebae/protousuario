@@ -37,7 +37,10 @@ const MODO_GLOBO   = 'mapa';   // en vez de 'satelite' (textura NASA) | 'mapa' (
 const TEXTURA      = 'img/earth-blue-marble.jpg';
 const RELIEVE      = 'img/earth-topology.png';   // opcional; '' para desactivar
 const MOSTRAR_BORDES = true;       // fronteras de países sobre la textura
-const TAM_SATELITE   = 2.4;        // px del punto de los satélites de fondo
+const TAM_SATELITE   = 2.0;        // px del punto de los satélites de fondo
+// Cuántos satélites dibuja el navegador. La capa de partículas los pinta
+// TODOS en una sola llamada de dibujo, así que 1000 cuesta prácticamente lo
+// mismo que 200: el límite real es cuántos manda el servidor (MAX_SATELITES).
 const TAM_PROTA      = 8.0;        // px del punto del satélite protagonista
 const PIXEL_RATIO_MAX = 1.25;      // baja a 1 si aún hay lag
 // ───────────────────────────────────────────────────────────────────────
@@ -102,6 +105,13 @@ function ajustar(){
   globoZoom.width(z.width).height(z.height);
 }
 addEventListener('resize', ajustar); setTimeout(ajustar, 60);
+
+// PLANO SATÉLITE: sin esto, el globo pequeño arranca a la altura por defecto
+// (muy lejos) y se ve como una bolita azul borrosa hasta que llega el primer
+// dato del orquestador. Se le da un encuadre desde el arranque.
+setTimeout(() => {
+  globoZoom.pointOfView({ lat: -12.05, lng: -77.04, altitude: 0.55 }, 0);
+}, 400);
 
 // ── Textura satelital (modo 'satelite') ───────────────────────────────
 // Se prueba a cargar la imagen ANTES de pedírsela a globe.gl. Si no está
@@ -372,6 +382,10 @@ let promptYaRotulado = false;
 // ═══════════════════════════════════════════════════════════════════════
 let vozActual = null;
 let audioDesbloqueado = false;
+// Velocidad de la voz, controlada desde el celular. playbackRate cambia el
+// ritmo AL VUELO, sin regrabar nada y sin gastar créditos de ElevenLabs.
+// El navegador conserva el tono por defecto, así que no suena a ardilla.
+let velocidadVoz = 1;
 
 // Los navegadores no dejan sonar audio hasta que alguien toca la página una
 // vez. Se desbloquea con el primer clic o tecla.
@@ -398,6 +412,7 @@ function sonar(archivo){
   if (!archivo) return null;
   const a = new Audio('/audio/' + archivo);
   a.preload = 'auto';
+  a.playbackRate = velocidadVoz;
   vozActual = a;
   a.play().catch((e) => {
     if (!audioDesbloqueado) mostrarAvisoAudio();
@@ -413,7 +428,9 @@ function sincronizarConVoz(audio, texto){
     const dur = audio.duration;
     if (!isFinite(dur) || dur <= 0) return;
     // ×0.92: el texto termina un pelín antes que la voz, nunca después.
-    const porLetra = Math.min(90, Math.max(12, (dur * 1000 * 0.92) / texto.length));
+    // Se divide por la velocidad: si la voz va a 1,5×, el texto también.
+    const porLetra = Math.min(90, Math.max(8,
+      (dur * 1000 * 0.92) / texto.length / Math.max(0.25, velocidadVoz)));
     arrancarEscritura(porLetra);
   };
   if (audio.readyState >= 1) ajustar();
@@ -629,6 +646,14 @@ function conectar(){
       nuevoSegmento('narracion', d.texto||'', d.audio);
     }
     if(m.tipo==='pausa') aplicarPausa(d.activa);
+    if(m.tipo==='velocidad'){
+      velocidadVoz = Math.min(2, Math.max(0.5, Number(d.valor) || 1));
+      if (vozActual) {
+        vozActual.playbackRate = velocidadVoz;
+        // Reajustar el ritmo del texto a mitad de bloque, sin cortar nada.
+        if (segActivo) sincronizarConVoz(vozActual, segActivo.texto);
+      }
+    }
     if(m.tipo==='deriva' && d.activa){
       limpiarPantalla();
       el('cabAgente').textContent = '◈  D E R I V A';

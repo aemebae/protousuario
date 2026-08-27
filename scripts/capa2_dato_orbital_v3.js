@@ -45,7 +45,11 @@ const LIMA = { lat: -12.0464, lon: -77.0428, altKm: 0.154 };
 
 // Cuantos satelites se MANDAN al navegador (no cuantos se propagan).
 // 400 se ve denso como satellitemap.space y la GTX 1050 lo mueve sobrado.
-const MAX_SATELITES = Number(process.env.MAX_SATELITES || 400);
+// 900 por defecto. Con la capa de PARTÍCULAS el navegador los dibuja todos en
+// UNA llamada, así que 900 cuesta casi lo mismo que 200 en la GPU. Lo que sí
+// crece es el tamaño del mensaje (unos 70 bytes por satélite), pero eso viaja
+// dentro de la laptop, no por la red. Sube a 1500 si quieres el cielo lleno.
+const MAX_SATELITES = Number(process.env.MAX_SATELITES || 900);
 
 // Memoria de proceso: evita releer/reparsear y reconstruir todo cada vuelta.
 const MEMO_GP = new Map();      // cachePath -> { t, modo, datos }

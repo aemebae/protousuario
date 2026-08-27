@@ -40,10 +40,10 @@ const ORIGEN = 'instrucciones_permanentes.txt';
 const DESTINO = 'guion_performance.json';
 const PRELUDIO_JSON = 'preludio.json';
 
-// Las preguntas las dice PROTOUSUARIO al micrófono, con su propia boca. Si la
-// voz clonada también las dijera, se pisarían. Por eso los bloques @PREGUNTA
-// salen SIN voz. Ponlo en true si prefieres que las diga el clon.
-const VOZ_EN_PREGUNTAS = false;
+// ¿La voz clonada dice también las preguntas?
+// Mowgli confirmó: la voz clonada dice la pregunta PRIMERO y él la repite
+// después al micrófono. Así no tiene que memorizar 15 preguntas.
+const VOZ_EN_PREGUNTAS = true;
 
 if (!fs.existsSync(ORIGEN)) {
   console.error(`\n✗ No encuentro ${ORIGEN}.\n`);
@@ -66,7 +66,19 @@ let nLinea = 0;
 for (const cruda of lineas) {
   nLinea++;
   const t = cruda.trim();
-  if (!t || t.startsWith('#')) continue;
+  if (!t) continue;
+
+  // Las viñetas de territorio se leen AUNQUE estén comentadas con #, porque así
+  // las tienes escritas en tu archivo. Cualquier otro comentario se ignora.
+  if (modo && modo.hueco) {
+    const m = t.match(/^#?\s*[•·*+-]\s*(.+)$/);
+    if (m) {
+      const nombre = m[1].split(/→|->|·/)[0].trim().replace(/\s+/g, ' ');
+      if (nombre) (modo.hueco.territorios ??= []).push(nombre);
+      continue;
+    }
+  }
+  if (t.startsWith('#')) continue;
 
   // ── ¿es una marca? ──
   if (t.startsWith('@')) {
@@ -93,8 +105,17 @@ for (const cruda of lineas) {
 
     if (HUECOS[marca]) {
       if (!agente) { avisos.push(`línea ${nLinea}: @${marca} fuera de un agente`); continue; }
-      agente.bloques.push({ tipo: HUECOS[marca], gemini: true, texto: '' });
-      modo = null;   // un hueco no consume las líneas siguientes
+      const hueco = { tipo: HUECOS[marca], gemini: true, texto: '' };
+      agente.bloques.push(hueco);
+      // Un @ORBITAL puede llevar debajo los DOS territorios que quieres que se
+      // nombren, escritos con viñeta. Se leen aunque estén comentados con #,
+      // que es como los tienes escritos:
+      //     @ORBITAL
+      //     # • El este de la República Democrática del Congo → este (94°) · ✖ DESPLAZADO
+      //     # • La frontera México-Estados Unidos → noroeste (325°) · ★ AUTORIZADO
+      // Solo se toma el NOMBRE (lo que va antes de la flecha): el rumbo, los
+      // grados y el estado los calcula el motor en vivo, con el satélite real.
+      modo = marca === 'ORBITAL' ? { hueco } : null;
       continue;
     }
 
@@ -111,7 +132,7 @@ for (const cruda of lineas) {
   // ── es contenido ──
   if (modo === 'preludio') { preludio.push(t); continue; }
   if (modo === 'cierre') { cierre = cierre ? cierre + ' ' + t : t; continue; }
-  if (!modo || !agente) {
+  if (!modo || typeof modo !== 'string' || !agente) {
     avisos.push(`línea ${nLinea}: texto suelto sin marca — ignorado: "${t.slice(0, 48)}…"`);
     continue;
   }

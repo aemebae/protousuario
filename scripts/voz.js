@@ -36,22 +36,61 @@ export const DIR_CACHE = 'audio_cache';
 
 for (const d of [DIR_RESPALDO, DIR_CACHE]) fs.mkdirSync(d, { recursive: true });
 
-/** La huella de un texto. Mismo texto → mismo nombre de archivo, siempre. */
-export function huella(texto) {
-  return crypto.createHash('sha1').update(String(texto).trim()).digest('hex').slice(0, 16);
+// ═══════════════════════════════════════════════════════════════════════════
+//  DOS VOCES
+//  VOZ_AUTOR → lo que escribiste tú: @PRELUDIO @ID @PROMPT @PREGUNTA @CIERRE
+//  VOZ_IA    → lo que escribe Gemini: @ORBITAL @NATGEO @MEMORIA y la DERIVA
+//  Si no defines la segunda en .env, TODO suena con la primera y no se rompe
+//  nada: el sistema simplemente no distingue.
+//
+//  IMPORTANTE: la huella incluye la voz. El mismo texto dicho por dos voces
+//  distintas son dos archivos distintos. Si no fuera así, el segundo pisaría
+//  al primero y sonaría la voz equivocada.
+// ═══════════════════════════════════════════════════════════════════════════
+export const VOZ_AUTOR = 'autor';
+export const VOZ_IA = 'ia';
+
+function idDeVoz(cual) {
+  if (cual === VOZ_IA) {
+    return process.env.ELEVENLABS_VOICE_ID_IA
+        || process.env.ELEVENLABS_VOICE_ID    // sin segunda voz: la misma
+        || '';
+  }
+  return process.env.ELEVENLABS_VOICE_ID || '';
+}
+
+/** La huella de un texto EN UNA VOZ. Mismo texto + misma voz → mismo archivo. */
+export function huella(texto, cual = VOZ_AUTOR) {
+  const semilla = idDeVoz(cual) + '|' + String(texto).trim();
+  return crypto.createHash('sha1').update(semilla).digest('hex').slice(0, 16);
 }
 
 /** ¿Ya existe en disco? Devuelve el nombre del archivo o null. */
-export function buscarEnDisco(texto) {
-  const nombre = huella(texto) + '.mp3';
+export function buscarEnDisco(texto, cual = VOZ_AUTOR) {
+  const nombre = huella(texto, cual) + '.mp3';
   for (const dir of [DIR_RESPALDO, DIR_CACHE]) {
     if (fs.existsSync(path.join(dir, nombre))) return nombre;
   }
   return null;
 }
 
+/**
+ * Cuánto dura un mp3, en milisegundos, SIN abrirlo.
+ * Los mp3 que grabamos son de tasa constante a 128 kbps, así que
+ * duración = bytes × 8 ÷ 128000. El error es de centésimas de segundo.
+ * Esto es lo que hace posible el MODO AUTOMÁTICO: el orquestador sabe cuánto
+ * dura cada bloque y pasa solo al siguiente cuando la voz termina.
+ */
+export function duracionMs(nombre) {
+  if (!nombre) return 0;
+  for (const dir of [DIR_RESPALDO, DIR_CACHE]) {
+    const f = path.join(dir, nombre);
+    if (fs.existsSync(f)) return Math.round((fs.statSync(f).size * 8 / 128000) * 1000);
+  }
+  return 0;
+}
+
 const API = () => process.env.ELEVENLABS_API_KEY;
-const VOZ = () => process.env.ELEVENLABS_VOICE_ID;
 const MODELO = () => process.env.ELEVENLABS_MODEL || 'eleven_flash_v2_5';
 
 // Ajustes de la voz clonada. Se pueden mover desde .env sin tocar código.
@@ -68,13 +107,14 @@ const AJUSTES = () => ({
  * Graba un texto a mp3 llamando a ElevenLabs. Uso interno y de prerender_voz.
  * @returns {Promise<string>} nombre del archivo (huella.mp3)
  */
-export async function grabar(texto, { dir = DIR_CACHE } = {}) {
-  if (!API() || !VOZ()) throw new Error('faltan ELEVENLABS_API_KEY o ELEVENLABS_VOICE_ID en .env');
-  const nombre = huella(texto) + '.mp3';
+export async function grabar(texto, { dir = DIR_CACHE, cual = VOZ_AUTOR } = {}) {
+  const vozId = idDeVoz(cual);
+  if (!API() || !vozId) throw new Error('faltan ELEVENLABS_API_KEY o ELEVENLABS_VOICE_ID en .env');
+  const nombre = huella(texto, cual) + '.mp3';
   const destino = path.join(dir, nombre);
 
   const r = await fetch(
-    `https://api.elevenlabs.io/v1/text-to-speech/${VOZ()}?output_format=mp3_44100_128`,
+    `https://api.elevenlabs.io/v1/text-to-speech/${vozId}?output_format=mp3_44100_128`,
     {
       method: 'POST',
       headers: { 'xi-api-key': API(), 'Content-Type': 'application/json' },
@@ -98,15 +138,15 @@ export async function grabar(texto, { dir = DIR_CACHE } = {}) {
  * @param {object} [op]
  * @param {boolean} [op.silencioso]  true = ni siquiera intenta la red
  */
-export async function voz(texto, { silencioso = false } = {}) {
+export async function voz(texto, { silencioso = false, cual = VOZ_AUTOR } = {}) {
   if (!texto || !texto.trim()) return null;
 
-  const enDisco = buscarEnDisco(texto);
+  const enDisco = buscarEnDisco(texto, cual);
   if (enDisco) return enDisco;                 // ← el 90 % de las veces cae aquí
   if (silencioso || process.env.SIN_VOZ === '1') return null;
 
   try {
-    return await grabar(texto);
+    return await grabar(texto, { cual });
   } catch (e) {
     console.warn(`    ⚠ sin voz para este bloque (${e.message})`);
     return null;
@@ -120,21 +160,24 @@ export async function voz(texto, { silencioso = false } = {}) {
  * de peticiones simultáneas de ElevenLabs.
  * @returns {Promise<Map<string,string>>} texto → nombre de archivo
  */
-export async function vozLote(textos, { etiqueta = '' } = {}) {
+export async function vozLote(entradas, { etiqueta = '' } = {}) {
+  // entradas: lista de strings, o de { texto, cual } para elegir la voz.
   const mapa = new Map();
   const pendientes = [];
+  const normal = (e) => (typeof e === 'string' ? { texto: e, cual: VOZ_AUTOR } : e);
 
-  for (const t of textos) {
+  for (const cruda of entradas) {
+    const { texto: t, cual } = normal(cruda);
     if (!t || !t.trim()) continue;
-    const yaEsta = buscarEnDisco(t);
+    const yaEsta = buscarEnDisco(t, cual);
     if (yaEsta) mapa.set(t, yaEsta);
-    else pendientes.push(t);
+    else pendientes.push({ texto: t, cual });
   }
 
   if (pendientes.length) {
     console.log(`    voz${etiqueta ? ' ' + etiqueta : ''}: ${mapa.size} en disco · ${pendientes.length} por grabar…`);
-    for (const t of pendientes) {
-      const n = await voz(t);
+    for (const { texto: t, cual } of pendientes) {
+      const n = await voz(t, { cual });
       if (n) mapa.set(t, n);
     }
   } else if (mapa.size) {

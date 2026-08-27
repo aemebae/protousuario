@@ -90,10 +90,19 @@ function enviarA(ws, tipo, datos) {
   if (ws.readyState === 1) ws.send(JSON.stringify({ tipo, datos, t: Date.now() }));
 }
 
+const ES_CONTROL = new WeakSet();
+// Eventos pesados que solo tienen sentido en la pantalla grande.
+const SOLO_ESCENA = new Set(['posiciones']);
+
 function emitir(tipo, datos) {
   const msg = JSON.stringify({ tipo, datos, t: Date.now() });
+  const pesado = SOLO_ESCENA.has(tipo);
   for (const ws of clientes) {
-    if (ws.readyState === 1) ws.send(msg);
+    if (ws.readyState !== 1) continue;
+    // Al celular no le mandamos la nube de satélites: con 1000 satélites eso
+    // son ~120 KB cada 900 ms viajando por el hotspot para nada.
+    if (pesado && ES_CONTROL.has(ws)) continue;
+    ws.send(msg);
   }
 }
 
@@ -197,8 +206,26 @@ app.get('/audio/:archivo', (req, res) => {
 // El celular manda un comando.
 app.post('/control', (req, res) => {
   const cmd = req.body?.comando;
-  const validos = ['avanzar', 'repetir', 'saltar_agente', 'terminar', 'pausa', 'deriva'];
-  if (!validos.includes(cmd)) return res.status(400).json({ error: 'comando inválido', validos });
+  const validos = ['avanzar', 'repetir', 'saltar_agente', 'terminar', 'pausa', 'deriva', 'auto', 'manual'];
+  const esVelocidad = typeof cmd === 'string' && /^velocidad:[0-9.]+$/.test(cmd);
+  if (!validos.includes(cmd) && !esVelocidad) {
+    return res.status(400).json({ error: 'comando inválido', validos });
+  }
+  // La velocidad la aplica el navegador al vuelo (playbackRate): no hay que
+  // regrabar nada, no cuesta créditos, y se oye el cambio al instante.
+  if (esVelocidad) {
+    const v = Math.min(2, Math.max(0.5, Number(cmd.split(':')[1]) || 1));
+    ultimoEstado.velocidad = v;
+    emitir('velocidad', { valor: v });
+    entregarComando(cmd);
+    return res.json({ ok: true, comando: cmd });
+  }
+  if (cmd === 'auto' || cmd === 'manual') {
+    ultimoEstado.modo = cmd;
+    emitir('modo', { auto: cmd === 'auto' });
+    entregarComando(cmd);
+    return res.json({ ok: true, comando: cmd });
+  }
   console.log(`[control] ${cmd.toUpperCase()}`);
   entregarComando(cmd);
   res.json({ ok: true, comando: cmd });

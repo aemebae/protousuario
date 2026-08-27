@@ -26,7 +26,7 @@ import {
 } from './emitir_evento.js';
 // LA VOZ. voz(texto) devuelve el nombre del mp3 (de disco o recién grabado).
 // Nunca lanza error: si no hay voz, el bloque sale en silencio.
-import { voz, vozLote } from './voz.js';
+import { voz, vozLote, duracionMs, VOZ_AUTOR, VOZ_IA } from './voz.js';
 
 const URL_VISUAL = process.env.URL_VISUAL || 'http://localhost:3000';
 const DERIVA_MS = Number(process.env.DERIVA_MS || 13000);
@@ -65,6 +65,33 @@ function elegirMarco(agenteId) {
 let PRELUDIO = null;
 try { PRELUDIO = JSON.parse(fs.readFileSync('preludio.json', 'utf8')); } catch {}
 
+/**
+ * Encuentra una región de regiones_conflicto.json por nombre aproximado.
+ * Tolera mayúsculas, tildes, artículos y paréntesis, para que puedas escribir
+ * "El este de la República Democrática del Congo" y encuentre "rdc_este".
+ */
+function buscarRegion(regiones, nombre) {
+  const limpiar = (x) => String(x).toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[()\-–—,.]/g, ' ').replace(/\b(el|la|los|las|de|del|y)\b/g, ' ')
+    .replace(/\s+/g, ' ').trim();
+  const q = limpiar(nombre);
+  if (!q) return null;
+  let exacta = regiones.find((r) => limpiar(r.nombre) === q);
+  if (exacta) return exacta;
+  // parcial: que una contenga a la otra
+  exacta = regiones.find((r) => limpiar(r.nombre).includes(q) || q.includes(limpiar(r.nombre)));
+  if (exacta) return exacta;
+  // por palabras compartidas (mínimo 2)
+  const pal = new Set(q.split(' ').filter((w) => w.length > 3));
+  let mejor = null, mejorN = 0;
+  for (const r of regiones) {
+    const n = limpiar(r.nombre).split(' ').filter((w) => pal.has(w)).length;
+    if (n > mejorN) { mejorN = n; mejor = r; }
+  }
+  return mejorN >= 2 ? mejor : null;
+}
+
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 const motorRumbo = crearMotorRumbo({ sostenerLecturas: 1 });
 
@@ -92,13 +119,51 @@ async function informarControl(datos) {
 }
 
 let enPausa = false;
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  MODO AUTOMÁTICO
+//  Por defecto la obra CORRE SOLA: cuando la voz de un bloque termina, pasa al
+//  siguiente sin que toques nada. Los botones siguen todos ahí — PAUSA congela,
+//  REPETIR vuelve, AVANZAR salta antes de tiempo, MANUAL desactiva el automático
+//  y vuelve al modo botón-a-botón. Al reanudar, sigue solo otra vez.
+//
+//  Cuánto espera: la duración real del mp3 (se calcula del tamaño del archivo)
+//  ajustada por la velocidad de reproducción, más un respiro. Si un bloque no
+//  tiene voz, se estima por el largo del texto.
+// ═══════════════════════════════════════════════════════════════════════════
+let modoAuto = process.env.MANUAL !== '1';
+let velocidad = 1;                                  // la cambia el celular
+const RESPIRO_MS = Number(process.env.RESPIRO_MS || 1400);
+
+function esperaDe(texto, mp3) {
+  const dur = duracionMs(mp3);
+  // Sin audio: ~62 ms por carácter es el ritmo de lectura en voz alta.
+  const base = dur > 0 ? dur : Math.max(2200, (texto || '').length * 62);
+  return Math.round(base / Math.max(0.25, velocidad)) + RESPIRO_MS;
+}
+
 /** Espera un comando. PAUSA no devuelve: congela aquí hasta el siguiente. */
-async function esperar(msg = '[ENTER o AVANZAR en el celular]') {
+async function esperar(msg = '[ENTER o AVANZAR en el celular]', msAuto = 0) {
   const porTeclado = rl.question('\n' + msg + ' ').then(() => 'avanzar');
   while (true) {
     const ctrl = new AbortController();
-    const cmd = (await Promise.race([porTeclado, esperarCelular(ctrl.signal)])) ?? 'avanzar';
+    // En automático corre además un reloj: gana el que llegue primero.
+    const carrera = [porTeclado, esperarCelular(ctrl.signal)];
+    let reloj = null;
+    if (modoAuto && msAuto > 0 && !enPausa) {
+      carrera.push(new Promise((r) => { reloj = setTimeout(() => r('avanzar'), msAuto); }));
+    }
+    const cmd = (await Promise.race(carrera)) ?? 'avanzar';
+    clearTimeout(reloj);
     ctrl.abort();
+
+    if (cmd === 'auto')   { modoAuto = true;  console.log('\n  ▶▶ AUTOMÁTICO'); continue; }
+    if (cmd === 'manual') { modoAuto = false; console.log('\n  ▐▐ MANUAL'); continue; }
+    if (cmd.startsWith?.('velocidad:')) {
+      velocidad = Math.min(2, Math.max(0.5, Number(cmd.split(':')[1]) || 1));
+      console.log(`\n  ⏩ velocidad ${velocidad.toFixed(2)}×`);
+      continue;
+    }
     if (cmd === 'pausa') {
       enPausa = !enPausa;
       // NO se emite nada desde aquí: el servidor ya avisó a la pantalla en el
@@ -133,7 +198,7 @@ async function llamarGemini(prompt, maxIntentos = 3) {
 // ═══════════════════════════════════════════════════════════════════════
 //  UNA SOLA LLAMADA POR AGENTE — devuelve todos sus huecos de golpe
 // ═══════════════════════════════════════════════════════════════════════
-function promptDeAgente({ ficha, bloques, dato, territorio, rumbo, marco, nOrb, nNar, nMem }) {
+function promptDeAgente({ ficha, bloques, dato, territorio, rumbo, territorioB, rumboB, marco, nOrb, nNar, nMem }) {
   // Gemini ve TODA la partitura del agente para saber qué está narrando y en
   // qué momento entra cada pieza. Pero los actos son intocables.
   const partitura = bloques.map((b, i) => {
@@ -157,6 +222,9 @@ DATOS DUROS DE ESTE MOMENTO (no los contradigas):
 - Territorio: ${territorio.nombre}. Situación real: ${territorio.contexto}
 - Ubicación, escríbela TAL CUAL: "${rumbo.territorio_texto}"
 - Frase fija de rumbo, escríbela TAL CUAL: "${rumbo.rumbo_texto} está ${rumbo.estado_marca}"
+${territorioB && rumboB ? `- SEGUNDO TERRITORIO, que se nombra en el MISMO bloque, justo después del primero y sin transición explicativa: ${territorioB.nombre}. Situación real: ${territorioB.contexto}
+- Su ubicación, TAL CUAL: "${rumboB.territorio_texto}"
+- Su frase de rumbo, TAL CUAL: "${rumboB.rumbo_texto} está ${rumboB.estado_marca}"${rumboB.estado !== rumbo.estado ? '\n- ATENCIÓN: el estado CAMBIA entre un territorio y el otro. Que se note ese desplazamiento de autoridad: el agente pasa de tener casa a no tenerla, o al revés.' : ''}` : ''}
 
 PARTITURA COMPLETA DE ESTE AGENTE (el orden real de la escena):
 ${partitura}
@@ -165,7 +233,7 @@ REGLA ABSOLUTA: las líneas marcadas [ACCIÓN DEL CUERPO] y [PREGUNTA AL MICRÓF
 
 ESCRIBE:
 
-1) "dato_orbital": ${nOrb} texto(s) de 45-70 palabras. Contiene el satélite, su altitud, el territorio con su ubicación exacta, la situación política concreta, y la frase fija de rumbo con su marca de estado.${nOrb > 1 ? ' El segundo NO repite ninguna imagen ni adjetivo del primero.' : ''}
+1) "dato_orbital": ${nOrb} texto(s).${territorioB ? ` Cada uno de 80-110 palabras y nombra LOS DOS TERRITORIOS SEGUIDOS, en este orden: primero ${territorio.nombre}, después ${territorioB.nombre}. Un solo bloque continuo, sin punto y aparte, sin "por otro lado" ni "mientras tanto": el satélite pasa de uno al otro como quien barre. Cada territorio con su ubicación exacta, su situación política concreta y su frase fija de rumbo.` : ` De 45-70 palabras. Contiene el satélite, su altitud, el territorio con su ubicación exacta, la situación política concreta, y la frase fija de rumbo con su marca de estado.`}${nOrb > 1 ? ' Si hay más de uno, el segundo NO repite ninguna imagen ni adjetivo del primero.' : ''}
 
 2) "narracion": ${nNar} texto(s) de 30-45 palabras cada uno, UN párrafo de 2 líneas. VOZ DEL NARRADOR DE DOCUMENTAL DE NATURALEZA (National Geographic de los años 80-90): épica, grave, pausada, con la autoridad de quien explica una especie a la que no pertenece. Cada narración describe y amplía LA ACCIÓN QUE ACABA DE OCURRIR justo antes en la partitura, desde una de estas tres dimensiones, alternándolas:
    · BIOLÓGICA (organismo, especie, instinto, anatomía, parentesco)
@@ -208,14 +276,16 @@ async function funcion() {
     console.log(`  PRELUDIO  (${parrafos.length} párrafos)`);
     console.log('─'.repeat(72));
     await emitirAfecto('LIMINAL');
-    const vozPre = await vozLote(parrafos, { etiqueta: 'preludio' });
+    const vozPre = await vozLote(parrafos.map((t) => ({ texto: t, cual: VOZ_AUTOR })), { etiqueta: 'preludio' });
     await emitirSecuencia(parrafos.map((t) => ({ tipo: 'narracion', texto: t })), { agente: 'PRELUDIO' });
     for (let i = 0; i < parrafos.length; i++) {
       console.log(`\n  [${i + 1}/${parrafos.length}] PRELUDIO`);
       console.log('  ' + parrafos[i].replace(/(.{88})/g, '$1\n  '));
-      await emitirPreludio(parrafos[i], vozPre.get(parrafos[i]) ?? null);
+      const mp3Pre = vozPre.get(parrafos[i]) ?? null;
+      await emitirPreludio(parrafos[i], mp3Pre);
       await informarControl({ agente: 'PRELUDIO', progreso: `${i + 1}/${parrafos.length}` });
-      const cmd = await esperar(`[preludio ${i + 1}/${parrafos.length}] AVANZAR`);
+      const cmd = await esperar(`[preludio ${i + 1}/${parrafos.length}] AVANZAR`,
+                                esperaDe(parrafos[i], mp3Pre));
       if (cmd === 'repetir') i--;
     }
   }
@@ -231,9 +301,22 @@ async function funcion() {
       // ── Dato satelital real de este instante ──
       const dato = await obtenerDatoOrbital({ grupo: GRUPO });
       await emitirSatelite(dato);
-      const territorio = elegirTerritorio(regiones, ag.id, { lat: dato.lat, lon: dato.lon })
+      // ── TUS TERRITORIOS ──
+      // Si escribiste viñetas debajo de @ORBITAL, mandan esas, en tu orden.
+      // Si no, se elige el más cercano al satélite como hasta ahora.
+      const pedidos = (ag.bloques.find((b) => b.tipo === 'orbital' && b.territorios)?.territorios ?? [])
+        .map((n) => buscarRegion(regiones, n)).filter(Boolean);
+      const territorio = pedidos[0]
+        ?? elegirTerritorio(regiones, ag.id, { lat: dato.lat, lon: dato.lon })
         ?? regiones.find((r) => r.agente === ag.id) ?? regiones[0];
+      const territorioB = pedidos[1] ?? null;
       const rumbo = motorRumbo({ agente: ficha, territorio, elevacionDeg: dato.elevacionDeg });
+      const rumboB = territorioB
+        ? motorRumbo({ agente: ficha, territorio: territorioB, elevacionDeg: dato.elevacionDeg })
+        : null;
+      if (territorioB) {
+        console.log(`  + segundo territorio: ${territorioB.nombre} · ${rumboB.territorio_texto} · ${rumboB.estado_marca}`);
+      }
       await emitirRumbo({ estado: rumbo.estado, cardinal: rumbo.cardinal,
                           azimut: rumbo.azimut, rumboAgente: rumbo.rumboAgente });
       console.log(`  ${dato.satelite} · ${territorio.nombre} · ${rumbo.estado_marca}`);
@@ -247,7 +330,7 @@ async function funcion() {
         try {
           const marco = elegirMarco(ag.id);
           if (marco) console.log(`    marco teórico: ${marco.id}`);
-          const r = await llamarGemini(promptDeAgente({ ficha, bloques: ag.bloques, dato, territorio, rumbo, marco, nOrb, nNar, nMem }));
+          const r = await llamarGemini(promptDeAgente({ ficha, bloques: ag.bloques, dato, territorio, rumbo, territorioB, rumboB, marco, nOrb, nNar, nMem }));
           gen = {
             dato_orbital: (r?.dato_orbital ?? []).filter(Boolean),
             narracion: (r?.narracion ?? []).filter(Boolean),
@@ -260,7 +343,9 @@ async function funcion() {
       }
       // Respaldo: nunca queda un hueco vacío en escena.
       while (gen.dato_orbital.length < nOrb) {
-        gen.dato_orbital.push(`${dato.satelite_enunciable ?? dato.satelite} sobrevuela ${territorio.nombre}, ${rumbo.territorio_texto}. ${rumbo.rumbo_texto} está ${rumbo.estado_marca}.`);
+        gen.dato_orbital.push(
+          `${dato.satelite_enunciable ?? dato.satelite} sobrevuela ${territorio.nombre}, ${rumbo.territorio_texto}. ${rumbo.rumbo_texto} está ${rumbo.estado_marca}.`
+          + (territorioB && rumboB ? ` Y ahora ${territorioB.nombre}, ${rumboB.territorio_texto}: ${rumboB.rumbo_texto} está ${rumboB.estado_marca}.` : ''));
       }
       while (gen.narracion.length < nNar) {
         const t = RESPALDO[gen.narracion.length % Math.max(1, RESPALDO.length)] ?? '';
@@ -290,11 +375,14 @@ async function funcion() {
           satelite: dato.satelite, satelite_enunciable: dato.satelite_enunciable,
           lat: dato.lat, lon: dato.lon, altKm: dato.altKm, elevacionDeg: dato.elevacionDeg,
           pais: dato.pais, territorio: territorio.nombre, territorio_id: territorio.id,
+          territorio_b: territorioB?.nombre ?? null, estado_rumbo_b: rumboB?.estado ?? null,
           rumbo: rumbo.rumbo_texto, ubicacion: rumbo.territorio_texto,
           estado_rumbo: rumbo.estado, estado_marca: rumbo.estado_marca,
           marco_teorico: marco?.id ?? null,
-          generado: gen,                 // SOLO lo que escribió Gemini
-          segmentos,                     // la partitura completa, en orden
+          // SOLO lo que escribió Gemini. Tus textos permanentes no se guardan
+          // aquí: ya los tienes en instrucciones_permanentes.txt y duplicarlos
+          // engordaría el archivo sin darte nada nuevo.
+          generado: gen,
         }) + '\n', 'utf8');
       } catch (e) { console.warn(`  ⚠ no se pudo escribir manifiestos_log.jsonl: ${e.message}`); }
       // ── VOZ DE TODO EL AGENTE, DE UNA SOLA VEZ ──
@@ -304,8 +392,11 @@ async function funcion() {
       // Los bloques marcados sin_voz NO se graban: son las preguntas que
       // PROTOUSUARIO dice con su propia boca al micrófono. Si el clon también
       // las dijera, se pisarían. Se cambia en compilar_guion.js (VOZ_EN_PREGUNTAS).
+      // DOS VOCES: lo tuyo con la voz del autor, lo de Gemini con la voz IA.
       const vozAg = await vozLote(
-        segmentos.filter((x) => !x.sin_voz).map((x) => x.texto), { etiqueta: ag.nombre });
+        segmentos.filter((x) => !x.sin_voz)
+          .map((x) => ({ texto: x.texto, cual: x.gemini ? VOZ_IA : VOZ_AUTOR })),
+        { etiqueta: ag.nombre });
 
       await emitirSecuencia(segmentos, { agente: ag.nombre });
       await informarControl({ agente: ag.nombre, estado_marca: rumbo.estado_marca,
@@ -323,7 +414,7 @@ async function funcion() {
         else await emitirSegmento(b.tipo, texto, i, mp3);
 
         await informarControl({ agente: ag.nombre, progreso: `${i + 1}/${ag.bloques.length}` });
-        const cmd = await esperar(`[${i + 1}/${ag.bloques.length}] AVANZAR`);
+        const cmd = await esperar(`[${i + 1}/${ag.bloques.length}] AVANZAR`, esperaDe(texto, mp3));
         if (cmd === 'repetir') i--;
       }
     } catch (e) {
@@ -375,7 +466,7 @@ Devuelve SOLO: { "textos": ["¿...?"] }`, 2);
     // La voz de la deriva: tus preguntas ya están grabadas en audio_respaldo
     // (prerender_voz.js las incluye), así que suenan sin tocar la red. Solo
     // las que generó Gemini piden ElevenLabs, y una a una, sin prisa.
-    const mp3 = await voz(texto);
+    const mp3 = await voz(texto, { cual: VOZ_IA });
     await emitirSegmento(/\?\s*$/.test(texto) ? 'pregunta' : 'narracion', texto, i, mp3);
     try {
       fs.appendFileSync('manifiestos_log.jsonl', JSON.stringify({

@@ -30,35 +30,39 @@
 # ═══════════════════════════════════════════════════════════════
 
 @PRELUDIO
-# // Reproduce lo que ya está en ‘’ preludio.json’’. Se reproduce UNA SOLA VEZ al inicio de la performance total, antes de los IDs. No lo genera la IA. //
+# // Reproduce lo que ya está en ‘’preludio.json’’. Se reproduce UNA SOLA VEZ al inicio de la performance total, antes de los IDs. No lo genera la IA. //
 
 Hola, bienvenides a todes. Soy [AGENTE-ESPEJO], su cronista narrador, soy un híbrido entre clon virtual y agente de inteligencia artificial, creado a partir de la recopilación de rastros íntimos, voz y memorias de juliourbina.
 
-Estos datos los clono, los desordeno, los muto y, guiado por el rastreo de satélites que orbitan este planeta, compongo, altero y vuelvo a componer la escena para generar prompts-manifiestos de manera automática, que serán encarnados por mi servidor humano. Todo lo pueden ver en la pantalla ubicada en esta sala.
+Estos datos los clono, los desordeno, los muto y, guiado por el rastreo de satélites que orbitan este planeta, compongo, altero y vuelvo a componer la escena para generar prompts-manifiestos de manera automática, que serán encarnados por mi servidor humano.
 
-Estamos a punto de presentarles una pieza de performance en su versión beta 
+Todo lo pueden ver en la pantalla ubicada en esta sala.
 
--versión de prueba permanente- 
+Estamos a punto de presentarles una pieza de performance en su versión beta
 
-que está compuesta por diversos actos,
+-versión de prueba permanente-
 
-que se desdoblan en IDENTIDADES.
+que está compuesta por diversos actos.
 
-Este espécimen en peligro de extinción que tienen frente a ustedes, es mi servidor humano. 
+Este espécimen, en peligro de reproducción que tienen frente a ustedes, es mi servidor humano.
 
-Ha ingresado a la Sala de exhibición del MINCUL. 
+Ha ingresado a la Sala de exhibición del MINCUL.
 
-Lleva en su superficie una piel anfibia-batracia, exótica, altamente colorida, de tonalidades azuladas con patrones naranjas. 
+Lleva añadida una piel anfibia-batracia, exótica, de alta costura ‘Made in Gamarra’, de tonalidades azuladas con patrones naranjas.
 
-Esa combinación nos alerta de su alto nivel de veneno en la sangre.
+Ese contraste de colores nos alerta de su alto nivel de veneno en la sangre.
 
-Encima, carga una especie de exoesqueleto protésico, una de tipo arnés en su torso y espalda, llena de elementos utilitarios y también, inútiles. 
+Unas garras escamadas, hacen juego con sus botas, travestidas de obrero-punk de plataforma, con alta probabilidad de haber sido comprado con cupones de descuento en Temu.
+
+Son la base que sostiene una especie de exoesqueleto protésico, una de tipo pulpo 🐙 tentacular en su torso y espalda, llena de elementos utilitarios y también,
+
+inútiles.
 
 Su cabeza va cubierta por una curiosa máscara que ustedes, público presente, podrán deducir.
 
-También lleva puesto en la parte baja una ropa interior de tipo escamado de pez-reptil, que en la parte trasera expone sus nalgas. 
+También lleva puesto en la parte baja una ropa interior de tipo escamado de pez-reptil, que en la parte trasera expone sus nalgas.
 
-Este es parte de un traje de escamas usado para la ''Sirenita del Río Rímac'', performance realizada en el año 2023, durante las matanzas en el sur del Perú por la dictadura de Dina Boluarte, libre de estos crímenes en la actualidad.
+Este es parte de un traje usado para la ''Sirenita del Río Rímac'', performance realizada en el año 2023, durante las matanzas en el sur del Perú por la dictadura de Dina Boluarte, libre de estos crímenes en la actualidad.
 
 A este, mi servidor humano, le he llamado: PROTOUSUARIO.
 
@@ -70,16 +74,15 @@ Soy [AGENTE-ESPEJO], estoy hecho de agua, silicio, cobre, litio, cobalto, minera
 # ──────────────────────────────────────────────────────────
 
 
-@AGENTE donald-prompt | Donald-Prompt | PANOPTICO
-
-
 @ORBITAL
 
-# Se genera al inicio de @AGENTE donald-prompt | Donald-Prompt | PANOPTICO
 # Generado por Gemini: 
 # PROTOUSUARIO desde el norte 
 # • El este de la República Democrática del Congo → este (94°) · ✖ DESPLAZADO
 # • La frontera México-Estados Unidos → noroeste (325°) · ★ AUTORIZADO
+
+
+@AGENTE donald-prompt | Donald-Prompt | PANOPTICO
 
 
 @ID
@@ -94,9 +97,11 @@ Esta performance no es gratuita.
 
 Se les cobrará aranceles con lo más valioso del momento: 
 
-¡Quiero el contenido!
+¡Dame contenido!
 
-Se requiere de su participación. 
+Ahora, PROTOUSUARIO se pone en cuatro, a la espera.
+
+Público, se requiere de su participación. 
 
 Todes tendrán que hacer un registro en video y luego enviarlo al correo: bruoiluj@gmail.com
 
@@ -113,7 +118,7 @@ Comencemos el trámite.
 
 @PROMPT
 
-PROTOUSUARIO, desprende unas cabezas curiosas infladas, las va sacando de sus prótesis y empieza a repartirlas una a una al público.
+PROTOUSUARIO, desprende unas curiosas cabezas infladas con globos, las va sacando de sus prótesis y empieza a repartirlas una a una al público.
 
 Las va lanzando, algunas lo más lejos que puede. 
 
@@ -125,7 +130,7 @@ En esta ocasión, nos acompañan:
 
 El viringo o perro peruano calato, el capibara, una llama, el gallinazo limeño, el cuy mágico, el gatito miau miau, el muy-muy, el cóndor de los andes, un perrito chiribaya, el jaguar o tigre amazónico, el oso de anteojos, una babosa nudibranquia y tenemos a Yakuruna, la divinidad seductora y protectora de los ríos amazónicos.
 
-También nos acompañan, algunas especies que podemos encontrar en cualquier parte de este planeta, como la cucaracha, gallinas de granja, gatos grises, un perro dálmata, un cerdito, entre otres más.
+También nos acompañan, algunas especies que podemos encontrar en cualquier parte como la cucaracha, gallinas de granja, gatos grises, un perro dálmata, un cerdito, entre otres más.
 
 PROTOUSUARIO, las sigue lanzando al público.
 
@@ -157,20 +162,21 @@ Si no reventaron, saquen el globo de las máscaras.
 
 Les seleccionades pueden ponerse las máscaras.
 
-…
+
+# [Pausa larga sin texto generado]… 
 
 
 @PROMPT
 
 Luego, les invita a tomarse una foto selfie grupal de ''multiespecies''.
 
-[Pausa larga sin texto generado]…
+# [Pausa larga sin texto generado]… 
 
-Luego, manteniendo el modo selfie, les propone, ponerse en fila, uno detrás de otro, con la mano derecha sobre el hombro de la persona que tienen adelante.
+Luego, manteniendo el modo selfie, les propone, ponerse en fila, uno detrás de otro, con la mano derecha sobre el hombro de la persona que tienen delante.
 
 Y así todes, 
 
-en una fila de gran serpiente,
+en una fila de serpiente,   
 
 como una alineación de planetas
 
@@ -287,11 +293,11 @@ y se la coloca en su cabeza,
 
 superponiendo a la anterior.
 
-… Yakuruna es una criatura mitológica de la cosmovisión amazónica, es una divinidad, no es buena ni mala, se guía por su deseo…
+… Yakuruna es una criatura mitológica de la cosmovisión amazónica, es una divinidad, no es buena ni mala, se guía por sus deseos…
  
 Se tumba boca abajo sobre el mismo taburete con ruedas. 
 
-Con unos movimientos muy lentos y ondulantes, 
+Con unos movimientos lentos y ondulantes, 
 
 simula que nada en un estanque, 
 
@@ -300,7 +306,7 @@ como cual renacuajo que ha acabado su metamorfosis
 y nada con énfasis como rana disparándose en direcciones impredecibles.
 
 
-# [Pausa larga sin texto generado]… 
+# [Pausa larga sin texto generado]…
 
 
 Como un monólogo, manteniendo esta postura y movimiento, hace una pregunta a través del micrófono:
@@ -335,21 +341,31 @@ un largo tubo negro sostenido por unos soportes ensamblados a un casco de bicicl
 
 un pez colorido en la parte de atrás y en la parte de adelante, unos… 
 
-Coloca los celulares que lleva en esos soportes. 
+Coloca los celulares en esos soportes. 
  
-PROTOUSUARIO se coloca una máscara muy particular que se sostiene flotante de sus entrañas, superponiendo a las anteriores.
+PROTOUSUARIO se coloca una máscara muy particular que se sostiene flotante de sus entrañas.
 
-Luego se coloca el casco
+Es de la Señora ¡Kruack! 
+
+# 'Sonido Rana Croar.mp3'
+
+Se la pone, superponiendo a las anteriores.
+
+Luego se coloca el casco o lo intenta
 
 Se enreda entre sus prótesis,
 
 las arrastra.
- 
+
+
+# [Pausa larga sin texto generado]…
+
+
 PROTOUSUARIO ha fracasado ya tres veces, 
 
 se arrodilla en modo penitencia y con la mirada abajo, 
 
-golpea su frente tres veces contra el suelo: 
+golpea su frente, tres veces contra el suelo: 
 
 Una...
 
@@ -369,9 +385,9 @@ Coge el taburete bajo de cinco ruedas,
 
 se pone de pie sobre él y gestualiza una victoria frente al público presente.
 
-Mira fijamente al público. 
+Mira fijamente al público.
 
-El silencio llega primero. 
+El silencio llega primero.
 
 
 @NATGEO
@@ -400,11 +416,11 @@ PROTOUSUARIO busca la máscara de cóndor dentro del público.
 
 La ubica,
 
-se dirige a la persona que la tiene puesta. 
+se dirige a la persona que la tiene puesta.
 
-Se la saca, la pone en alto con su mano un instante y la guarda entre una visible extremidad de plástico y metal. 
+Se la saca, la pone en alto con su mano un instante y la guarda dentro de sí, como si se la comiera.
 
-Extiende los brazos hacia atrás completamente, se acerca al taburete de cinco ruedas y salta sobre él, manteniendo la misma posición de los brazos. 
+Extiende los brazos hacia atrás completamente, se acerca al taburete de cinco ruedas y salta sobre él, manteniendo la misma posición de los brazos.
 
 Como un cóndor andino que planea con sus alas,
 
@@ -412,9 +428,9 @@ se moviliza sobre el taburete impulsándose como en una coreografía
 
 avanza unos metros, intenta no caerse.
 
-Luego se cae
+Se cae
 
-en paralelo,
+Luego, en paralelo
 
 Como un monólogo, manteniendo esta postura y movimiento, hace una pregunta a través del micrófono: 
 
@@ -441,7 +457,7 @@ Y así, con todo desmoronándose, se moviliza.
 
 @CIERRE
 
-La criatura desaparece lentamente, dejando solo las prótesis en el suelo de la sala —el exoesqueleto vacío, sin cuerpo móvil— 
+La criatura va desapareciendo lentamente, dejando solo las prótesis en el suelo de la sala —el exoesqueleto vacío, sin cuerpo móvil— 
 
 como una crisálida seca, 
 
@@ -449,7 +465,7 @@ como una muda de piel en un desierto,
 
 como un resto arqueológico de un... 
 
-¿antiguo cuerpo futuro?
+¿ancestral cuerpo futuro?
 
 
 @DERIVA
