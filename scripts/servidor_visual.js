@@ -265,7 +265,9 @@ async function cicloEspera() {
     const dato = await obtenerDatoOrbital({ grupo: GRUPO_SATELITAL });
 
     ultimoEstado.salud = dato.modo_datos;
-    emitir('salud', { modo: dato.modo_datos });
+    // Se manda también el conteo: así la esquina de la escena te dice cuántos
+    // satélites hay de verdad, sin tener que mirar la terminal.
+    emitir('salud', { modo: dato.modo_datos, sats: dato.n_enviados ?? 0, total: dato.n_grupo ?? 0 });
 
     if (dato.lat != null) {
       const protagonista = {

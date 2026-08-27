@@ -37,7 +37,10 @@ const MODO_GLOBO   = 'mapa';   // en vez de 'satelite' (textura NASA) | 'mapa' (
 const TEXTURA      = 'img/earth-blue-marble.jpg';
 const RELIEVE      = 'img/earth-topology.png';   // opcional; '' para desactivar
 const MOSTRAR_BORDES = true;       // fronteras de países sobre la textura
-const TAM_SATELITE   = 2.0;        // px del punto de los satélites de fondo
+// 3.4 px. Con la textura NASA puesta el planeta es MUCHO más claro que el
+// modo mapa oscuro de antes, así que los puntos ámbar necesitan más cuerpo
+// para leerse. Si los quieres finos otra vez, baja a 2.2.
+const TAM_SATELITE   = 3.4;        // px del punto de los satélites de fondo
 // Cuántos satélites dibuja el navegador. La capa de partículas los pinta
 // TODOS en una sola llamada de dibujo, así que 1000 cuesta prácticamente lo
 // mismo que 200: el límite real es cuántos manda el servidor (MAX_SATELITES).
@@ -633,8 +636,14 @@ function actualizarRumbo(d){
   el('rosaEstado').textContent = d.estado==='AUTORIZADO' ? '★ AUTORIZADO' : '✖ DESPLAZADO';
 }
 
-function actualizarSalud(modo){
-  el('textoSalud').textContent = modo;
+function actualizarSalud(modo, sats, total){
+  // Se muestra el conteo real de satélites junto al estado de los datos.
+  // Si dice "12 sats" en vez de "1200", el problema no es el dibujo: es que
+  // el grupo satelital no se descargó y estás viendo el caché de 'stations'.
+  const cuenta = (sats != null && sats > 0)
+    ? `  ·  ${sats} sats${total ? ' de ' + total.toLocaleString('es-PE') : ''}`
+    : '';
+  el('textoSalud').textContent = modo + cuenta;
   el('puntoSalud').classList.toggle('degradado', modo !== 'ONLINE_COMPLETO');
 }
 
@@ -649,7 +658,7 @@ function conectar(){
     if(m.tipo==='posiciones')   actualizarPosiciones(d);
     if(m.tipo==='territorio')   mostrarTerritorio(d);
     if(m.tipo==='afecto')       aplicarEstado(d.estado);
-    if(m.tipo==='salud')        actualizarSalud(d.modo);
+    if(m.tipo==='salud')        actualizarSalud(d.modo, d.sats, d.total);
     if(m.tipo==='rumbo')        actualizarRumbo(d);
     if(m.tipo==='segmento')     nuevoSegmento(d.tipo, d.texto, d.audio, d.sonido);
     if(m.tipo==='preludio'){

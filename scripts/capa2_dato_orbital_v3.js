@@ -49,7 +49,7 @@ const LIMA = { lat: -12.0464, lon: -77.0428, altKm: 0.154 };
 // UNA llamada, así que 900 cuesta casi lo mismo que 200 en la GPU. Lo que sí
 // crece es el tamaño del mensaje (unos 70 bytes por satélite), pero eso viaja
 // dentro de la laptop, no por la red. Sube a 1500 si quieres el cielo lleno.
-const MAX_SATELITES = Number(process.env.MAX_SATELITES || 900);
+const MAX_SATELITES = Number(process.env.MAX_SATELITES || 1200);
 
 // Memoria de proceso: evita releer/reparsear y reconstruir todo cada vuelta.
 const MEMO_GP = new Map();      // cachePath -> { t, modo, datos }
@@ -235,8 +235,23 @@ export async function obtenerDatoOrbital({
   // en vez de inventar un satélite falso como hacía la versión anterior.
   const regionAsignada = elegido.regionConflicto ?? (regiones.length ? regiones[Math.floor(Math.random() * regiones.length)] : null);
 
+  // ── DIAGNÓSTICO ──
+  // Sin esto no hay forma de saber por qué se ven pocos puntos: si el grupo
+  // trajo 13.000 objetos o 12, si la red respondió o se está usando un caché
+  // viejo. Ahora la consola lo dice en cada ciclo.
+  const nube = recortarNube(candidatos, elegido, MAX_SATELITES);
+  console.log(`  ☉ ${datos.length} objetos en el grupo "${grupo}" · `
+    + `${candidatos.length} propagados · ${nube.length} enviados al navegador · ${modo}`);
+  if (candidatos.length < 100) {
+    console.warn(`  ⚠ MUY POCOS SATÉLITES. Casi seguro no existe tles/gp_cache_${grupo}.json`);
+    console.warn(`    y CelesTrak no respondió. Con internet, borra tles/ y vuelve a arrancar.`);
+  }
+
   return {
     modo_datos: modo,
+    n_grupo: datos.length,
+    n_propagados: candidatos.length,
+    n_enviados: nube.length,
     satelite: elegido.nombre,
     satelite_enunciable: enunciable(elegido.nombre),
     region: regionAsignada?.nombre ?? null,
@@ -251,8 +266,7 @@ export async function obtenerDatoOrbital({
     // TODOS los satélites del grupo con posición, para dibujar el fondo en el globo.
     // Nube RECORTADA (ver recortarNube): el navegador no necesita 13.000
     // puntos para verse lleno, y con 13.000 no se ve: se atraganta.
-    todos: recortarNube(candidatos, elegido, MAX_SATELITES)
-      .map((c) => ({ nombre: c.nombre, k: c.k, lat: c.lat, lon: c.lon, altKm: c.altKm })),
+    todos: nube.map((c) => ({ nombre: c.nombre, k: c.k, lat: c.lat, lon: c.lon, altKm: c.altKm })),
     protagonista_k: elegido.k,
   };
 }
