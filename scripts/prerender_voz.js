@@ -45,9 +45,13 @@ if (PRE?.texto || PRE?.parrafos) {
 
 for (const a of G?.agentes ?? []) {
   for (const b of a.bloques ?? []) {
-    // gemini:true cambia cada vez → no se puede pre-grabar.
-    // sin_voz:true lo dice PROTOUSUARIO al micrófono → no lleva voz clonada.
-    if (!b.gemini && !b.sin_voz) añadir(a.nombre, b.tipo, b.texto);
+    // b.gemini  → cambia cada función, no se puede pre-grabar
+    // b.sin_voz  → lo dice PROTOUSUARIO al micrófono
+    // tipo sonido→ es un mp3 tuyo, no pasa por ElevenLabs
+    // b.fijado   → era un hueco y lo congelaste: SÍ se pre-graba, con voz IA,
+    //              porque lo escribió Gemini y así conserva su timbre.
+    if (b.gemini || b.sin_voz || b.tipo === 'sonido') continue;
+    añadir(a.nombre, b.tipo, b.texto, b.fijado ? VOZ_IA : VOZ_AUTOR);
   }
 }
 añadir('CIERRE', 'narracion', G?.cierre);

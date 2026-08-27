@@ -407,6 +407,21 @@ function mostrarAvisoAudio(){
   document.body.appendChild(d);
 }
 
+// Reproduce un sonido TUYO de "sonidos externos" (no pasa por ElevenLabs).
+function sonarExterno(archivo){
+  if (vozActual) { try { vozActual.pause(); } catch {} vozActual = null; }
+  if (!archivo) return null;
+  const a = new Audio('/sonido/' + encodeURIComponent(archivo));
+  a.preload = 'auto';
+  a.playbackRate = 1;            // tus sonidos NO cambian con la velocidad de voz
+  vozActual = a;
+  a.play().catch((e) => {
+    if (!audioDesbloqueado) mostrarAvisoAudio();
+    console.warn('[sonido]', e.message);
+  });
+  return a;
+}
+
 function sonar(archivo){
   if (vozActual) { try { vozActual.pause(); } catch {} vozActual = null; }
   if (!archivo) return null;
@@ -511,7 +526,7 @@ function arrancarEscritura(velocidad = VEL){
   }, velocidad);
 }
 
-function nuevoSegmento(tipoCrudo, texto, archivoVoz){
+function nuevoSegmento(tipoCrudo, texto, archivoVoz, sonidoExterno){
   const tipo = normalizar(tipoCrudo);
   const corrido = el('corrido');
 
@@ -523,7 +538,8 @@ function nuevoSegmento(tipoCrudo, texto, archivoVoz){
     segActivo.i = 0;
     segActivo.cuerpo.textContent = '';
     segActivo.cuerpo.classList.add('cursor');
-    const a = sonar(archivoVoz ?? segActivo.voz);   // REPETIR lo vuelve a decir
+    const a = segActivo.sonido ? sonarExterno(segActivo.sonido)
+                               : sonar(archivoVoz ?? segActivo.voz);   // REPETIR
     arrancarEscritura();
     sincronizarConVoz(a, texto);
     return;
@@ -549,8 +565,9 @@ function nuevoSegmento(tipoCrudo, texto, archivoVoz){
     (rotulo ? `<span class="rotulo">${rotulo}</span>` : '') +
     `<span class="cuerpo cursor"></span>`;
   corrido.appendChild(div);
-  segActivo = { div, cuerpo: div.querySelector('.cuerpo'), texto, i: 0, voz: archivoVoz };
-  const a = sonar(archivoVoz);
+  segActivo = { div, cuerpo: div.querySelector('.cuerpo'), texto, i: 0,
+                voz: archivoVoz, sonido: sonidoExterno };
+  const a = sonidoExterno ? sonarExterno(sonidoExterno) : sonar(archivoVoz);
   arrancarEscritura();
   sincronizarConVoz(a, texto);
 }
@@ -634,7 +651,7 @@ function conectar(){
     if(m.tipo==='afecto')       aplicarEstado(d.estado);
     if(m.tipo==='salud')        actualizarSalud(d.modo);
     if(m.tipo==='rumbo')        actualizarRumbo(d);
-    if(m.tipo==='segmento')     nuevoSegmento(d.tipo, d.texto, d.audio);
+    if(m.tipo==='segmento')     nuevoSegmento(d.tipo, d.texto, d.audio, d.sonido);
     if(m.tipo==='preludio'){
       limpiarPantalla();
       el('cabAgente').textContent='PRELUDIO';

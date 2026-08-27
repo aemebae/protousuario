@@ -26,7 +26,7 @@ import {
 } from './emitir_evento.js';
 // LA VOZ. voz(texto) devuelve el nombre del mp3 (de disco o recién grabado).
 // Nunca lanza error: si no hay voz, el bloque sale en silencio.
-import { voz, vozLote, duracionMs, VOZ_AUTOR, VOZ_IA } from './voz.js';
+import { voz, vozLote, duracionMs, buscarSonido, VOZ_AUTOR, VOZ_IA } from './voz.js';
 
 const URL_VISUAL = process.env.URL_VISUAL || 'http://localhost:3000';
 const DERIVA_MS = Number(process.env.DERIVA_MS || 13000);
@@ -359,8 +359,9 @@ async function funcion() {
       const segmentos = ag.bloques.map((b) => ({
         tipo: b.tipo === 'id_agente' ? 'prompt' : b.tipo,
         texto: b.gemini ? (cola[b.tipo].shift() ?? '') : b.texto,
-        sin_voz: !!b.sin_voz,
+        sin_voz: !!b.sin_voz || b.tipo === 'sonido',
         gemini: !!b.gemini,
+        sonido: b.sonido ?? null,
       }));
 
       // ── REGISTRO ──
@@ -409,12 +410,19 @@ async function funcion() {
         console.log(`\n  [${i + 1}/${ag.bloques.length}] ${rotulo[b.tipo]}`);
         console.log('  ' + texto.replace(/(.{88})/g, '$1\n  '));
 
-        const mp3 = segmentos[i].sin_voz ? null : (vozAg.get(texto) ?? null);
+        const seg = segmentos[i];
+        const mp3 = seg.sin_voz ? null : (vozAg.get(texto) ?? null);
+        // Un bloque @SONIDO no dice nada: suena tu mp3 y ya.
+        const son = seg.sonido ? buscarSonido(seg.sonido) : null;
+        if (seg.sonido && !son) console.warn(`    ⚠ no encuentro "${seg.sonido}" en "sonidos externos/"`);
+        if (son) console.log(`  ♪ ${son}`);
         if (b.tipo === 'id_agente') await emitirAgenteId(ag.nombre, texto, mp3);
-        else await emitirSegmento(b.tipo, texto, i, mp3);
+        else await emitirSegmento(b.tipo, texto, i, mp3, son);
 
         await informarControl({ agente: ag.nombre, progreso: `${i + 1}/${ag.bloques.length}` });
-        const cmd = await esperar(`[${i + 1}/${ag.bloques.length}] AVANZAR`, esperaDe(texto, mp3));
+        // En automático, un @SONIDO espera lo que dure el mp3 de verdad.
+        const cmd = await esperar(`[${i + 1}/${ag.bloques.length}] AVANZAR`,
+          son ? duracionMs(son) + RESPIRO_MS : esperaDe(texto, mp3));
         if (cmd === 'repetir') i--;
       }
     } catch (e) {

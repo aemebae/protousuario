@@ -41,8 +41,10 @@ export const emitirAgenteId  = (nombre, texto, audio = null) => emitirEvento('ag
 // `audio` es el nombre del mp3 (huella.mp3). El navegador lo pide a
 // /audio/<nombre> y lo reproduce mientras escribe el texto. Si va null, el
 // bloque sale en silencio: la escena no se detiene por falta de voz.
-export const emitirSegmento = (tipo, texto, indice, audio = null) =>
-  emitirEvento('segmento', { tipo, texto, indice, audio });
+// `sonido` es el nombre de un mp3 de "sonidos externos" (los tuyos, sin pasar
+// por ElevenLabs). Si viene, el navegador lo reproduce en lugar de la voz.
+export const emitirSegmento = (tipo, texto, indice, audio = null, sonido = null) =>
+  emitirEvento('segmento', { tipo, texto, indice, audio, sonido });
 
 // ---------- Secuencia completa (respaldo del celular) ----------
 /**

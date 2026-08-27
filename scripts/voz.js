@@ -28,6 +28,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { duracionMp3Ms } from './mp3_duracion.js';
 
 // audio_respaldo/ = lo que grabaste en casa, a mano. NUNCA se borra.
 // audio_cache/    = lo que se generó en vivo. Se puede borrar sin miedo.
@@ -61,7 +62,10 @@ function idDeVoz(cual) {
 
 /** La huella de un texto EN UNA VOZ. Mismo texto + misma voz → mismo archivo. */
 export function huella(texto, cual = VOZ_AUTOR) {
-  const semilla = idDeVoz(cual) + '|' + String(texto).trim();
+  // La semilla lleva la voz Y sus ajustes: dos voces (o los mismos ajustes
+  // cambiados) dan archivos distintos y no se pisan entre sí.
+  const a = AJUSTES(cual);
+  const semilla = `${idDeVoz(cual)}|${a.stability}/${a.similarity_boost}/${a.style}/${a.speed}|${String(texto).trim()}`;
   return crypto.createHash('sha1').update(semilla).digest('hex').slice(0, 16);
 }
 
@@ -83,11 +87,35 @@ export function buscarEnDisco(texto, cual = VOZ_AUTOR) {
  */
 export function duracionMs(nombre) {
   if (!nombre) return 0;
-  for (const dir of [DIR_RESPALDO, DIR_CACHE]) {
+  for (const dir of [DIR_RESPALDO, DIR_CACHE, DIR_SONIDOS]) {
     const f = path.join(dir, nombre);
-    if (fs.existsSync(f)) return Math.round((fs.statSync(f).size * 8 / 128000) * 1000);
+    if (!fs.existsSync(f)) continue;
+    // Se lee la cabecera del propio mp3: vale también para TUS sonidos, que
+    // pueden venir a cualquier tasa o ser de tasa variable.
+    const real = duracionMp3Ms(f);
+    if (real > 0) return real;
+    return Math.round((fs.statSync(f).size * 8 / 128000) * 1000);
   }
   return 0;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  SONIDOS EXTERNOS
+//  Tus mp3 (croares, zumbidos, estática) viven en su carpeta y NO pasan por
+//  ElevenLabs: no cuestan créditos y conservan su nombre, no se renombran por
+//  huella. Se llaman desde el guion con @SONIDO.
+// ═══════════════════════════════════════════════════════════════════════════
+export const DIR_SONIDOS = 'sonidos externos';
+
+/** Busca un sonido tuyo por nombre, tolerando mayúsculas y la extensión. */
+export function buscarSonido(nombre) {
+  if (!nombre || !fs.existsSync(DIR_SONIDOS)) return null;
+  const pedido = String(nombre).trim().toLowerCase().replace(/\.[^.]+$/, '');
+  for (const f of fs.readdirSync(DIR_SONIDOS)) {
+    if (!/\.(mp3|wav|ogg|m4a)$/i.test(f)) continue;
+    if (f.toLowerCase().replace(/\.[^.]+$/, '') === pedido) return f;
+  }
+  return null;
 }
 
 const API = () => process.env.ELEVENLABS_API_KEY;
@@ -95,13 +123,24 @@ const MODELO = () => process.env.ELEVENLABS_MODEL || 'eleven_flash_v2_5';
 
 // Ajustes de la voz clonada. Se pueden mover desde .env sin tocar código.
 // stability bajo = más expresiva y más impredecible; alto = más plana.
-const AJUSTES = () => ({
-  stability: Number(process.env.VOZ_STABILITY ?? 0.45),
-  similarity_boost: Number(process.env.VOZ_SIMILARITY ?? 0.8),
-  style: Number(process.env.VOZ_STYLE ?? 0.35),
-  use_speaker_boost: true,
-  speed: Number(process.env.VOZ_SPEED ?? 1.0),
-});
+// TRUCO ÚTIL: si no quieres crear una segunda voz en ElevenLabs, la VOZ IA
+// puede ser la MISMA voz clonada con otros ajustes — más plana, menos estilo.
+// Suena a otra cosa sin costarte una voz nueva:
+//     VOZ_IA_STABILITY=0.85
+//     VOZ_IA_STYLE=0.05
+// Los ajustes entran en la huella, así que los dos resultados conviven en
+// disco sin pisarse.
+function AJUSTES(cual) {
+  const sufijo = cual === VOZ_IA ? '_IA' : '';
+  const leer = (n, d) => Number(process.env[`VOZ${sufijo}_${n}`] ?? process.env[`VOZ_${n}`] ?? d);
+  return {
+    stability: leer('STABILITY', 0.45),
+    similarity_boost: leer('SIMILARITY', 0.8),
+    style: leer('STYLE', 0.35),
+    use_speaker_boost: true,
+    speed: leer('SPEED', 1.0),
+  };
+}
 
 /**
  * Graba un texto a mp3 llamando a ElevenLabs. Uso interno y de prerender_voz.
@@ -118,7 +157,7 @@ export async function grabar(texto, { dir = DIR_CACHE, cual = VOZ_AUTOR } = {}) 
     {
       method: 'POST',
       headers: { 'xi-api-key': API(), 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: texto, model_id: MODELO(), voice_settings: AJUSTES() }),
+      body: JSON.stringify({ text: texto, model_id: MODELO(), voice_settings: AJUSTES(cual) }),
       signal: AbortSignal.timeout(30000),
     }
   );

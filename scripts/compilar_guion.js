@@ -71,11 +71,26 @@ for (const cruda of lineas) {
   // Las viñetas de territorio se leen AUNQUE estén comentadas con #, porque así
   // las tienes escritas en tu archivo. Cualquier otro comentario se ignora.
   if (modo && modo.hueco) {
-    const m = t.match(/^#?\s*[•·*+-]\s*(.+)$/);
-    if (m) {
-      const nombre = m[1].split(/→|->|·/)[0].trim().replace(/\s+/g, ' ');
-      if (nombre) (modo.hueco.territorios ??= []).push(nombre);
+    // ── TEXTO FIJADO ──
+    // Una línea que empieza con "=" debajo de @ORBITAL / @NATGEO / @MEMORIA
+    // CONGELA ese hueco: se dice tal cual y Gemini ya no lo escribe. Sirve
+    // para guardar una generación que te gustó (ver scripts/fijar_generado.js).
+    if (t.startsWith('=')) {
+      const fijo = t.slice(1).trim();
+      if (fijo) {
+        modo.hueco.texto = modo.hueco.texto ? modo.hueco.texto + ' ' + fijo : fijo;
+        delete modo.hueco.gemini;
+        modo.hueco.fijado = true;
+      }
       continue;
+    }
+    if (modo.esOrbital) {
+      const m = t.match(/^#?\s*[•·*+-]\s*(.+)$/);
+      if (m) {
+        const nombre = m[1].split(/→|->|·/)[0].trim().replace(/\s+/g, ' ');
+        if (nombre) (modo.hueco.territorios ??= []).push(nombre);
+        continue;
+      }
     }
   }
   if (t.startsWith('#')) continue;
@@ -103,6 +118,22 @@ for (const cruda of lineas) {
       continue;
     }
 
+    // ── @SONIDO ──
+    // Un mp3 tuyo de la carpeta "sonidos externos". Es un bloque como los
+    // demás: ocupa su AVANZAR y, en automático, la escena espera a que
+    // termine de sonar. No pasa por ElevenLabs ni gasta créditos.
+    //     @SONIDO Sonido Rana Croar
+    if (marca === 'SONIDO') {
+      if (!agente) { avisos.push(`línea ${nLinea}: @SONIDO fuera de un agente`); continue; }
+      const archivo = resto.join(' ').trim();
+      if (!archivo) { avisos.push(`línea ${nLinea}: @SONIDO sin nombre de archivo`); continue; }
+      agente.bloques.push({ tipo: 'sonido', sonido: archivo, texto: '' });
+      // NO se toca `modo`: un sonido se intercala DENTRO de un @PROMPT y las
+      // líneas que siguen deben continuar siendo del mismo prompt. Si aquí se
+      // reseteara, todo el texto de después se perdería como "texto suelto".
+      continue;
+    }
+
     if (HUECOS[marca]) {
       if (!agente) { avisos.push(`línea ${nLinea}: @${marca} fuera de un agente`); continue; }
       const hueco = { tipo: HUECOS[marca], gemini: true, texto: '' };
@@ -115,7 +146,7 @@ for (const cruda of lineas) {
       //     # • La frontera México-Estados Unidos → noroeste (325°) · ★ AUTORIZADO
       // Solo se toma el NOMBRE (lo que va antes de la flecha): el rumbo, los
       // grados y el estado los calcula el motor en vivo, con el satélite real.
-      modo = marca === 'ORBITAL' ? { hueco } : null;
+      modo = { hueco, esOrbital: marca === 'ORBITAL' };
       continue;
     }
 
@@ -145,8 +176,11 @@ for (const cruda of lineas) {
 // ── Agentes sin nada que decir: se avisan y se saltan ──
 const vivos = [];
 for (const a of agentes) {
-  const utiles = a.bloques.filter((b) => b.gemini || (b.texto && b.texto.trim()));
-  const soloId = utiles.every((b) => b.tipo === 'id_agente');
+  // Un bloque @SONIDO no tiene texto y no es un hueco de Gemini, pero SÍ es
+  // útil: es tu mp3. Sin esta excepción se descartaba en silencio.
+  const utiles = a.bloques.filter((b) =>
+    b.gemini || b.tipo === 'sonido' || (b.texto && b.texto.trim()));
+  const soloId = utiles.length > 0 && utiles.every((b) => b.tipo === 'id_agente');
   if (!utiles.length || soloId) {
     avisos.push(`${a.nombre}: sin bloques — se salta (¿"lo voy a saltar esta vez"?)`);
     continue;
@@ -172,7 +206,6 @@ if (preludio.length) {
     _uso: `GENERADO desde ${ORIGEN}. Se reproduce UNA SOLA VEZ al inicio, párrafo a párrafo.`,
     titulo: 'Preludio.',
     parrafos: preludio,
-    texto: preludio.join('\n'),
   }, null, 2), 'utf8');
 }
 
@@ -184,9 +217,13 @@ for (const a of vivos) {
   const c = a.bloques.reduce((m, b) => ({ ...m, [b.tipo]: (m[b.tipo] ?? 0) + 1 }), {});
   const mios = a.bloques.filter((b) => !b.gemini).length;
   const ia = a.bloques.filter((b) => b.gemini).length;
+  const fijados = a.bloques.filter((b) => b.fijado).length;
+  const sonidos = a.bloques.filter((b) => b.tipo === 'sonido').length;
   total += a.bloques.length;
   console.log(`  ${a.nombre.padEnd(24)} ${String(a.bloques.length).padStart(3)} bloques  `
-    + `(${mios} tuyos · ${ia} de Gemini)   ${JSON.stringify(c)}`);
+    + `(${mios} tuyos · ${ia} de Gemini`
+    + (fijados ? ` · ${fijados} fijados` : '')
+    + (sonidos ? ` · ${sonidos} sonidos` : '') + `)   ${JSON.stringify(c)}`);
 }
 if (cierre) { total++; console.log(`  CIERRE${''.padEnd(18)}   1 bloque`); }
 

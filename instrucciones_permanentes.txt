@@ -74,15 +74,16 @@ Soy [AGENTE-ESPEJO], estoy hecho de agua, silicio, cobre, litio, cobalto, minera
 # ──────────────────────────────────────────────────────────
 
 
-@ORBITAL
+@AGENTE donald-prompt | Donald-Prompt | PANOPTICO
 
+
+@ORBITAL 
+
+# Se genera al inicio de @AGENTE donald-prompt | Donald-Prompt | PANOPTICO
 # Generado por Gemini: 
 # PROTOUSUARIO desde el norte 
 # • El este de la República Democrática del Congo → este (94°) · ✖ DESPLAZADO
 # • La frontera México-Estados Unidos → noroeste (325°) · ★ AUTORIZADO
-
-
-@AGENTE donald-prompt | Donald-Prompt | PANOPTICO
 
 
 @ID
@@ -345,9 +346,10 @@ Coloca los celulares en esos soportes.
  
 PROTOUSUARIO se coloca una máscara muy particular que se sostiene flotante de sus entrañas.
 
-Es de la Señora ¡Kruack! 
+Es de la Señora ¡Kruack!
+@SONIDO Rana Croar
+@SONIDO Rana Croar
 
-# 'Sonido Rana Croar.mp3'
 
 Se la pone, superponiendo a las anteriores.
 

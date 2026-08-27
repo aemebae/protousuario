@@ -1,5 +1,5 @@
 {
-  "_uso": "GENERADO por scripts/compilar_guion.js el 2026-08-26 08:18 desde instrucciones_permanentes.txt. NO EDITAR A MANO.",
+  "_uso": "GENERADO por scripts/compilar_guion.js el 2026-08-27 11:10 desde instrucciones_permanentes.txt. NO EDITAR A MANO.",
   "_tipos": "id_agente · orbital(gemini) · prompt(tuyo) · narracion(gemini) · pregunta(tuya) · memoria(gemini)",
   "_avanzar": "cada bloque espera un AVANZAR del celular",
   "agentes": [
@@ -11,7 +11,11 @@
         {
           "tipo": "orbital",
           "gemini": true,
-          "texto": ""
+          "texto": "",
+          "territorios": [
+            "El este de la República Democrática del Congo",
+            "La frontera México-Estados Unidos"
+          ]
         },
         {
           "tipo": "id_agente",
@@ -35,11 +39,15 @@
         },
         {
           "tipo": "id_agente",
-          "texto": "¡Quiero el contenido!"
+          "texto": "¡Dame contenido!"
         },
         {
           "tipo": "id_agente",
-          "texto": "Se requiere de su participación."
+          "texto": "Ahora, PROTOUSUARIO se pone en cuatro, a la espera."
+        },
+        {
+          "tipo": "id_agente",
+          "texto": "Público, se requiere de su participación."
         },
         {
           "tipo": "id_agente",
@@ -67,7 +75,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "PROTOUSUARIO, desprende unas cabezas curiosas infladas, las va sacando de sus prótesis y empieza a repartirlas una a una al público."
+          "texto": "PROTOUSUARIO, desprende unas curiosas cabezas infladas con globos, las va sacando de sus prótesis y empieza a repartirlas una a una al público."
         },
         {
           "tipo": "prompt",
@@ -91,7 +99,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "También nos acompañan, algunas especies que podemos encontrar en cualquier parte de este planeta, como la cucaracha, gallinas de granja, gatos grises, un perro dálmata, un cerdito, entre otres más."
+          "texto": "También nos acompañan, algunas especies que podemos encontrar en cualquier parte como la cucaracha, gallinas de granja, gatos grises, un perro dálmata, un cerdito, entre otres más."
         },
         {
           "tipo": "prompt",
@@ -144,19 +152,11 @@
         },
         {
           "tipo": "prompt",
-          "texto": "…"
-        },
-        {
-          "tipo": "prompt",
           "texto": "Luego, les invita a tomarse una foto selfie grupal de ''multiespecies''."
         },
         {
           "tipo": "prompt",
-          "texto": "[Pausa larga sin texto generado]…"
-        },
-        {
-          "tipo": "prompt",
-          "texto": "Luego, manteniendo el modo selfie, les propone, ponerse en fila, uno detrás de otro, con la mano derecha sobre el hombro de la persona que tienen adelante."
+          "texto": "Luego, manteniendo el modo selfie, les propone, ponerse en fila, uno detrás de otro, con la mano derecha sobre el hombro de la persona que tienen delante."
         },
         {
           "tipo": "prompt",
@@ -164,7 +164,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "en una fila de gran serpiente,"
+          "texto": "en una fila de serpiente,"
         },
         {
           "tipo": "prompt",
@@ -214,7 +214,11 @@
         {
           "tipo": "orbital",
           "gemini": true,
-          "texto": ""
+          "texto": "",
+          "territorios": [
+            "Taiwán y el estrecho de Formosa",
+            "el desierto de Atacama"
+          ]
         },
         {
           "tipo": "prompt",
@@ -288,7 +292,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "… Yakuruna es una criatura mitológica de la cosmovisión amazónica, es una divinidad, no es buena ni mala, se guía por su deseo…"
+          "texto": "… Yakuruna es una criatura mitológica de la cosmovisión amazónica, es una divinidad, no es buena ni mala, se guía por sus deseos…"
         },
         {
           "tipo": "prompt",
@@ -296,7 +300,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "Con unos movimientos muy lentos y ondulantes,"
+          "texto": "Con unos movimientos lentos y ondulantes,"
         },
         {
           "tipo": "prompt",
@@ -359,15 +363,33 @@
         },
         {
           "tipo": "prompt",
-          "texto": "Coloca los celulares que lleva en esos soportes."
+          "texto": "Coloca los celulares en esos soportes."
         },
         {
           "tipo": "prompt",
-          "texto": "PROTOUSUARIO se coloca una máscara muy particular que se sostiene flotante de sus entrañas, superponiendo a las anteriores."
+          "texto": "PROTOUSUARIO se coloca una máscara muy particular que se sostiene flotante de sus entrañas."
         },
         {
           "tipo": "prompt",
-          "texto": "Luego se coloca el casco"
+          "texto": "Es de la Señora ¡Kruack!"
+        },
+        {
+          "tipo": "sonido",
+          "sonido": "Rana Croar",
+          "texto": ""
+        },
+        {
+          "tipo": "sonido",
+          "sonido": "Rana Croar",
+          "texto": ""
+        },
+        {
+          "tipo": "prompt",
+          "texto": "Se la pone, superponiendo a las anteriores."
+        },
+        {
+          "tipo": "prompt",
+          "texto": "Luego se coloca el casco o lo intenta"
         },
         {
           "tipo": "prompt",
@@ -387,7 +409,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "golpea su frente tres veces contra el suelo:"
+          "texto": "golpea su frente, tres veces contra el suelo:"
         },
         {
           "tipo": "prompt",
@@ -449,7 +471,11 @@
         {
           "tipo": "orbital",
           "gemini": true,
-          "texto": ""
+          "texto": "",
+          "territorios": [
+            "la Franja de Gaza",
+            "el sur andino del Perú (Ayacucho–Puno)"
+          ]
         },
         {
           "tipo": "prompt",
@@ -465,7 +491,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "Se la saca, la pone en alto con su mano un instante y la guarda entre una visible extremidad de plástico y metal."
+          "texto": "Se la saca, la pone en alto con su mano un instante y la guarda dentro de sí, como si se la comiera."
         },
         {
           "tipo": "prompt",
@@ -485,11 +511,11 @@
         },
         {
           "tipo": "prompt",
-          "texto": "Luego se cae"
+          "texto": "Se cae"
         },
         {
           "tipo": "prompt",
-          "texto": "en paralelo,"
+          "texto": "Luego, en paralelo"
         },
         {
           "tipo": "prompt",
@@ -516,5 +542,5 @@
       ]
     }
   ],
-  "cierre": "La criatura desaparece lentamente, dejando solo las prótesis en el suelo de la sala —el exoesqueleto vacío, sin cuerpo móvil— como una crisálida seca, como una muda de piel en un desierto, como un resto arqueológico de un... ¿antiguo cuerpo futuro?"
+  "cierre": "La criatura va desapareciendo lentamente, dejando solo las prótesis en el suelo de la sala —el exoesqueleto vacío, sin cuerpo móvil— como una crisálida seca, como una muda de piel en un desierto, como un resto arqueológico de un... ¿ancestral cuerpo futuro?"
 }

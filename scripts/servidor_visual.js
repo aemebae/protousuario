@@ -203,6 +203,18 @@ app.get('/audio/:archivo', (req, res) => {
   res.status(404).end();
 });
 
+// ───────── SONIDOS EXTERNOS ─────────
+// Tus mp3 se sirven por su NOMBRE REAL, no por huella: no pasan por ElevenLabs.
+app.get('/sonido/:archivo', (req, res) => {
+  const pedido = decodeURIComponent(String(req.params.archivo));
+  if (pedido.includes('..') || /[\\/]/.test(pedido)) return res.status(400).end();
+  const ruta = resolve(process.cwd(), 'sonidos externos', pedido);
+  if (!existsSync(ruta)) return res.status(404).end();
+  res.type('audio/mpeg');
+  res.setHeader('Cache-Control', 'public, max-age=86400');
+  res.sendFile(ruta);
+});
+
 // El celular manda un comando.
 app.post('/control', (req, res) => {
   const cmd = req.body?.comando;
