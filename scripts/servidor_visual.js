@@ -151,7 +151,11 @@ app.post('/evento', (req, res) => {
   if (tipo === 'afecto' && datos?.estado) ultimoEstado.afecto = datos.estado;
   // La secuencia completa se guarda: un celular que se reconecta a media
   // función recupera de golpe todos los textos que faltan.
-  if (tipo === 'secuencia') ultimoEstado.secuencia = datos ?? null;
+  if (tipo === 'secuencia') { ultimoEstado.secuencia = datos ?? null; ultimoEstado.bloque = null; }
+  if (tipo === 'segmento' && typeof datos?.indice === 'number') {
+    ultimoEstado.bloque = datos.indice;
+    emitir('bloque', { i: datos.indice });   // el celular resalta esa línea
+  }
   if (tipo === 'deriva') ultimoEstado.deriva = !!datos?.activa;
 
   emitir(tipo, datos ?? {});
@@ -215,14 +219,37 @@ app.get('/sonido/:archivo', (req, res) => {
   res.sendFile(ruta);
 });
 
+// Estado de pausa: vive aquí, en el servidor, para que la pantalla reaccione
+// sin esperar al orquestador.
+let estadoPausa = false;
+
 // El celular manda un comando.
 app.post('/control', (req, res) => {
   const cmd = req.body?.comando;
-  const validos = ['avanzar', 'repetir', 'saltar_agente', 'terminar', 'pausa', 'deriva', 'auto', 'manual'];
+  const validos = ['avanzar', 'retroceder', 'repetir', 'saltar_agente',
+                   'terminar', 'pausa', 'deriva', 'auto', 'manual'];
   const esVelocidad = typeof cmd === 'string' && /^velocidad:[0-9.]+$/.test(cmd);
-  if (!validos.includes(cmd) && !esVelocidad) {
+  const esIr = typeof cmd === 'string' && /^ir:\d+$/.test(cmd);   // saltar a un bloque
+  if (!validos.includes(cmd) && !esVelocidad && !esIr) {
     return res.status(400).json({ error: 'comando inválido', validos });
   }
+
+  // ═══ LA PAUSA LA MANDA EL SERVIDOR, NO EL ORQUESTADOR ═══
+  // Este era el fallo que notaste: si el aviso de pausa tenía que dar la
+  // vuelta por el orquestador, llegaba tarde y la frase terminaba igual. El
+  // orquestador solo escucha entre bloques; el texto, en cambio, se escribe
+  // letra a letra en el navegador. Ahora la pantalla se entera EN EL INSTANTE
+  // en que sueltas el botón, y por eso congela en la letra exacta.
+  {
+    const antes = estadoPausa;
+    if (cmd === 'pausa') estadoPausa = !estadoPausa;
+    else estadoPausa = false;               // cualquier otro botón reanuda
+    if (estadoPausa !== antes) {
+      ultimoEstado.pausa = estadoPausa;
+      emitir('pausa', { activa: estadoPausa });
+    }
+  }
+  if (esIr) { entregarComando(cmd); return res.json({ ok: true, comando: cmd }); }
   // La velocidad la aplica el navegador al vuelo (playbackRate): no hay que
   // regrabar nada, no cuesta créditos, y se oye el cambio al instante.
   if (esVelocidad) {

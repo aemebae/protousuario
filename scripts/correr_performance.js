@@ -180,17 +180,28 @@ async function esperar(msg = '[ENTER o AVANZAR en el celular]', msAuto = 0) {
   }
 }
 
-async function llamarGemini(prompt, maxIntentos = 3) {
+// SIN_GEMINI=1 → la función corre SOLO con tus textos permanentes y el
+// respaldo local. Cero red, cero espera, cero sorpresas. Es el interruptor
+// de emergencia si el modelo está saturado el día de la función.
+const SIN_GEMINI = process.env.SIN_GEMINI === '1';
+// Tope duro por intento. Sin esto, un 503 de Google puede dejar la escena
+// colgada minutos: fue lo que te pasó con Quimera.
+const GEMINI_MS = Number(process.env.GEMINI_MS || 20000);
+
+async function llamarGemini(prompt, maxIntentos = Number(process.env.GEMINI_INTENTOS || 2)) {
   for (let i = 0; i < maxIntentos; i++) {
     try {
-      const res = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
+      const res = await Promise.race([
+        ai.models.generateContent({ model: process.env.GEMINI_MODELO || 'gemini-2.5-flash', contents: prompt }),
+        new Promise((_, rej) => setTimeout(() => rej(new Error(`sin respuesta en ${GEMINI_MS / 1000}s`)), GEMINI_MS)),
+      ]);
       const limpio = res.text.trim().replace(/^```json\s*|\s*```$/g, '');
       const m = limpio.match(/\{[\s\S]*\}/);
       return JSON.parse(m ? m[0] : limpio);
     } catch (e) {
       if (i === maxIntentos - 1) throw e;
       console.warn(`  reintento ${i + 1}/${maxIntentos} — ${e.message}`);
-      await new Promise((r) => setTimeout(r, 1500 * (i + 1)));
+      await new Promise((r) => setTimeout(r, 800));
     }
   }
 }
@@ -256,51 +267,22 @@ const GRUPO = process.env.GRUPO_SATELITAL || 'active';
 const rotulo = { orbital: 'DATO ORBITAL', prompt: 'PROMPT', narracion: '· narración NatGeo ·',
                  memoria: '· memoria episódica ·', pregunta: '◈ PREGUNTA', id_agente: 'ID AGENTE' };
 
-async function funcion() {
-  console.log('\n' + '='.repeat(72));
-  console.log('  PROTOUSUARIO · Patio de las Artes · MINCUL, Lima');
-  console.log(`  ${GUION.agentes.length} agentes · ${GUION.agentes.reduce((s, a) => s + a.bloques.length, 0)} bloques`);
-  console.log('  AVANZAR = siguiente bloque · PAUSA congela · DERIVA = pasaje final');
-  console.log('='.repeat(72));
-  await esperar('[ENTER o AVANZAR para empezar]');
-
-  // ═══ PRELUDIO ═══
-  // Se parte en párrafos: cada uno es un bloque con su propio AVANZAR y su
-  // propia voz. Un preludio de 400 palabras de un solo golpe no se puede
-  // sostener en escena; en párrafos, sí.
-  if (PRELUDIO?.texto && process.env.SIN_PRELUDIO !== '1') {
-    // El compilador ya deja los párrafos partidos; si no, se parten aquí.
-    const parrafos = (PRELUDIO.parrafos?.length ? PRELUDIO.parrafos
-      : PRELUDIO.texto.split(/\n+/)).map((t) => t.trim()).filter(Boolean);
-    console.log('\n' + '─'.repeat(72));
-    console.log(`  PRELUDIO  (${parrafos.length} párrafos)`);
-    console.log('─'.repeat(72));
-    await emitirAfecto('LIMINAL');
-    const vozPre = await vozLote(parrafos.map((t) => ({ texto: t, cual: VOZ_AUTOR })), { etiqueta: 'preludio' });
-    await emitirSecuencia(parrafos.map((t) => ({ tipo: 'narracion', texto: t })), { agente: 'PRELUDIO' });
-    for (let i = 0; i < parrafos.length; i++) {
-      console.log(`\n  [${i + 1}/${parrafos.length}] PRELUDIO`);
-      console.log('  ' + parrafos[i].replace(/(.{88})/g, '$1\n  '));
-      const mp3Pre = vozPre.get(parrafos[i]) ?? null;
-      await emitirPreludio(parrafos[i], mp3Pre);
-      await informarControl({ agente: 'PRELUDIO', progreso: `${i + 1}/${parrafos.length}` });
-      const cmd = await esperar(`[preludio ${i + 1}/${parrafos.length}] AVANZAR`,
-                                esperaDe(parrafos[i], mp3Pre));
-      if (cmd === 'repetir') i--;
-    }
-  }
-
-  for (const ag of GUION.agentes) {
-    const ficha = FICHAS.find((f) => f.id === ag.id) ?? { agente: ag.nombre, caracter: '', sesgo_manifiestos: '' };
-    try {
-      console.log('\n' + '─'.repeat(72));
-      console.log(`  ${ag.nombre.toUpperCase()}  (${ag.estado})`);
-      console.log('─'.repeat(72));
-      await emitirAfecto(ag.estado);
-
+// ═══════════════════════════════════════════════════════════════════════════
+//  PREPARAR UN AGENTE — se hace EN SEGUNDO PLANO, mientras suena el anterior
+//
+//  EL PROBLEMA QUE RESUELVE: antes, al entrar cada agente, la escena se
+//  detenía a esperar a Gemini. Si Google devolvía 503 (te pasó con Quimera),
+//  eran minutos de pantalla congelada y el control sin responder, porque el
+//  orquestador solo escucha el celular entre bloque y bloque.
+//
+//  AHORA: mientras PROTOUSUARIO ejecuta al agente 1, el sistema ya está
+//  pidiendo y grabando el agente 2 por detrás. Cuando llega su turno, todo
+//  está en memoria y en disco. Gemini deja de estar en el camino crítico.
+async function prepararAgente(ag) {
+  const ficha = FICHAS.find((f) => f.id === ag.id)
+    ?? { agente: ag.nombre, caracter: '', sesgo_manifiestos: '' };
       // ── Dato satelital real de este instante ──
       const dato = await obtenerDatoOrbital({ grupo: GRUPO });
-      await emitirSatelite(dato);
       // ── TUS TERRITORIOS ──
       // Si escribiste viñetas debajo de @ORBITAL, mandan esas, en tu orden.
       // Si no, se elige el más cercano al satélite como hasta ahora.
@@ -317,8 +299,6 @@ async function funcion() {
       if (territorioB) {
         console.log(`  + segundo territorio: ${territorioB.nombre} · ${rumboB.territorio_texto} · ${rumboB.estado_marca}`);
       }
-      await emitirRumbo({ estado: rumbo.estado, cardinal: rumbo.cardinal,
-                          azimut: rumbo.azimut, rumboAgente: rumbo.rumboAgente });
       console.log(`  ${dato.satelite} · ${territorio.nombre} · ${rumbo.estado_marca}`);
 
       // ── Una sola llamada a Gemini con todos los huecos ──
@@ -326,10 +306,13 @@ async function funcion() {
       const nNar = ag.bloques.filter((b) => b.tipo === 'narracion').length;
       const nMem = ag.bloques.filter((b) => b.tipo === 'memoria').length;
       let gen = { dato_orbital: [], narracion: [], memoria: [] };
-      if (nOrb + nNar + nMem > 0) {
+      // `marco` se declara AQUÍ y no dentro del try: si se queda dentro, al
+      // escribir el registro más abajo da "marco is not defined" — que es
+      // exactamente el error que viste en la terminal.
+      const marco = (nOrb + nNar + nMem > 0) ? elegirMarco(ag.id) : null;
+      if (marco) console.log(`    marco teórico: ${marco.id}`);
+      if (nOrb + nNar + nMem > 0 && !SIN_GEMINI) {
         try {
-          const marco = elegirMarco(ag.id);
-          if (marco) console.log(`    marco teórico: ${marco.id}`);
           const r = await llamarGemini(promptDeAgente({ ficha, bloques: ag.bloques, dato, territorio, rumbo, territorioB, rumboB, marco, nOrb, nNar, nMem }));
           gen = {
             dato_orbital: (r?.dato_orbital ?? []).filter(Boolean),
@@ -399,6 +382,76 @@ async function funcion() {
           .map((x) => ({ texto: x.texto, cual: x.gemini ? VOZ_IA : VOZ_AUTOR })),
         { etiqueta: ag.nombre });
 
+
+  return { ag, ficha, dato, territorio, territorioB, rumbo, rumboB, marco, gen, segmentos, vozAg };
+}
+
+async function funcion() {
+  console.log('\n' + '='.repeat(72));
+  console.log('  PROTOUSUARIO · Patio de las Artes · MINCUL, Lima');
+  console.log(`  ${GUION.agentes.length} agentes · ${GUION.agentes.reduce((s, a) => s + a.bloques.length, 0)} bloques`);
+  console.log('  AVANZAR = siguiente bloque · PAUSA congela · DERIVA = pasaje final');
+  console.log('='.repeat(72));
+  // El agente 1 empieza a prepararse AHORA, antes de que suene una sola
+  // palabra. Para cuando termine el preludio, ya estará listo.
+  const preparado = [];
+  if (GUION.agentes[0]) preparado[0] = prepararAgente(GUION.agentes[0]);
+
+  await esperar('[ENTER o AVANZAR para empezar]');
+
+  // ═══ PRELUDIO ═══
+  // Se parte en párrafos: cada uno es un bloque con su propio AVANZAR y su
+  // propia voz. Un preludio de 400 palabras de un solo golpe no se puede
+  // sostener en escena; en párrafos, sí.
+  if (PRELUDIO?.texto && process.env.SIN_PRELUDIO !== '1') {
+    // El compilador ya deja los párrafos partidos; si no, se parten aquí.
+    const parrafos = (PRELUDIO.parrafos?.length ? PRELUDIO.parrafos
+      : PRELUDIO.texto.split(/\n+/)).map((t) => t.trim()).filter(Boolean);
+    console.log('\n' + '─'.repeat(72));
+    console.log(`  PRELUDIO  (${parrafos.length} párrafos)`);
+    console.log('─'.repeat(72));
+    await emitirAfecto('LIMINAL');
+    const vozPre = await vozLote(parrafos.map((t) => ({ texto: t, cual: VOZ_AUTOR })), { etiqueta: 'preludio' });
+    await emitirSecuencia(parrafos.map((t) => ({ tipo: 'narracion', texto: t })), { agente: 'PRELUDIO' });
+    for (let i = 0; i < parrafos.length; i++) {
+      console.log(`\n  [${i + 1}/${parrafos.length}] PRELUDIO`);
+      console.log('  ' + parrafos[i].replace(/(.{88})/g, '$1\n  '));
+      const mp3Pre = vozPre.get(parrafos[i]) ?? null;
+      await emitirPreludio(parrafos[i], mp3Pre);
+      await informarControl({ agente: 'PRELUDIO', progreso: `${i + 1}/${parrafos.length}` });
+      const cmd = await esperar(`[preludio ${i + 1}/${parrafos.length}] AVANZAR`,
+                                esperaDe(parrafos[i], mp3Pre));
+      if (cmd === 'repetir') i--;
+      else if (cmd === 'retroceder') i = Math.max(-1, i - 2);
+      else if (typeof cmd === 'string' && cmd.startsWith('ir:')) {
+        const d = Number(cmd.slice(3));
+        if (Number.isFinite(d) && d >= 0 && d < parrafos.length) i = d - 1;
+      }
+    }
+  }
+
+  // ── ADELANTARSE ──
+  // El agente 1 se prepara mientras suena el preludio; el 2 mientras corre el
+  // 1; y así. Cuando le toca a cada uno, ya está todo pedido y grabado.
+  let enCamino = preparado[0] ?? prepararAgente(GUION.agentes[0]);
+
+  for (let idx = 0; idx < GUION.agentes.length; idx++) {
+    const ag = GUION.agentes[idx];
+    try {
+      console.log('\n' + '─'.repeat(72));
+      console.log(`  ${ag.nombre.toUpperCase()}  (${ag.estado})`);
+      console.log('─'.repeat(72));
+
+      const prep = await enCamino;
+      // Se lanza YA la preparación del siguiente, sin esperarla.
+      enCamino = GUION.agentes[idx + 1] ? prepararAgente(GUION.agentes[idx + 1]) : null;
+
+      const { dato, territorio, rumbo, segmentos, vozAg } = prep;
+
+      await emitirAfecto(ag.estado);
+      await emitirSatelite(dato);
+      await emitirRumbo({ estado: rumbo.estado, cardinal: rumbo.cardinal,
+                          azimut: rumbo.azimut, rumboAgente: rumbo.rumboAgente });
       await emitirSecuencia(segmentos, { agente: ag.nombre });
       await informarControl({ agente: ag.nombre, estado_marca: rumbo.estado_marca,
                               territorio: `${territorio.nombre} — ${rumbo.territorio_texto}` });
@@ -423,7 +476,23 @@ async function funcion() {
         // En automático, un @SONIDO espera lo que dure el mp3 de verdad.
         const cmd = await esperar(`[${i + 1}/${ag.bloques.length}] AVANZAR`,
           son ? duracionMs(son) + RESPIRO_MS : esperaDe(texto, mp3));
+
+        // ── NAVEGACIÓN ──
+        // El bucle usa i++ al final de cada vuelta, así que:
+        //   repetir     → i--        vuelve a decir ESTE bloque
+        //   retroceder  → i -= 2     va al ANTERIOR
+        //   ir:N        → i = N-1    salta al bloque N (tocando una línea)
+        // El tope inferior es -1 para que la siguiente vuelta caiga en 0 y
+        // nunca se salga del guion por abajo.
         if (cmd === 'repetir') i--;
+        else if (cmd === 'retroceder') i = Math.max(-1, i - 2);
+        else if (typeof cmd === 'string' && cmd.startsWith('ir:')) {
+          const destino = Number(cmd.slice(3));
+          if (Number.isFinite(destino) && destino >= 0 && destino < ag.bloques.length) {
+            i = destino - 1;
+            console.log(`  ↦ salto al bloque ${destino + 1}`);
+          }
+        }
       }
     } catch (e) {
       if (e instanceof Saltar) { console.log(`\n  ⏭  ${ag.nombre} saltado.`); continue; }
@@ -500,4 +569,10 @@ funcion().catch(async (e) => {
   }
   rl.close();
   process.exit(0);
-});
+});  // ── LA DERIVA YA NO LLAMA A GEMINI ──
+  // Tus preguntas están escritas en preguntas_deriva.json. Antes, además, se
+  // le pedía un lote nuevo al modelo: eso es lo que hacía que el pasaje final
+  // tardara tanto en arrancar. Ahora entra al instante, sin red.
+  const lote = [];
+
+

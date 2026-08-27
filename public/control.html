@@ -37,13 +37,40 @@
   .fila{display:flex;gap:9px;}
   .fila button{flex:1;padding:15px;font-size:13px;background:transparent;
     color:var(--accent);border:1px solid var(--dim);}
-  #btnAvanzar{padding:30px;font-size:21px;}
+  /* v7 — botones más chicos: el texto manda, no la botonera */
+  button{padding:11px 8px;font-size:13px;letter-spacing:.05em;}
+  #btnAvanzar{padding:15px;font-size:16px;}
+  #btnRetro{padding:15px;font-size:16px;background:transparent;
+    color:var(--accent);border:1px solid var(--dim);}
+  .fila{gap:7px;}
+
+  /* ── LISTA NAVEGABLE (tipo Speechify) ──
+     Todo el texto del agente queda impreso. Se recorre con el dedo y se toca
+     una línea para saltar a ella. La línea que suena va resaltada y la lista
+     se desplaza sola para mantenerla a la vista. */
+  .lista{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+    border:1px solid var(--dim);border-radius:12px;padding:4px;margin-bottom:8px;}
+  .lin{padding:9px 11px;border-radius:9px;margin:2px 0;cursor:pointer;
+    font-size:14px;line-height:1.45;opacity:.42;
+    border-left:2px solid transparent;transition:opacity .15s;}
+  .lin:active{background:rgba(255,255,255,.07);}
+  .lin.dicho{opacity:.3;}
+  .lin.ahora{opacity:1;background:rgba(255,255,255,.05);
+    border-left-color:var(--accent);font-size:15px;}
+  .lin .t{display:block;font-family:var(--font);font-size:9px;
+    letter-spacing:.18em;opacity:.5;margin-bottom:3px;}
+  .lin[data-tipo="prompt"] .t{color:var(--accent);}
+  .lin[data-tipo="pregunta"]{font-style:italic;}
+  .lin[data-tipo="pregunta"] .t{color:#c9a6ff;}
+  .lin[data-tipo="sonido"] .t{color:#ffc65f;}
+  .lin[data-tipo="orbital"] .t, .lin[data-tipo="narracion"] .t,
+  .lin[data-tipo="memoria"] .t{color:#8fb6a2;}
   #btnTerminar{background:transparent;color:var(--alert);border:1px solid var(--alert);
     padding:12px;font-size:12px;}
   /* PAUSA: segundo botón en tamaño, porque en escena se usa de verdad.
      Cuando está activo se pinta entero y AVANZAR se atenúa, para que a
      oscuras y de un vistazo sepas en qué estado estás. */
-  #btnPausa{background:transparent;color:var(--accent);border:1px solid var(--dim);
+  #btnPausa{background:transparent;color:#ffc65f;border:1px solid #8a6520;
     padding:20px;font-size:16px;}
   body[data-pausa="1"] #btnPausa{background:#ffc65f;color:var(--bg);border-color:#ffc65f;}
   body[data-pausa="1"] #btnAvanzar{opacity:.3;}
@@ -66,10 +93,6 @@
   #velValor{flex:1;text-align:center;font-size:22px;letter-spacing:.04em;
     font-variant-numeric:tabular-nums;}
   #velValor small{display:block;font-size:9px;letter-spacing:.2em;opacity:.4;}
-  #btnDeriva{background:transparent;color:#c9a6ff;border:1px solid #6b4f96;
-    padding:16px;font-size:14px;letter-spacing:.1em;}
-  body[data-deriva="1"] #btnDeriva{background:#c9a6ff;color:var(--bg);}
-  body[data-deriva="1"] #btnAvanzar{opacity:.25;}
   .conexion{font-size:11px;letter-spacing:.14em;text-align:center;opacity:.55;padding-bottom:4px;}
   .conexion.caida{color:var(--alert);opacity:1;font-size:13px;}
   .conexion.local{color:#ffc65f;opacity:1;font-size:13px;}
@@ -84,17 +107,19 @@
     <div class="progreso" id="progreso"></div>
   </div>
 
-  <div class="segmento" id="segmento">
-    <span class="tipo" id="segTipo">EN ESPERA</span>
-    <span id="segTexto">Arranca el orquestador en la laptop y pulsa AVANZAR.</span>
+  <div class="lista" id="lista">
+    <div class="lin ahora"><span class="t">EN ESPERA</span>
+      Arranca el orquestador en la laptop y pulsa AVANZAR.</div>
   </div>
 
   <div class="botonera">
-    <button id="btnAvanzar">▶  AVANZAR</button>
-    <button id="btnPausa">⏸  PAUSA</button>
     <div class="fila">
+      <button id="btnRetro">◀  ATRÁS</button>
+      <button id="btnAvanzar">AVANZAR  ▶</button>
+    </div>
+    <div class="fila">
+      <button id="btnPausa">⏸ PAUSA</button>
       <button id="btnRepetir">↺ REPETIR</button>
-      <button id="btnSaltar">⏭ SALTAR AGENTE</button>
     </div>
     <div class="grupo">
       <div class="rotulo">reproducción</div>
@@ -113,7 +138,6 @@
       </div>
     </div>
 
-    <button id="btnDeriva">◈ DERIVA — PASAJE FINAL</button>
     <button id="btnTerminar">■ TERMINAR PERFORMANCE</button>
   </div>
   <div class="conexion" id="conexion">conectando…</div>
@@ -130,6 +154,7 @@ const el = (id) => document.getElementById(id);
 //  Al volver al alcance, el WebSocket se reconecta solo y se re-sincroniza.
 // ═══════════════════════════════════════════════════════════════════════
 let secuencia = [], iLocal = 0, enLinea = false, modoLocal = false;
+let bloqueActual = -1;
 
 function pintarConexion(){
   const c = el('conexion');
@@ -162,7 +187,13 @@ async function enviar(comando){
   }
 }
 
-el('btnAvanzar').onclick = () => { document.body.dataset.pausa=''; enviar('avanzar'); };
+el('btnAvanzar').onclick = () => {
+  document.body.dataset.pausa='';
+  // Se adelanta el resaltado sin esperar la respuesta: el botón se siente
+  // inmediato aunque la red tarde. Si el servidor manda otra cosa, corrige.
+  if (secuencia.length && bloqueActual < secuencia.length - 1) { bloqueActual++; pintarLista(); }
+  enviar('avanzar');
+};
 el('btnPausa').onclick   = () => {
   const activa = document.body.dataset.pausa === '1';
   document.body.dataset.pausa = activa ? '' : '1';
@@ -194,14 +225,13 @@ el('velMas').onclick   = () => { if(iVel<PASOS.length-1){ iVel++; mandarVel(); }
 el('velValor').onclick = () => { iVel = PASOS.indexOf(1.00); mandarVel(); };
 
 el('btnRepetir').onclick = () => enviar('repetir');
-el('btnSaltar').onclick  = () => { if(confirm('¿Saltar al siguiente agente?')) enviar('saltar_agente'); };
-el('btnTerminar').onclick= () => { if(confirm('¿TERMINAR la performance?')) enviar('terminar'); };
-el('btnDeriva').onclick  = () => {
-  if(confirm('◈ DERIVA: el sistema queda autónomo y sigue hablando solo. ¿Entrar al pasaje final?')){
-    document.body.dataset.deriva='1';
-    enviar('deriva');
-  }
+// ATRÁS: vuelve al bloque anterior. Es lo que faltaba cuando apretabas
+// AVANZAR varias veces por impaciencia y se te iban tres líneas de golpe.
+el('btnRetro').onclick = () => {
+  if (bloqueActual > 0) { bloqueActual--; pintarLista(); }
+  enviar('retroceder');
 };
+el('btnTerminar').onclick= () => { if(confirm('¿TERMINAR la performance?')) enviar('terminar'); };
 
 // Espacio y flecha derecha también avanzan (por si usas teclado bluetooth)
 addEventListener('keydown', e => {
@@ -219,20 +249,60 @@ function pintarEstado(d){
   }
   if(d.progreso) el('progreso').textContent = d.progreso;
 }
-function pintarSegmento(tipo, texto){
-  // En el celular SÍ conviene ver la etiqueta de cada parte: es tu partitura,
-  // no la pantalla del público. Aquí sirve saber si lo que sigue es una orden
-  // para tu cuerpo o una narración que solo suena.
-  const nombres={orbital:'DATO ORBITAL', memoria:'memoria episódica',
-                 prompt:'▌ PROMPT — EJECUTA', narracion:'narración NatGeo',
-                 reflexion:'narración NatGeo', pregunta:'◈ PREGUNTA — AL MICRÓFONO'};
-  el('segTipo').textContent = nombres[tipo] ?? tipo.toUpperCase();
-  el('segTexto').textContent = texto;
-  el('segmento').scrollTop = 0;
-  el('segmento').style.borderColor =
-    tipo==='prompt' ? 'var(--accent)' : (tipo==='pregunta' ? '#c9a6ff' : 'var(--dim)');
-  el('segTexto').style.fontSize = tipo==='pregunta' ? '19px' : '';
+// ═══════════════════════════════════════════════════════════════════════
+//  LISTA NAVEGABLE
+//  El servidor manda la secuencia COMPLETA del agente en cuanto se arma
+//  (evento 'secuencia'). Aquí se imprime entera: recorres con el dedo y
+//  tocas una línea para saltar a ella. La que suena va resaltada.
+//  Esto también es tu red si se cae el hotspot: el texto ya está aquí.
+// ═══════════════════════════════════════════════════════════════════════
+const NOMBRE_TIPO = {
+  orbital:'DATO ORBITAL', memoria:'memoria episódica', prompt:'▌ PROMPT',
+  narracion:'narración NatGeo', reflexion:'narración NatGeo',
+  pregunta:'◈ PREGUNTA — AL MICRÓFONO', sonido:'♪ SONIDO', id_agente:'▌ ID',
+};
+
+function pintarLista(){
+  const cont = el('lista');
+  cont.innerHTML = '';
+  if(!secuencia.length){
+    cont.innerHTML = '<div class="lin ahora"><span class="t">EN ESPERA</span>'
+      + 'Arranca el orquestador en la laptop y pulsa AVANZAR.</div>';
+    return;
+  }
+  secuencia.forEach((seg, k) => {
+    const d = document.createElement('div');
+    d.className = 'lin' + (k === bloqueActual ? ' ahora' : (k < bloqueActual ? ' dicho' : ''));
+    d.dataset.tipo = seg.tipo;
+    d.dataset.i = k;
+    d.innerHTML = `<span class="t">${k+1}. ${NOMBRE_TIPO[seg.tipo] ?? seg.tipo}</span>`
+      + (seg.texto ? seg.texto.replace(/</g,'&lt;') : (seg.sonido ? seg.sonido : '—'));
+    // Tocar una línea = ir a ella. Confirmación corta para no saltar por error
+    // con el pulgar mientras haces otra cosa en escena.
+    d.onclick = () => {
+      if (k === bloqueActual) return;
+      if (navigator.vibrate) navigator.vibrate(18);
+      bloqueActual = k; pintarLista();
+      enviar('ir:' + k);
+    };
+    cont.appendChild(d);
+  });
+  const activa = cont.querySelector('.lin.ahora');
+  if (activa) activa.scrollIntoView({ block:'center', behavior:'smooth' });
 }
+
+function pintarSegmento(tipo, texto){
+  // Si el texto está en la secuencia, se resalta esa línea. Si no (preludio,
+  // deriva), se añade al final para que también se pueda recorrer.
+  const k = secuencia.findIndex((x) => x.texto === texto);
+  if (k >= 0) bloqueActual = k;
+  else {
+    secuencia.push({ tipo, texto });
+    bloqueActual = secuencia.length - 1;
+  }
+  pintarLista();
+}
+
 
 function conectar(){
   const ws = new WebSocket(`ws://${location.host}`);
@@ -252,10 +322,14 @@ function conectar(){
       pintarConexion();
     }
     if(m.tipo==='secuencia'){
-      secuencia = m.datos.segmentos || []; iLocal = 0; pintarConexion();
+      secuencia = m.datos.segmentos || []; iLocal = 0; bloqueActual = -1;
+      pintarLista(); pintarConexion();
     }
     if(m.tipo==='pausa'){ document.body.dataset.pausa = m.datos.activa ? '1' : ''; }
     if(m.tipo==='modo') pintarModo(!!m.datos.auto);
+    if(m.tipo==='bloque' && typeof m.datos.i === 'number'){
+      bloqueActual = m.datos.i; pintarLista();
+    }
     if(m.tipo==='velocidad'){
       const k = PASOS.indexOf(Number(m.datos.valor));
       if(k>=0){ iVel = k; pintarVel(); }
