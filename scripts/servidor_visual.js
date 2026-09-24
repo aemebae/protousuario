@@ -32,7 +32,6 @@ import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { networkInterfaces } from 'node:os';
-import { spawn } from 'node:child_process';
 import { obtenerDatoOrbital, repropagarNube } from './capa2_dato_orbital_v3.js';
 // Distrito / ciudad bajo el satélite (curaduría propia, offline, 0 MB extra).
 import { resolverLugar } from './resolver_lugar.js';
@@ -64,6 +63,15 @@ function indiceDePais(pais, pais_tipo) {
 const app = express();
 app.use(express.json({ limit: '2mb' }));
 app.use(express.static(join(RAIZ, 'public')));
+
+// ---------- Imágenes del CLON TRANSESPECIE ----------
+// La carpeta vive en la raíz (con espacio en el nombre). Se sirve por su
+// propia ruta para no tener que mover ni renombrar nada. Caché larga: son
+// 21 PNG de ~1 MB que el navegador carga UNA vez y reutiliza toda la noche.
+app.use('/clon-img', express.static(join(RAIZ, 'CLON TRANSESPECIE'), {
+  maxAge: '7d',
+  fallthrough: true,
+}));
 
 const server = createServer(app);
 const wss = new WebSocketServer({ server });
@@ -224,51 +232,11 @@ app.get('/sonido/:archivo', (req, res) => {
 // sin esperar al orquestador.
 let estadoPausa = false;
 
-// ═══════════════════════════════════════════════════════════════════════════
-//  ARRANCAR LA PERFORMANCE DESDE EL CELULAR
-//  Sí se puede, y es de lo más seguro que hay: este servidor lanza el
-//  orquestador como un proceso hijo, con la misma terminal. Ves su salida en
-//  la misma ventana de siempre y el ENTER del teclado le sigue llegando.
-//  Así no tienes que tocar la laptop para empezar: la enciendes, la dejas
-//  con la tapa cerrada, y arrancas desde el bolsillo.
-// ═══════════════════════════════════════════════════════════════════════════
-let procesoOrquestador = null;
-
-function arrancarOrquestador() {
-  if (procesoOrquestador && procesoOrquestador.exitCode === null) {
-    console.log('[control] ARRANCAR ignorado: la performance ya está corriendo.');
-    emitir('orquestador', { corriendo: true, aviso: 'ya estaba corriendo' });
-    return { ok: false, motivo: 'ya_corriendo' };
-  }
-  console.log('\n' + '▶'.repeat(36));
-  console.log('  ARRANQUE REMOTO desde el celular');
-  console.log('▶'.repeat(36) + '\n');
-
-  procesoOrquestador = spawn(
-    process.execPath,                                  // el mismo node que corre esto
-    ['--env-file=.env', join(__dirname, 'correr_performance.js')],
-    { cwd: process.cwd(), stdio: 'inherit', env: process.env }
-  );
-  emitir('orquestador', { corriendo: true });
-
-  procesoOrquestador.on('exit', (codigo) => {
-    console.log(`\n■ La performance terminó (código ${codigo}).\n`);
-    emitir('orquestador', { corriendo: false });
-    procesoOrquestador = null;
-  });
-  procesoOrquestador.on('error', (e) => {
-    console.error('✗ No se pudo arrancar el orquestador:', e.message);
-    emitir('orquestador', { corriendo: false, error: e.message });
-    procesoOrquestador = null;
-  });
-  return { ok: true };
-}
-
 // El celular manda un comando.
 app.post('/control', (req, res) => {
   const cmd = req.body?.comando;
   const validos = ['avanzar', 'retroceder', 'repetir', 'saltar_agente',
-                   'terminar', 'pausa', 'deriva', 'auto', 'manual', 'arrancar'];
+                   'terminar', 'pausa', 'deriva', 'auto', 'manual'];
   const esVelocidad = typeof cmd === 'string' && /^velocidad:[0-9.]+$/.test(cmd);
   const esIr = typeof cmd === 'string' && /^ir:\d+$/.test(cmd);   // saltar a un bloque
   if (!validos.includes(cmd) && !esVelocidad && !esIr) {
@@ -289,10 +257,6 @@ app.post('/control', (req, res) => {
       ultimoEstado.pausa = estadoPausa;
       emitir('pausa', { activa: estadoPausa });
     }
-  }
-  if (cmd === 'arrancar') {
-    const r = arrancarOrquestador();
-    return res.json({ ok: r.ok, comando: cmd, motivo: r.motivo ?? null });
   }
   if (esIr) { entregarComando(cmd); return res.json({ ok: true, comando: cmd }); }
   // La velocidad la aplica el navegador al vuelo (playbackRate): no hay que
@@ -417,9 +381,7 @@ server.listen(PUERTO, '0.0.0.0', () => {
   }
   console.log('════════════════════════════════════════════════════');
   console.log(`  Grupo satelital: ${GRUPO_SATELITAL} | ciclo de espera: ${POLL_MS / 1000}s`);
-  console.log('  Puedes arrancar la performance DESDE EL CELULAR con el botón');
-  console.log('  ▶ EMPEZAR, o a mano en otra terminal con:');
-  console.log('     node --env-file=.env scripts\\correr_performance.js\n');
+  console.log('  Esperando al orquestador...\n');
   cicloEspera();
   setInterval(cicloEspera, POLL_MS);
   if (TICK_MS > 0) setInterval(tickRapido, TICK_MS);

@@ -219,3 +219,10 @@ html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--text)
    navegador a recomponer la capa en CADA cuadro. Se queda el efecto,
    se va la mezcla. Si igual notas lag, pon display:none aquí. */
 .scanlines{ mix-blend-mode:normal; opacity:.5; }
+
+/* ── CLON TRANSESPECIE: la ventana antes reservada ────────────────────
+   El iframe carga /clon.html desde el MISMO servidor: sin OBS, sin otro
+   origen, sin configuración. El fondo transparente deja que el clon se
+   recorte sobre el negro de la escena. */
+#marcoClon{position:absolute;inset:0;width:100%;height:100%;border:0;
+  background:transparent;display:block;pointer-events:none;}

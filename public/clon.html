@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>CLON TRANSESPECIE — PROTOUSUARIO</title>
+<style>
+  :root{ --fondo:#0d0a10; --accent:#55ffa6; --accent-dim:#2b6b49; }
+  html,body{margin:0;padding:0;height:100%;background:var(--fondo);overflow:hidden;}
+  #lienzo{position:absolute;inset:0;width:100%;height:100%;display:block;}
+  #titulo{position:absolute;top:12px;left:14px;z-index:3;font:9px monospace;
+    letter-spacing:.24em;text-transform:uppercase;color:var(--accent);opacity:.7;
+    text-shadow:0 0 8px var(--accent-dim);pointer-events:none;}
+  #carga{position:absolute;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;
+    color:var(--accent-dim);font:10px monospace;letter-spacing:.2em;text-transform:uppercase;
+    transition:opacity .8s;}
+  #carga.oculto{opacity:0;pointer-events:none;}
+</style>
+</head>
+<body>
+<canvas id="lienzo"></canvas>
+<div id="titulo">CLON TRANSESPECIE</div>
+<div id="carga">encarnando…</div>
+<script>
+'use strict';
+/* ═══════════════════════════════════════════════════════════════════════
+   CLON TRANSESPECIE — Capa de encarnación
+   PROTOUSUARIO / [AGENTE-ESPEJO] · Museo de la Nación
+
+   Cabeza BASE completa + PARCHES de retícula 8×11 tomados de otras
+   especies en la MISMA celda. La fragmentación es virtual: drawImage con
+   rectángulo de origen. Nadie recorta archivos.
+
+   MAPA DE OCUPACIÓN: cada PNG se reduce a 8×11 px (un píxel por celda) y
+   se lee su alfa. Sin esto, la mitad de los parches cae en el vacío
+   transparente de las esquinas y el rostro se deshace en ruido.
+
+   100% offline. Sin API, sin red. Solo archivos locales.
+   Demo sin orquestador:  /clon.html?demo=1
+   ═══════════════════════════════════════════════════════════════════════ */
+
+const COLS = 8, FILAS = 11, CELDAS = COLS*FILAS, SRC = 1024;
+const RUTA = '/clon-img/';
+const DEMO = new URLSearchParams(location.search).has('demo');
+
+const ESPECIES = [
+  { f:'julix.png',                    tag:'humano'  },
+  { f:'Babosa.png',                   tag:'especie' },
+  { f:'Capibara_gpt.png',             tag:'especie' },
+  { f:'Cerdo.png',                    tag:'especie' },
+  { f:'Chiribaya_gpt.png',            tag:'especie' },
+  { f:'Cucaracha_gemini_2.png',       tag:'especie' },
+  { f:'Cuy_gemini.png',               tag:'especie' },
+  { f:'Cóndor_gpt.png',               tag:'especie' },
+  { f:'Dálmata_gpt.png',              tag:'especie' },
+  { f:'El oso de anteojos_01°.png',   tag:'especie' },
+  { f:'Gallina-1_gpt.png',            tag:'especie' },
+  { f:'Gallinazo_gemini.png',         tag:'especie' },
+  { f:'Gato gris_gpt.png',            tag:'especie' },
+  { f:'Jaguar_gpt.png',               tag:'especie' },
+  { f:'Llama_gpt.png',                tag:'especie' },
+  { f:'Muy-muy_01°.png',              tag:'especie' },
+  { f:'Viringo.png',                  tag:'especie' },
+  { f:'Yakuruna_cabeza-1_gemini.png', tag:'especie' },
+  { f:'Elite_01°.png',                tag:'poder'   },
+  { f:'Monstruo_01°.png',             tag:'poder'   },
+  { f:'Monstruo_02°.png',             tag:'poder'   },
+  { f:'Señora K.png',                 tag:'poder'   },
+];
+// Las maquetas jvlix-transespecie quedan fuera: son modelo, no material.
+
+/* Perfiles: uno por ID del CRONISTA. Mismas claves que PALETA en app.js. */
+const PERFIL = {
+  PANOPTICO:  {acc:'#55ffa6',dim:'#2b6b49',ms:620, max:26,poder:0.42,firma:'seco',   entra:90},
+  LIMINAL:    {acc:'#c9a6ff',dim:'#6b4f96',ms:1900,max:12,poder:0.00,firma:'suave',  entra:600},
+  CORRIENTE:  {acc:'#5fe0e8',dim:'#256b74',ms:1000,max:20,poder:0.04,firma:'onda',   entra:380},
+  ORBITAL:    {acc:'#ffc65f',dim:'#8a6520',ms:820, max:22,poder:0.08,firma:'franja', entra:200},
+  POLIFONICO: {acc:'#ff7ad1',dim:'#8a3a6b',ms:700, max:30,poder:0.14,firma:'todo',   entra:260},
+};
+let estado = 'PANOPTICO';
+const perfil = () => PERFIL[estado] ?? PERFIL.PANOPTICO;
+
+/* Zona vocal: banda de boca/hocico. Late con la voz sea cual sea el
+   órgano que ocupe esas celdas — la babosa enuncia con lo que tiene. */
+const ZONA_VOCAL = [];
+for (const fi of [6,7]) for (const co of [2,3,4,5]) ZONA_VOCAL.push(fi*COLS+co);
+
+/* ── estado ── */
+const imgs = new Map(), ocupa = new Map();
+let baseF=null, baseAnt=null, baseFade=1;
+const parches = new Map();
+let pausa=false, hablando=false, finHabla=0, amplitud=0, franja=0, listo=false;
+
+/* ── lienzo ── */
+const cv=document.getElementById('lienzo'), cx=cv.getContext('2d');
+let W=0,H=0,lado=0,ox=0,oy=0,celW=0,celH=0;
+function redim(){
+  const dpr=Math.min(devicePixelRatio||1,1.5);
+  W=cv.clientWidth; H=cv.clientHeight;
+  cv.width=W*dpr; cv.height=H*dpr; cx.setTransform(dpr,0,0,dpr,0,0);
+  lado=Math.min(W,H)*0.97; ox=(W-lado)/2; oy=(H-lado)/2;
+  celW=lado/COLS; celH=lado/FILAS;
+}
+addEventListener('resize',redim);
+
+/* ── carga + mapa de ocupación ── */
+const mini=document.createElement('canvas'); mini.width=COLS; mini.height=FILAS;
+const mcx=mini.getContext('2d',{willReadFrequently:true});
+function mapear(im){
+  mcx.clearRect(0,0,COLS,FILAS);
+  mcx.drawImage(im,0,0,COLS,FILAS);
+  const d=mcx.getImageData(0,0,COLS,FILAS).data, a=new Uint8Array(CELDAS);
+  for(let i=0;i<CELDAS;i++) a[i]=d[i*4+3];
+  return a;
+}
+function cargar(e){
+  return new Promise(res=>{
+    const im=new Image();
+    im.onload=()=>{ imgs.set(e.f,im); ocupa.set(e.f,mapear(im)); res(); };
+    im.onerror=()=>{ console.warn('no cargó',e.f); res(); };
+    im.src=RUTA+encodeURIComponent(e.f);
+  });
+}
+const azar=a=>a[Math.floor(Math.random()*a.length)];
+const vivas=()=>ESPECIES.filter(e=>imgs.has(e.f));
+
+/* Fuente para UNA celda: solo especies con carne ahí. */
+function fuentePara(celda){
+  const p=perfil();
+  const conPoder = Math.random()<p.poder;
+  let pool = vivas().filter(e => (conPoder ? e.tag==='poder' : e.tag!=='poder')
+                                && ocupa.get(e.f)[celda] > 110);
+  if(!pool.length) pool = vivas().filter(e=>ocupa.get(e.f)[celda]>110);
+  return pool.length ? azar(pool).f : null;
+}
+/* Base nueva: cabeza con suficiente cuerpo para sostener el rostro. */
+function baseNueva(){
+  const p=perfil();
+  const conPoder = Math.random()<p.poder*0.6;
+  let pool = vivas().filter(e=>{
+    const o=ocupa.get(e.f); let n=0; for(let i=0;i<CELDAS;i++) if(o[i]>90) n++;
+    return n>=26 && (conPoder ? e.tag==='poder' : e.tag!=='poder');
+  });
+  if(!pool.length) pool=vivas();
+  return azar(pool).f;
+}
+
+/* ── mutación ── */
+let proximo=0;
+function mutar(t){
+  const p=perfil();
+  if(t<proximo) return;
+  proximo = t + (p.ms*0.7 + Math.random()*p.ms*0.6) * (hablando?0.5:1);
+
+  const oBase = ocupa.get(baseF);
+  for(let i=0, n=1+Math.floor(Math.random()*3); i<n; i++){
+    let celda;
+    if(p.firma==='franja'){
+      celda = franja*COLS + Math.floor(Math.random()*COLS);
+      if(Math.random()<0.34) franja=(franja+1)%FILAS;
+    } else if(p.firma==='onda' && parches.size){
+      celda = (azar([...parches.keys()])+COLS) % CELDAS;
+    } else {
+      celda = Math.floor(Math.random()*CELDAS);
+    }
+    if(oBase[celda] <= 90) continue;              // no parchear el vacío
+    const f = fuentePara(celda);
+    if(!f) continue;
+    const vida = p.firma==='suave' ? 7000+Math.random()*8000 : 3000+Math.random()*5000;
+    parches.set(celda,{f,nace:t,vida});
+  }
+  while(parches.size>p.max){
+    let viejo=null,edad=-1;
+    for(const [c,q] of parches) if(t-q.nace>edad){edad=t-q.nace;viejo=c;}
+    parches.delete(viejo);
+  }
+  if(Math.random() < (p.firma==='todo'?0.09:0.03)){
+    baseAnt=baseF; baseFade=0; baseF=baseNueva();
+    for(const c of [...parches.keys()]) if(ocupa.get(baseF)[c]<=90) parches.delete(c);
+  }
+}
+
+/* ── dibujo ── */
+function celdaAt(f,celda,alfa,latido){
+  const co=celda%COLS, fi=(celda-co)/COLS;
+  const sw=SRC/COLS, sh=SRC/FILAS;
+  let dx=ox+co*celW, dy=oy+fi*celH, dw=celW, dh=celH;
+  if(latido>0){ const k=1+latido*0.30; dy-=celH*(k-1)/2; dh=celH*k; }
+  cx.globalAlpha=alfa;
+  cx.drawImage(imgs.get(f), co*sw, fi*sh, sw, sh, dx, dy, dw+0.6, dh+0.6);
+  cx.globalAlpha=1;
+}
+function cuadro(t){
+  requestAnimationFrame(cuadro);
+  if(!listo) return;
+  const p=perfil();
+  if(!pausa) mutar(t);
+  if(hablando && !fuenteReal && t>finHabla) hablando=false;
+
+  cx.clearRect(0,0,W,H);
+  if(baseFade<1) baseFade=Math.min(1,baseFade+0.018);
+  if(baseAnt && baseFade<1){ cx.globalAlpha=1-baseFade; cx.drawImage(imgs.get(baseAnt),ox,oy,lado,lado); }
+  cx.globalAlpha = (baseAnt&&baseFade<1)?baseFade:1;
+  cx.drawImage(imgs.get(baseF),ox,oy,lado,lado);
+  cx.globalAlpha=1;
+
+  for(const [celda,q] of parches){
+    const edad=t-q.nace;
+    if(!pausa && edad>q.vida){ parches.delete(celda); continue; }
+    const entra=Math.min(1,edad/p.entra);
+    const sale=pausa?1:Math.min(1,(q.vida-edad)/600);
+    celdaAt(q.f,celda,Math.max(0,Math.min(entra,sale)),0);
+  }
+
+  if(hablando){
+    const amp = fuenteReal ? amplitud
+      : 0.30+0.70*Math.abs(Math.sin(t/88)+0.5*Math.sin(t/53))/1.5;
+    const oBase=ocupa.get(baseF);
+    for(const celda of ZONA_VOCAL){
+      if(oBase[celda]<=90) continue;
+      celdaAt(parches.get(celda)?.f ?? baseF, celda, 0.92, amp);
+    }
+  }
+
+  cx.strokeStyle=p.dim; cx.globalAlpha=0.20; cx.lineWidth=1;
+  for(let c=1;c<COLS;c++){cx.beginPath();cx.moveTo(ox+c*celW,oy);cx.lineTo(ox+c*celW,oy+lado);cx.stroke();}
+  for(let f=1;f<FILAS;f++){cx.beginPath();cx.moveTo(ox,oy+f*celH);cx.lineTo(ox+lado,oy+f*celH);cx.stroke();}
+  cx.globalAlpha=1;
+}
+
+/* ── voz: se analiza en silencio; el sonido sale por la página principal ── */
+let actx=null,analiz=null,datos=null,voz=null,fuenteReal=false;
+function abrirAudio(){
+  if(actx) return;
+  try{
+    actx=new (window.AudioContext||window.webkitAudioContext)();
+    analiz=actx.createAnalyser(); analiz.fftSize=256;
+    datos=new Uint8Array(analiz.frequencyBinCount);
+  }catch(e){ console.warn('sin WebAudio'); }
+}
+addEventListener('click',abrirAudio,{once:true});
+addEventListener('touchstart',abrirAudio,{once:true});
+addEventListener('keydown',abrirAudio,{once:true});
+
+(function medir(){
+  if(fuenteReal&&analiz){
+    analiz.getByteFrequencyData(datos);
+    let s=0; for(let i=2;i<40;i++) s+=datos[i];
+    amplitud=Math.min(1,(s/38)/105);
+    if(!pausa && voz && voz.ended){ hablando=false; fuenteReal=false; }
+  }
+  setTimeout(medir,40);
+})();
+
+function hablar(texto,archivo){
+  hablando=true; fuenteReal=false;
+  finHabla=performance.now()+Math.max(2500,(texto?.length??40)*72);
+  if(!archivo||!actx) return;
+  try{
+    if(voz){ try{voz.pause();}catch(_){} }
+    voz=new Audio('/audio/'+archivo);
+    voz.crossOrigin='anonymous'; voz.muted=false;
+    const nodo=actx.createMediaElementSource(voz);
+    nodo.connect(analiz);                       // NO a destination: es mudo
+    voz.addEventListener('loadedmetadata',()=>{ finHabla=performance.now()+voz.duration*1000+400; });
+    voz.play().then(()=>{fuenteReal=true;}).catch(()=>{fuenteReal=false;});
+  }catch(e){ fuenteReal=false; }
+}
+
+function aplicarEstado(n){
+  if(!PERFIL[n]) return;
+  estado=n;
+  document.documentElement.style.setProperty('--accent',PERFIL[n].acc);
+  document.documentElement.style.setProperty('--accent-dim',PERFIL[n].dim);
+}
+
+/* ── WebSocket: los mismos eventos que ya emite el orquestador ── */
+function conectar(){
+  let ws; try{ ws=new WebSocket(`ws://${location.host}`); }catch(e){ return; }
+  ws.onmessage=e=>{
+    let m; try{ m=JSON.parse(e.data); }catch(_){ return; }
+    const d=m.datos??m;
+    if(m.tipo==='afecto')    aplicarEstado(d.estado);
+    if(m.tipo==='segmento')  hablar(d.texto,d.audio);
+    if(m.tipo==='preludio')  hablar(d.texto,d.audio);
+    if(m.tipo==='agente_id'){ baseAnt=baseF; baseFade=0; baseF=baseNueva(); hablar(d.texto,d.audio); }
+    if(m.tipo==='pausa'){ pausa=!!d.activa;
+      if(voz){ pausa ? voz.pause() : voz.play().catch(()=>{}); } }
+    if(m.tipo==='velocidad'&&voz) voz.playbackRate=Math.min(2,Math.max(0.5,Number(d.valor)||1));
+  };
+  ws.onclose=()=>setTimeout(conectar,2000);
+}
+
+/* ── arranque ── */
+(async function(){
+  redim();
+  await Promise.all(ESPECIES.map(cargar));
+  if(!imgs.size){ document.getElementById('carga').textContent='sin imágenes en /clon-img/'; return; }
+  baseF = imgs.has('julix.png') ? 'julix.png' : baseNueva();
+  listo = true;
+  document.getElementById('carga').classList.add('oculto');
+  conectar();
+  requestAnimationFrame(cuadro);
+
+  if(DEMO){                                  // prueba sin orquestador
+    const ids=Object.keys(PERFIL); let i=0;
+    setInterval(()=>{ hablar('x'.repeat(60+Math.random()*90)); }, 6500);
+    setInterval(()=>{ aplicarEstado(ids[i++%ids.length]); }, 22000);
+    hablar('x'.repeat(80));
+  }
+})();
+</script>
+</body>
+</html>

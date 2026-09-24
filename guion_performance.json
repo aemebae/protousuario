@@ -1,5 +1,5 @@
 {
-  "_uso": "GENERADO por scripts/compilar_guion.js el 2026-08-27 21:51 desde instrucciones_permanentes.txt. NO EDITAR A MANO.",
+  "_uso": "GENERADO por scripts/compilar_guion.js el 2026-09-01 07:00 desde instrucciones_permanentes.txt. NO EDITAR A MANO.",
   "_tipos": "id_agente · orbital(gemini) · prompt(tuyo) · narracion(gemini) · pregunta(tuya) · memoria(gemini)",
   "_avanzar": "cada bloque espera un AVANZAR del celular",
   "agentes": [
@@ -31,19 +31,11 @@
         },
         {
           "tipo": "id_agente",
-          "texto": "Esta performance no es gratuita."
+          "texto": "Esta performance no es gratuita. Se les cobrará aranceles con lo más valioso del momento: ¡Dame contenido!"
         },
         {
           "tipo": "id_agente",
-          "texto": "Se les cobrará aranceles con lo más valioso del momento:"
-        },
-        {
-          "tipo": "id_agente",
-          "texto": "¡Dame contenido!"
-        },
-        {
-          "tipo": "id_agente",
-          "texto": "Ahora, PROTOUSUARIO se Fpone en cuatro, apoyando sus extremidades superiores sobre el taburete... a la espera."
+          "texto": "Ahora, Protousuario se pone en cuatro, apoyando sus extremidades superiores sobre el taburete... a la espera."
         },
         {
           "tipo": "id_agente",
@@ -59,15 +51,7 @@
         },
         {
           "tipo": "id_agente",
-          "texto": "Ustedes firmaron el consentimiento al entrar:"
-        },
-        {
-          "tipo": "id_agente",
-          "texto": "su atención es el impuesto."
-        },
-        {
-          "tipo": "id_agente",
-          "texto": "Yo decido, él obedece, ustedes observan."
+          "texto": "Ustedes firmaron el consentimiento al entrar: su atención es el impuesto. Yo decido, él obedece, ustedes observan."
         },
         {
           "tipo": "id_agente",
@@ -75,7 +59,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "PROTOUSUARIO desprende unas curiosas cabezas infladas con globos, las va sacando de sus prótesis y empieza a repartirlas una a una al público."
+          "texto": "Protousuario desprende unas curiosas cabezas infladas con globos, las va sacando de sus prótesis y empieza a repartirlas una a una al público."
         },
         {
           "tipo": "prompt",
@@ -95,19 +79,32 @@
         },
         {
           "tipo": "prompt",
-          "texto": "El viringo o perro peruano calato, el capibara, una llama, el gallinazo limeño, el cuy mágico, el gatito miau miau, el muy-muy, el cóndor de los andes, un perrito chiribaya, el jaguar o tigre amazónico, el oso de anteojos, una babosa nudibranquia y tenemos a Yakuruna, la divinidad seductora y protectora de los ríos amazónicos."
+          "texto": "El viringo o perro peruano calato, el capibara, una llama, el gallinazo limeño, el cuy mágico, el gatito miau miau, el muy-muy, el cóndor de los andes,"
         },
         {
           "tipo": "prompt",
-          "texto": "También nos acompañan, algunas especies que podemos encontrar en cualquier parte como la cucaracha, gallinas de granja, gatos grises, un perro dálmata, un cerdito, entre otres más."
+          "texto": "un perrito chiribaya, el jaguar o tigre amazónico, el oso de anteojos, una babosa nudibranquia y tenemos a"
         },
         {
           "tipo": "prompt",
-          "texto": "PROTOUSUARIO las sigue lanzando al público."
+          "texto": "Yakuruna, la divinidad seductora y protectora de los ríos amazónicos."
+        },
+        {
+          "tipo": "prompt",
+          "texto": "También nos acompañan, algunas especies que podemos encontrar en cualquier parte, como la cucaracha, gallinas de granja, gatos grises, un perro dálmata, un cerdito, entre otres más."
+        },
+        {
+          "tipo": "prompt",
+          "texto": "Protousuario las sigue lanzando al público."
         },
         {
           "tipo": "prompt",
           "texto": "Golpea una con su culo."
+        },
+        {
+          "tipo": "sonido",
+          "sonido": "Punch",
+          "texto": ""
         },
         {
           "tipo": "prompt",
@@ -120,7 +117,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "Ahora, PROTOUSUARIO espera que todes les seleccionades tengan sus cabezas en la mano."
+          "texto": "Ahora, Protousuario espera que todes les seleccionades tengan sus cabezas en la mano."
         },
         {
           "tipo": "prompt",
@@ -128,15 +125,15 @@
         },
         {
           "tipo": "prompt",
-          "texto": "3"
+          "texto": "three"
         },
         {
           "tipo": "prompt",
-          "texto": "2"
+          "texto": "two"
         },
         {
           "tipo": "prompt",
-          "texto": "1"
+          "texto": "one"
         },
         {
           "tipo": "sonido",
@@ -145,7 +142,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "Si no reventaron, saquen el globo de las máscaras."
+          "texto": "Si no los reventaron, saquen el globo de las máscaras."
         },
         {
           "tipo": "prompt",
@@ -157,7 +154,15 @@
         },
         {
           "tipo": "prompt",
-          "texto": "Luego, manteniendo el modo selfie, les propone, ponerse en fila, uno detrás de otro, con la mano derecha sobre el hombro de la persona que tienen delante."
+          "texto": "Luego, manteniendo el modo selfie, les propone, ponerse en fila,"
+        },
+        {
+          "tipo": "prompt",
+          "texto": "uno detrás de otro,"
+        },
+        {
+          "tipo": "prompt",
+          "texto": "con la mano derecha sobre el hombro de la persona que tienen delante."
         },
         {
           "tipo": "prompt",
@@ -177,7 +182,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "caminan guiados por PROTOUSUARIO hacia una sala diferente."
+          "texto": "caminan guiados por Protousuario hacia una sala diferente."
         },
         {
           "tipo": "memoria",
@@ -222,7 +227,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "PROTOUSUARIO se acerca al centro, agarra un insecticida Sapolio que encuentra cerca y se lo aplica como quien se hecha un perfume de Chanel 5,"
+          "texto": "Protousuario se acerca al centro, agarra un insecticida Sapolio que encuentra cerca y se lo aplica como quien se hecha un perfume de Chanel 5,"
         },
         {
           "tipo": "prompt",
@@ -284,7 +289,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "… Yakuruna es una criatura mitológica de la cosmovisión amazónica, es una divinidad, no es buena ni mala, se guía por sus deseos."
+          "texto": "Un dato: Yakuruna es una criatura mitológica de la cosmovisión amazónica, es una divinidad, no es buena ni mala, se guía por sus deseos."
         },
         {
           "tipo": "prompt",
@@ -319,7 +324,7 @@
         },
         {
           "tipo": "id_agente",
-          "texto": "Este que ven aquí, PROTOUSUARIO, fue mi origen: ahora es mi servidor, mi cuerpo de repuesto, mi última fase larvaria."
+          "texto": "Este que ven aquí, Protousuario, fue mi origen: ahora es mi servidor, mi cuerpo de repuesto, mi última fase larvaria."
         },
         {
           "tipo": "id_agente",
@@ -327,7 +332,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "PROTOUSUARIO está ya de pie, en otra sala"
+          "texto": "Protousuario está ya de pie, en otra sala"
         },
         {
           "tipo": "prompt",
@@ -339,15 +344,11 @@
         },
         {
           "tipo": "prompt",
-          "texto": "un pez colorido en la parte de atrás y en la parte de adelante, unos…"
+          "texto": "un pez colorido en la parte de atrás y en la parte de adelante, unos… Coloca los celulares en esos soportes."
         },
         {
           "tipo": "prompt",
-          "texto": "Coloca los celulares en esos soportes."
-        },
-        {
-          "tipo": "prompt",
-          "texto": "PROTOUSUARIO se coloca una máscara muy particular que se sostiene flotante de sus entrañas."
+          "texto": "Protousuario se coloca una máscara muy particular que se sostiene flotante de sus entrañas."
         },
         {
           "tipo": "prompt",
@@ -355,7 +356,7 @@
         },
         {
           "tipo": "sonido",
-          "sonido": "Cuak",
+          "sonido": "Kuak",
           "texto": ""
         },
         {
@@ -374,7 +375,15 @@
         },
         {
           "tipo": "prompt",
-          "texto": "Luego se coloca el casco o lo intenta"
+          "texto": "Un silencio en la sala."
+        },
+        {
+          "tipo": "prompt",
+          "texto": "Luego se coloca el casco entre las prótesis,"
+        },
+        {
+          "tipo": "prompt",
+          "texto": "o lo intenta"
         },
         {
           "tipo": "prompt",
@@ -386,7 +395,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "PROTOUSUARIO ha fallado ya tres veces,"
+          "texto": "Protousuario ha fallado ya tres veces,"
         },
         {
           "tipo": "prompt",
@@ -414,11 +423,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "Su cuarta versión supera todo paradigma establecido,"
-        },
-        {
-          "tipo": "prompt",
-          "texto": "es la mejor versión nunca antes desarrollada:"
+          "texto": "Su cuarta versión supera todo paradigma establecido, es la mejor versión nunca antes desarrollada:"
         },
         {
           "tipo": "prompt",
@@ -426,11 +431,19 @@
         },
         {
           "tipo": "prompt",
-          "texto": "Coge el taburete bajo de cinco ruedas,"
+          "texto": "Protousuario coge el taburete bajo de cinco ruedas,"
         },
         {
           "tipo": "prompt",
           "texto": "se pone de pie sobre él y gestualiza una victoria frente al público presente."
+        },
+        {
+          "tipo": "prompt",
+          "texto": "Besho"
+        },
+        {
+          "tipo": "prompt",
+          "texto": "Abasho"
         },
         {
           "tipo": "prompt",
@@ -464,7 +477,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "PROTOUSUARIO busca la máscara de cóndor dentro del público."
+          "texto": "Protousuario busca la máscara de cóndor dentro del público."
         },
         {
           "tipo": "prompt",
@@ -517,7 +530,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "Y así, con todo desmoronándose, se moviliza."
+          "texto": "Y así, a pesar de que todo está desmoronándose, se moviliza."
         },
         {
           "tipo": "narracion",
