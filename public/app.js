@@ -210,14 +210,29 @@ let firmaPoligonos = '';
 function pintarPoligonos(){
   if (!paises.length) return;
   const p = paleta();
-  const firma = `${estadoActual}|${paisIdx}|${paisNombre}|${hayTextura}`;
+  // La firma incluye la celda de 5° donde está el protagonista: el plano
+  // detalle se rehace cuando el satélite se mueve lo suficiente, no en cada tic.
+  const celda = protagonista
+    ? `${Math.round(protagonista.lat / 5)}:${Math.round(protagonista.lon / 5)}` : '-';
+  const firma = `${estadoActual}|${paisIdx}|${paisNombre}|${hayTextura}|${celda}`;
   if (firma === firmaPoligonos) return;
   firmaPoligonos = firma;
 
-  // Solo por nombre. El índice del servidor viene del 110m y aquí usamos 50m:
-  // mezclarlos resaltaba el país equivocado.
-  const esResaltado = (f) =>
-    !!(paisNombre && f.properties && f.properties.ADMIN === paisNombre);
+  // ── AQUÍ ESTABA EL FALLO DEL PLANO DETALLE ──
+  // El servidor manda el país EN ESPAÑOL ("Brasil", "Sudán del Sur": sale del
+  // campo NAME_ES del mapa). Este código lo comparaba con ADMIN, que está EN
+  // INGLÉS ("Brazil", "South Sudan"). Nunca coincidían: desde que pasamos al
+  // mapa de 50m, el país sobrevolado no se resaltó NI UNA VEZ, en ninguno de
+  // los dos globos. Por eso el plano detalle mostraba el punto y el radar,
+  // pero no el terreno. Ahora se compara con los tres nombres posibles.
+  const normal = (x) => String(x ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+  const buscado = normal(paisNombre);
+  const esResaltado = (f) => {
+    if (!buscado || !f.properties) return false;
+    const pr = f.properties;
+    return normal(pr.NAME_ES) === buscado || normal(pr.ADMIN) === buscado
+        || normal(pr.NAME_EN) === buscado || normal(pr.NAME) === buscado;
+  };
 
   const datos = MOSTRAR_BORDES ? paises : paises.filter(esResaltado);
 
@@ -241,14 +256,37 @@ function pintarPoligonos(){
     // parpadeo entre las dos superficies (lo que se llama "z-fighting").
     .polygonAltitude((f)=> esResaltado(f) ? 0.016 : 0.005);
 
-  // El globo pequeño ("plano satélite") solo dibuja el país sobrevolado:
-  // no necesita el planeta entero y así deja de costar.
-  globoZoom.polygonsData(paises.filter(esResaltado))
+  // ── PLANO DETALLE: el terreno SIEMPRE ──
+  // Antes el globo pequeño solo dibujaba el país resaltado. Cuando el satélite
+  // pasaba sobre el océano (Océano Austral, en tu log) o el nombre no casaba,
+  // no quedaba NADA dibujado: solo el punto y el radar sobre agua lisa.
+  // Ahora dibuja las fronteras de todos los países a menos de 40° del satélite
+  // —el vecindario que la cámara ve— con el sobrevolado relleno encima.
+  // Siguen siendo pocos polígonos: no pesa como el planeta entero.
+  const cerca = (f) => {
+    if (!protagonista) return esResaltado(f);
+    f.__c ??= centroideAprox(f);
+    const dLat = f.__c.lat - protagonista.lat;
+    let dLon = Math.abs(f.__c.lon - protagonista.lon); if (dLon > 180) dLon = 360 - dLon;
+    return esResaltado(f) || Math.hypot(dLat, dLon * Math.cos(protagonista.lat * Math.PI / 180)) < 40;
+  };
+  globoZoom.polygonsData(paises.filter(cerca))
     .polygonCapCurvatureResolution(1.5)
-    .polygonCapColor(()=> hex(p.accent) + (hayTextura ? '44' : '88'))
-    .polygonSideColor(()=> 'rgba(0,0,0,0.12)')
-    .polygonStrokeColor(()=> hex(p.accent))
-    .polygonAltitude(()=> 0.016);
+    .polygonCapColor((f)=> esResaltado(f) ? hex(p.accent) + (hayTextura ? '55' : '99')
+                                          : (hayTextura ? 'rgba(0,0,0,0)' : colorTierra(f)))
+    .polygonSideColor(()=> 'rgba(0,0,0,0.10)')
+    .polygonStrokeColor((f)=> esResaltado(f) ? hex(p.accent) : hex(p.grid))
+    .polygonAltitude((f)=> esResaltado(f) ? 0.016 : 0.004);
+}
+
+/** Centro aproximado de un país: promedio de los vértices de su contorno. */
+function centroideAprox(f){
+  try {
+    const c = f.geometry.coordinates.flat(3);
+    let la = 0, lo = 0, n = 0;
+    for (let i = 0; i + 1 < c.length; i += 2) { lo += c[i]; la += c[i + 1]; n++; }
+    return n ? { lat: la / n, lon: lo / n } : { lat: 0, lon: 0 };
+  } catch { return { lat: 0, lon: 0 }; }
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -617,6 +655,7 @@ function actualizarPosiciones(d){
   // vea moverse. No toca telemetría ni cámara: si lo hiciera, el globo estaría
   // reencuadrando cada segundo y eso es justo lo que se sentía brusco.
   if (d.tick) {
+    pintarPoligonos();          // barato: solo actúa si cambió de celda de 5°
     if (protagonista) {
       el('tCoords').textContent = `${protagonista.lat.toFixed(2)}, ${protagonista.lon.toFixed(2)}`;
       globoZoom.pointOfView({lat:protagonista.lat, lng:protagonista.lon, altitude:0.55}, 900);
