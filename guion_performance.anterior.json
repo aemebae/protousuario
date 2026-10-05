@@ -1,5 +1,5 @@
 {
-  "_uso": "GENERADO por scripts/compilar_guion.js el 2026-10-05 06:15 desde instrucciones_permanentes.txt. NO EDITAR A MANO.",
+  "_uso": "GENERADO por scripts/compilar_guion.js el 2026-10-05 06:16 desde instrucciones_permanentes.txt. NO EDITAR A MANO.",
   "_tipos": "id_agente · orbital(gemini) · prompt(tuyo) · narracion(gemini) · pregunta(tuya) · memoria(gemini)",
   "_avanzar": "cada bloque espera un AVANZAR del celular",
   "agentes": [
@@ -471,7 +471,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "Ja ja ja ja ja ja ja"
+          "texto": "Ja ja ja ja ja ja ja Ja ja ja ja ja ja ja Ja ja ja ja ja ja ja"
         },
         {
           "tipo": "sonido",
