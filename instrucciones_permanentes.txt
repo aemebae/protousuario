@@ -400,7 +400,7 @@ Abasho
 # [Pausa larga sin texto generado]…
 
 # Risa de la Señora K
-Ja ja ja ja ja ja ja 
+Ja ja ja ja ja ja ja Ja ja ja ja ja ja ja Ja ja ja ja ja ja ja 
 # (por 10 segundos)
 
 @SONIDO Sigan haciendo su tap tap tap
