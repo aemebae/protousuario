@@ -229,7 +229,7 @@ function cuadro(t){
 }
 
 /* ── voz: se analiza en silencio; el sonido sale por la página principal ── */
-let actx=null,analiz=null,datos=null,voz=null,fuenteReal=false;
+let actx=null,analiz=null,datos=null,voz=null,fuenteReal=false,nodoVoz=null;
 function abrirAudio(){
   if(actx) return;
   try{
@@ -238,6 +238,12 @@ function abrirAudio(){
     datos=new Uint8Array(analiz.frequencyBinCount);
   }catch(e){ console.warn('sin WebAudio'); }
 }
+// Si Chrome se abrió con --autoplay-policy=no-user-gesture-required (el
+// comando que ya usas para la TV), el analizador puede arrancar SOLO, sin que
+// nadie toque el iframe. Antes solo arrancaba con un clic DENTRO del clon, y
+// en la escena compuesta nadie hace clic ahí: la boca caía a sílabas falsas.
+abrirAudio();
+setTimeout(()=>{ try{ if(actx && actx.state==='suspended') actx.resume(); }catch(_){} }, 600);
 addEventListener('click',abrirAudio,{once:true});
 addEventListener('touchstart',abrirAudio,{once:true});
 addEventListener('keydown',abrirAudio,{once:true});
@@ -252,15 +258,28 @@ addEventListener('keydown',abrirAudio,{once:true});
   setTimeout(medir,40);
 })();
 
-function hablar(texto,archivo){
+/* ── v2: la boca también habla con TUS SONIDOS ──
+   Un bloque @SONIDO (el croar de la rana, el Cuak) llega con `sonido` y sin
+   `audio`. Antes el clon lo ignoraba y "hablaba" 2,5 s con sílabas falsas
+   mientras sonaba la rana. Ahora ese mp3 pasa por el mismo analizador: la
+   boca se mueve con la amplitud REAL del croar. El clon croa.
+   (La ruta es /sonido/ en vez de /audio/: son tus archivos, no ElevenLabs.) */
+function hablar(texto,archivo,sonido){
   hablando=true; fuenteReal=false;
   finHabla=performance.now()+Math.max(2500,(texto?.length??40)*72);
-  if(!archivo||!actx) return;
+  const url = sonido ? '/sonido/'+encodeURIComponent(sonido)
+            : (archivo ? '/audio/'+archivo : null);
+  if(!url||!actx) return;
   try{
     if(voz){ try{voz.pause();}catch(_){} }
-    voz=new Audio('/audio/'+archivo);
+    // Se DESCONECTA el nodo anterior. Antes cada bloque dejaba el suyo
+    // enganchado al analizador: tras 190 bloques quedaban 190 fuentes
+    // colgando. Con esto, siempre hay exactamente una.
+    if(nodoVoz){ try{nodoVoz.disconnect();}catch(_){} nodoVoz=null; }
+    voz=new Audio(url);
     voz.crossOrigin='anonymous'; voz.muted=false;
     const nodo=actx.createMediaElementSource(voz);
+    nodoVoz=nodo;
     nodo.connect(analiz);                       // NO a destination: es mudo
     voz.addEventListener('loadedmetadata',()=>{ finHabla=performance.now()+voz.duration*1000+400; });
     voz.play().then(()=>{fuenteReal=true;}).catch(()=>{fuenteReal=false;});
@@ -280,8 +299,9 @@ function conectar(){
   ws.onmessage=e=>{
     let m; try{ m=JSON.parse(e.data); }catch(_){ return; }
     const d=m.datos??m;
+    if(actx && actx.state==='suspended'){ try{actx.resume();}catch(_){} }
     if(m.tipo==='afecto')    aplicarEstado(d.estado);
-    if(m.tipo==='segmento')  hablar(d.texto,d.audio);
+    if(m.tipo==='segmento')  hablar(d.texto,d.audio,d.sonido);
     if(m.tipo==='preludio')  hablar(d.texto,d.audio);
     if(m.tipo==='agente_id'){ baseAnt=baseF; baseFade=0; baseF=baseNueva(); hablar(d.texto,d.audio); }
     if(m.tipo==='pausa'){ pausa=!!d.activa;
