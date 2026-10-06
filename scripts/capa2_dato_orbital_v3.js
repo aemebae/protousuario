@@ -94,8 +94,120 @@ function dentroDeBbox(lat, lon, [latMin, latMax, lonMin, lonMax]) {
   return lat >= latMin && lat <= latMax && lon >= lonMin && lon <= lonMax;
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+//  ¿QUÉ SATÉLITE ESTÁ ENCIMA DE ESTE TERRITORIO, AHORA?
+//
+//  Antes se elegía UN satélite para todo el agente con dos reglas ajenas a
+//  tus territorios: "el primero que caiga en cualquier región curada" o, si
+//  ninguno, "el más alto en el cielo de LIMA". Por eso la noche del 27 salió
+//  ORBCOMM FM04 sobre Brasil mientras la voz hablaba del Congo: estaba alto
+//  en el cielo de Lima, no encima del Congo.
+//
+//  Ahora, para CADA territorio, se busca entre los ~16.000 satélites el que
+//  se ve más alto en el cielo DE ESE TERRITORIO. Es una definición física
+//  exacta de "sobrevolar": si estuvieras parado en el centro del Congo y
+//  miraras hacia arriba, ese es el que tendrías más cerca de la vertical.
+//
+//  Preferencia por la ÓRBITA BAJA (menos de 2.000 km): son los satélites que
+//  de verdad pasan, que cruzan el territorio en minutos. Un geoestacionario
+//  está siempre en el mismo sitio; si no se prefiriera la órbita baja, el
+//  Congo tendría el mismo satélite todas las noches, para siempre.
+// ═══════════════════════════════════════════════════════════════════════════
+const R_TIERRA = 6371;
+const ORBITA_BAJA_KM = Number(process.env.ORBITA_BAJA_KM || 2000);
+const ELEV_MINIMA_BAJA = 30;   // un satélite bajo vale si está a más de 30° en ese cielo
+
+function centroDeTerritorio(t) {
+  if (t?.centro?.lat != null) return t.centro;
+  const [a, b, c, d] = t.bbox;
+  return { lat: (a + b) / 2, lon: (c + d) / 2 };
+}
+
+/** Ángulo central (radianes) entre dos puntos de la superficie. */
+function anguloCentral(lat1, lon1, lat2, lon2) {
+  const r = Math.PI / 180;
+  const h = Math.sin(((lat2 - lat1) * r) / 2) ** 2
+    + Math.cos(lat1 * r) * Math.cos(lat2 * r) * Math.sin(((lon2 - lon1) * r) / 2) ** 2;
+  return 2 * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+
+/**
+ * Elevación (grados sobre el horizonte) a la que se ve un satélite desde un
+ * punto del suelo, sabiendo solo su punto subsatelital y su altura.
+ * 90° = en la vertical exacta; 0° = rasante en el horizonte; <0 = no se ve.
+ */
+export function elevacionDesde(gamma, altKm) {
+  const k = R_TIERRA / (R_TIERRA + altKm);
+  return Math.atan2(Math.cos(gamma) - k, Math.sin(gamma)) * 180 / Math.PI;
+}
+
+/**
+ * El satélite que está encima de UN territorio en este instante.
+ * Orden de preferencia:
+ *   1. órbita baja con su punto subsatelital DENTRO del territorio
+ *   2. órbita baja a más de 30° en el cielo del territorio
+ *   3. cualquier órbita, la más alta en ese cielo
+ * En los grupos 1 y 2 gana el que tiene el punto subsatelital MÁS CERCA del
+ * centro del territorio (no "el más alto en el cielo": eso favorecía a los
+ * que vuelan a 1.500 km aunque estuvieran al borde — en la prueba, un GONETS
+ * sobre Puerto Maldonado, en plena Amazonía, para "el sur andino").
+ * @param {Set<string>} [excluir]  claves ya usadas (para que A y B no compartan satélite)
+ */
+// Objetos sin nombre propio: solo tienen su matrícula internacional
+// ("2024-199AU") o el rótulo provisional de un lanzamiento ("OBJECT AB").
+// La voz los leería como "dos mil veinticuatro, ciento noventa y nueve, A, U".
+// Se prefieren los que tienen nombre; los otros solo entran si no hay nada más.
+const SIN_NOMBRE = /^(\d{4}-\d{3}[A-Z]{1,3}|OBJECT [A-Z]{1,3})$/i;
+
+export function elegirSobreTerritorio(candidatos, territorio, excluir = new Set()) {
+  return elegirSobreTerritorioFiltrado(candidatos, territorio, excluir, true)
+      ?? elegirSobreTerritorioFiltrado(candidatos, territorio, excluir, false);
+}
+
+function elegirSobreTerritorioFiltrado(candidatos, territorio, excluir, soloConNombre) {
+  if (!territorio?.bbox || !candidatos?.length) return null;
+  const c = centroDeTerritorio(territorio);
+  let dentroBajo = null, altoBajo = null, cualquiera = null;
+  for (const s of candidatos) {
+    if (excluir.has(s.k) || s.altKm == null) continue;
+    if (soloConNombre && SIN_NOMBRE.test(String(s.nombre).trim())) continue;
+    const g = anguloCentral(c.lat, c.lon, s.lat, s.lon);
+    const elev = elevacionDesde(g, s.altKm);
+    if (elev <= 0) continue;                       // bajo el horizonte de ese lugar
+    const r = { s, elev, g, dentro: dentroDeBbox(s.lat, s.lon, territorio.bbox) };
+    if (!cualquiera || elev > cualquiera.elev) cualquiera = r;
+    if (s.altKm < ORBITA_BAJA_KM) {
+      if (r.dentro && (!dentroBajo || g < dentroBajo.g)) dentroBajo = r;
+      if (elev >= ELEV_MINIMA_BAJA && (!altoBajo || g < altoBajo.g)) altoBajo = r;
+    }
+  }
+  const g = dentroBajo ?? altoBajo ?? cualquiera;
+  if (!g) return null;
+  const alt = g.s.altKm;
+  return {
+    territorio_id: territorio.id ?? null,
+    territorio_nombre: territorio.nombre,
+    satelite: g.s.nombre,
+    satelite_enunciable: enunciable(g.s.nombre),
+    k: g.s.k,
+    lat: g.s.lat, lon: g.s.lon, altKm: alt,
+    elevacion_desde_territorio: Math.round(g.elev * 10) / 10,
+    distancia_km: Math.round(g.g * R_TIERRA),
+    dentro: g.dentro,
+    orbita: alt < ORBITA_BAJA_KM ? 'baja' : alt < 30000 ? 'media' : 'geoestacionaria',
+    elevacionDeg: g.s.elevacionDeg,       // la de siempre: vista desde la sala (MINCUL)
+    rangeKm: g.s.rangeKm,
+  };
+}
+
 function enunciable(nombre) {
-  return String(nombre).replace(/[-_]/g, ' ').replace(/\s+/g, ' ').trim();
+  // Para la VOZ: sin alias entre paréntesis ni etiquetas entre corchetes.
+  //   "COSMOS 2532 (RODNIK-S 18)"            → "COSMOS 2532"
+  //   "STARLINK-11453 [DTC]"                 → "STARLINK 11453"
+  //   "DB GME UT (DB-GLOBE MISSION EARTH-UT)" → "DB GME UT"
+  // En la pantalla se sigue viendo el nombre completo.
+  const limpio = String(nombre).replace(/\([^)]*\)|\[[^\]]*\]/g, ' ');
+  return (limpio.trim() ? limpio : String(nombre)).replace(/[-_]/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 /**
@@ -109,6 +221,8 @@ export async function obtenerDatoOrbital({
   grupo = 'stations',
   observador = LIMA,
   regionesPath = 'regiones_conflicto.json',
+  territorios = [],          // [A, B]: si vienen, el protagonista es el que está encima de A
+  silencioso = false,        // sin la línea de diagnóstico (para el relevo periódico)
 } = {}) {
   const regiones = cargarRegiones(regionesPath);
   const url = `https://celestrak.org/NORAD/elements/gp.php?GROUP=${grupo}&FORMAT=json`;
@@ -219,11 +333,19 @@ export async function obtenerDatoOrbital({
   }
 
   // ---------- ELEGIR PROTAGONISTA ----------
-  // Prioridad 1: el primero que caiga en una región de conflicto curada (tu dramaturgia manda).
-  // Prioridad 2: si ninguno cae ahí, el de mayor elevación (el "más presente" en el cielo).
-  const elegido =
-    candidatos.find((c) => c.regionConflicto) ??
-    candidatos.reduce((mejor, c) => (!mejor || c.elevacionDeg > mejor.elevacionDeg ? c : mejor), null);
+  // CON TERRITORIOS (durante la función): un satélite por territorio, el que
+  // está encima de cada uno AHORA. El protagonista es el del primero.
+  // SIN TERRITORIOS (la pantalla en espera, antes de empezar): la regla vieja.
+  const porTerritorio = [];
+  const usados = new Set();
+  for (const t of territorios.filter(Boolean)) {
+    const r = elegirSobreTerritorio(candidatos, t, usados);
+    if (r) { porTerritorio.push(r); usados.add(r.k); }
+  }
+  const elegido = porTerritorio.length
+    ? candidatos.find((c) => c.k === porTerritorio[0].k)
+    : (candidatos.find((c) => c.regionConflicto) ??
+       candidatos.reduce((mejor, c) => (!mejor || c.elevacionDeg > mejor.elevacionDeg ? c : mejor), null));
 
   const territorio = resolverTerritorio(elegido.lat, elegido.lon); // UNA sola consulta, sobre el elegido
 
@@ -233,16 +355,18 @@ export async function obtenerDatoOrbital({
   // azar de tu regiones_conflicto.json -- igual que hacía tu sistema viejo --
   // pero (mejora real) el satélite y las coordenadas siguen siendo REALES,
   // en vez de inventar un satélite falso como hacía la versión anterior.
-  const regionAsignada = elegido.regionConflicto ?? (regiones.length ? regiones[Math.floor(Math.random() * regiones.length)] : null);
+  const regionAsignada = porTerritorio.length
+    ? (territorios.find(Boolean) ?? null)
+    : (elegido.regionConflicto ?? (regiones.length ? regiones[Math.floor(Math.random() * regiones.length)] : null));
 
   // ── DIAGNÓSTICO ──
   // Sin esto no hay forma de saber por qué se ven pocos puntos: si el grupo
   // trajo 13.000 objetos o 12, si la red respondió o se está usando un caché
   // viejo. Ahora la consola lo dice en cada ciclo.
   const nube = recortarNube(candidatos, elegido, MAX_SATELITES);
-  console.log(`  ☉ ${datos.length} objetos en el grupo "${grupo}" · `
+  if (!silencioso) console.log(`  ☉ ${datos.length} objetos en el grupo "${grupo}" · `
     + `${candidatos.length} propagados · ${nube.length} enviados al navegador · ${modo}`);
-  if (candidatos.length < 100) {
+  if (candidatos.length < 100 && !silencioso) {
     console.warn(`  ⚠ MUY POCOS SATÉLITES. Casi seguro no existe tles/gp_cache_${grupo}.json`);
     console.warn(`    y CelesTrak no respondió. Con internet, borra tles/ y vuelve a arrancar.`);
   }
@@ -256,7 +380,7 @@ export async function obtenerDatoOrbital({
     satelite_enunciable: enunciable(elegido.nombre),
     region: regionAsignada?.nombre ?? null,
     contexto: regionAsignada?.contexto ?? null,
-    region_real: !!elegido.regionConflicto, // true = el satélite SÍ sobrevuela esa región ahora; false = asignación decorativa de respaldo
+    region_real: porTerritorio.length ? !!porTerritorio[0].dentro : !!elegido.regionConflicto,
     simulado: false,
     pais: territorio.nombre,
     pais_tipo: territorio.tipo,
@@ -268,6 +392,15 @@ export async function obtenerDatoOrbital({
     // puntos para verse lleno, y con 13.000 no se ve: se atraganta.
     todos: nube.map((c) => ({ nombre: c.nombre, k: c.k, lat: c.lat, lon: c.lon, altKm: c.altKm })),
     protagonista_k: elegido.k,
+    // Uno por territorio, en el orden de tus viñetas. Vacío en la espera.
+    porTerritorio: porTerritorio.map((r) => ({
+      ...r, pais: resolverTerritorio(r.lat, r.lon).nombre,
+    })),
+    // El segundo satélite, para dibujarlo en el globo junto al protagonista.
+    protagonista_b: porTerritorio[1]
+      ? { nombre: porTerritorio[1].satelite, k: porTerritorio[1].k,
+          lat: porTerritorio[1].lat, lon: porTerritorio[1].lon, altKm: porTerritorio[1].altKm }
+      : null,
   };
 }
 

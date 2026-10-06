@@ -310,6 +310,7 @@ const NOMBRE_TIPO = {
   orbital:'DATO ORBITAL', memoria:'memoria episódica', prompt:'▌ PROMPT',
   narracion:'narración NatGeo', reflexion:'narración NatGeo',
   pregunta:'◈ PREGUNTA — AL MICRÓFONO', sonido:'♪ SONIDO', id_agente:'▌ ID',
+  clon:'◐ CLON', silencio:'· SILENCIO ·',
 };
 
 function pintarLista(){
@@ -326,7 +327,8 @@ function pintarLista(){
     d.dataset.tipo = seg.tipo;
     d.dataset.i = k;
     d.innerHTML = `<span class="t">${k+1}. ${NOMBRE_TIPO[seg.tipo] ?? seg.tipo}</span>`
-      + (seg.texto ? seg.texto.replace(/</g,'&lt;') : (seg.sonido ? seg.sonido : '—'));
+      + (seg.texto ? seg.texto.replace(/</g,'&lt;')
+         : (seg.sonido ? seg.sonido : (seg.figura ? seg.figura : (seg.tipo === 'silencio' ? '…' : '—'))));
     // Tocar una línea = ir a ella. Confirmación corta para no saltar por error
     // con el pulgar mientras haces otra cosa en escena.
     d.onclick = () => {
@@ -372,11 +374,21 @@ function conectar(){
       pintarConexion();
     }
     if(m.tipo==='secuencia'){
-      secuencia = m.datos.segmentos || []; iLocal = 0; bloqueActual = -1;
+      // Si es una ACTUALIZACIÓN (el satélite en vivo se acaba de escribir en
+      // el dato orbital), se conserva la línea resaltada.
+      const seguir = !!m.datos.actualizacion;
+      secuencia = m.datos.segmentos || [];
+      if (!seguir) { iLocal = 0; bloqueActual = -1; }
       pintarLista(); pintarConexion();
     }
     if(m.tipo==='pausa'){ document.body.dataset.pausa = m.datos.activa ? '1' : ''; }
     if(m.tipo==='modo') pintarModo(!!m.datos.auto);
+    // Red de seguridad: si llegan textos de la función, la función ESTÁ
+    // corriendo, diga lo que diga (o no diga) el servidor. Los botones nunca
+    // se quedan apagados con la obra en marcha.
+    if(m.tipo==='segmento' || m.tipo==='bloque' || m.tipo==='agente_id' || m.tipo==='preludio'){
+      document.body.dataset.corriendo = '1';
+    }
     if(m.tipo==='orquestador'){
       document.body.dataset.corriendo = m.datos.corriendo ? '1' : '';
       if(!m.datos.corriendo) el('btnArrancar').textContent = '▶  EMPEZAR LA PERFORMANCE';

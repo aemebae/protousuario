@@ -154,7 +154,9 @@ export function crearMotorRumbo({ sostenerLecturas = 1, elevacionCielos = ELEVAC
    * @param {object} p
    * @param {object} p.agente        objeto del agente (necesita .rumbo)
    * @param {object} p.territorio    región elegida (necesita .bbox y .nombre)
-   * @param {number} p.elevacionDeg  elevación del satélite sobre Lima
+   * @param {number} p.elevacionDeg  elevación del satélite. Desde la edición del
+   *        10-10 se le pasa la elevación vista DESDE EL TERRITORIO (ver
+   *        CIELOS_DESDE en correr_performance.js), no desde la sala.
    * @returns {{estado:'AUTORIZADO'|'DESPLAZADO', cardinal:string, azimut:number,
    *            rumboAgente:string, cambio:boolean, rumbo_texto:string}}
    */
@@ -163,8 +165,13 @@ export function crearMotorRumbo({ sostenerLecturas = 1, elevacionCielos = ELEVAC
     const azimut = rumboEntre(CENTRO, centro);
     const cardinalCrudo = azimutACardinal(azimut);
 
-    // --- histéresis, aislada por agente ---
-    const m = memoria.get(agente.id) ?? { confirmado: null, candidato: null, repeticiones: 0 };
+    // --- histéresis, aislada por agente Y por territorio ---
+    // Antes la llave era solo el agente. Con dos territorios por agente, el
+    // segundo se tomaba como "un cambio de rumbo" del primero: con
+    // sostenerLecturas = 1 daba igual, pero con 2 o más, el territorio B
+    // heredaba el cardinal del A. Ahora cada par agente+territorio es aparte.
+    const llave = `${agente.id}|${territorio.id ?? territorio.nombre}`;
+    const m = memoria.get(llave) ?? { confirmado: null, candidato: null, repeticiones: 0 };
     if (cardinalCrudo === m.candidato) m.repeticiones++;
     else { m.candidato = cardinalCrudo; m.repeticiones = 1; }
 
@@ -173,14 +180,15 @@ export function crearMotorRumbo({ sostenerLecturas = 1, elevacionCielos = ELEVAC
     else if (m.candidato !== m.confirmado && m.repeticiones >= sostenerLecturas) {
       m.confirmado = m.candidato; cambio = true;
     }
-    memoria.set(agente.id, m);
+    memoria.set(llave, m);
     const cardinalConfirmado = m.confirmado;
 
     // --- AUTORIZADO / DESPLAZADO ---
     let estado;
     if (agente.rumbo === 'cielos') {
-      // Caso especial: no le pertenece ningún cardinal. Está autorizado solo
-      // cuando el satélite está realmente encima de la sala.
+      // Caso especial: no le pertenece ningún cardinal. Está autorizado cuando
+      // el satélite está realmente ENCIMA — por defecto, encima del territorio
+      // que nombra (antes: encima de la sala; ver CIELOS_DESDE).
       estado = (elevacionDeg ?? -90) >= elevacionCielos ? 'AUTORIZADO' : 'DESPLAZADO';
     } else {
       estado = cardinalPertenece(cardinalConfirmado, agente.rumbo) ? 'AUTORIZADO' : 'DESPLAZADO';

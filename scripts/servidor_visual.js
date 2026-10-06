@@ -32,6 +32,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { networkInterfaces } from 'node:os';
+import { spawn } from 'node:child_process';
 import { obtenerDatoOrbital, repropagarNube } from './capa2_dato_orbital_v3.js';
 // Distrito / ciudad bajo el satélite (curaduría propia, offline, 0 MB extra).
 import { resolverLugar } from './resolver_lugar.js';
@@ -117,7 +118,12 @@ function emitir(tipo, datos) {
 
 // ---------- Relevo: ¿manda el orquestador o el ciclo de espera? ----------
 let ultimoEventoOrquestador = 0;
-const orquestadorActivo = () => Date.now() - ultimoEventoOrquestador < SILENCIO_MS;
+// Vivo = mandó algo hace poco, O está ahora mismo esperando un botón del
+// celular. Esto último faltaba: durante una PAUSA larga el orquestador no
+// manda nada (solo espera), y a los 2 minutos el servidor lo daba por muerto
+// y el globo volvía a recorrer territorios EN PLENA PAUSA.
+const orquestadorActivo = () =>
+  esperandoOrquestador != null || Date.now() - ultimoEventoOrquestador < SILENCIO_MS;
 
 app.post('/evento', (req, res) => {
   const { tipo, datos } = req.body || {};
@@ -125,6 +131,7 @@ app.post('/evento', (req, res) => {
 
   const primeraVez = !orquestadorActivo();
   ultimoEventoOrquestador = Date.now();
+  anunciarOrquestador();
   if (primeraVez) console.log('[visual] orquestador tomó el control — ciclo de espera en pausa.');
 
   // El dato satelital del manifiesto se traduce a los eventos que el globo
@@ -141,7 +148,12 @@ app.post('/evento', (req, res) => {
         lat: d.lat, lon: d.lon, altKm: d.altKm,
         elevacionDeg: d.elevacionDeg, rangeKm: d.rangeKm,
       };
-      ultimoEstado.posiciones = { todos: d.todos || [], protagonista };
+      // El satélite del SEGUNDO territorio: se dibuja también, sin mover la cámara.
+      const protagonistaB = d.protagonista_b?.lat != null ? {
+        nombre: d.protagonista_b.nombre, k: d.protagonista_b.k,
+        lat: d.protagonista_b.lat, lon: d.protagonista_b.lon, altKm: d.protagonista_b.altKm,
+      } : null;
+      ultimoEstado.posiciones = { todos: d.todos || [], protagonista, protagonistaB };
       emitir('posiciones', ultimoEstado.posiciones);
 
       const lug = resolverLugar(d.lat, d.lon);
@@ -160,7 +172,10 @@ app.post('/evento', (req, res) => {
   if (tipo === 'afecto' && datos?.estado) ultimoEstado.afecto = datos.estado;
   // La secuencia completa se guarda: un celular que se reconecta a media
   // función recupera de golpe todos los textos que faltan.
-  if (tipo === 'secuencia') { ultimoEstado.secuencia = datos ?? null; ultimoEstado.bloque = null; }
+  if (tipo === 'secuencia') {
+    ultimoEstado.secuencia = datos ?? null;
+    if (!datos?.actualizacion) ultimoEstado.bloque = null;
+  }
   if (tipo === 'segmento' && typeof datos?.indice === 'number') {
     ultimoEstado.bloque = datos.indice;
     emitir('bloque', { i: datos.indice });   // el celular resalta esa línea
@@ -232,11 +247,67 @@ app.get('/sonido/:archivo', (req, res) => {
 // sin esperar al orquestador.
 let estadoPausa = false;
 
+// ═══════════════════════════════════════════════════════════════════════════
+//  ARRANCAR LA PERFORMANCE DESDE EL CELULAR (botón ▶ EMPEZAR)
+//  El servidor lanza correr_performance.js como proceso hijo, en esta misma
+//  terminal: ves su salida aquí y el ENTER del teclado le sigue llegando.
+//
+//  ¿Y LOS BOTONES DEL CELULAR? El control atenúa ATRÁS / AVANZAR / PAUSA /
+//  REPETIR hasta que el servidor le dice "corriendo". Antes eso SOLO pasaba
+//  si arrancabas con el botón: arrancando desde la terminal, los botones se
+//  quedaban apagados. Ahora "corriendo" significa que HAY un orquestador
+//  vivo, lo haya lanzado quien lo haya lanzado.
+// ═══════════════════════════════════════════════════════════════════════════
+let procesoOrquestador = null;
+const hijoVivo = () => !!(procesoOrquestador && procesoOrquestador.exitCode === null);
+const orquestadorCorriendo = () => hijoVivo() || esperandoOrquestador != null
+  || Date.now() - ultimoEventoOrquestador < 15000;
+let corriendoAnunciado = null;
+function anunciarOrquestador(forzar = false) {
+  const vivo = orquestadorCorriendo();
+  if (forzar || vivo !== corriendoAnunciado) {
+    corriendoAnunciado = vivo;
+    emitir('orquestador', { corriendo: vivo });
+  }
+}
+setInterval(anunciarOrquestador, 2000);
+
+function arrancarOrquestador() {
+  if (orquestadorCorriendo()) {
+    console.log('[control] EMPEZAR ignorado: la performance ya está corriendo.');
+    emitir('orquestador', { corriendo: true, aviso: 'ya estaba corriendo' });
+    return { ok: false, motivo: 'ya_corriendo' };
+  }
+  console.log('\n' + '▶'.repeat(36));
+  console.log('  ARRANQUE REMOTO desde el celular');
+  console.log('▶'.repeat(36) + '\n');
+
+  const env = join(RAIZ, '.env');
+  const args = existsSync(env) ? [`--env-file=${env}`] : [];
+  if (!args.length) console.warn('  ⚠ no encuentro .env en la raíz: el orquestador arranca sin claves.');
+  procesoOrquestador = spawn(process.execPath, [...args, join(__dirname, 'correr_performance.js')],
+                             { cwd: RAIZ, stdio: 'inherit', env: process.env });
+  anunciarOrquestador(true);
+
+  procesoOrquestador.on('exit', (codigo) => {
+    console.log(`\n■ La performance terminó (código ${codigo}).\n`);
+    procesoOrquestador = null;
+    ultimoEventoOrquestador = 0;      // vuelve la espera y el botón EMPEZAR
+    anunciarOrquestador(true);
+  });
+  procesoOrquestador.on('error', (e) => {
+    console.error('✗ No se pudo arrancar el orquestador:', e.message);
+    procesoOrquestador = null;
+    anunciarOrquestador(true);
+  });
+  return { ok: true };
+}
+
 // El celular manda un comando.
 app.post('/control', (req, res) => {
   const cmd = req.body?.comando;
   const validos = ['avanzar', 'retroceder', 'repetir', 'saltar_agente',
-                   'terminar', 'pausa', 'deriva', 'auto', 'manual'];
+                   'terminar', 'pausa', 'deriva', 'auto', 'manual', 'arrancar'];
   const esVelocidad = typeof cmd === 'string' && /^velocidad:[0-9.]+$/.test(cmd);
   const esIr = typeof cmd === 'string' && /^ir:\d+$/.test(cmd);   // saltar a un bloque
   if (!validos.includes(cmd) && !esVelocidad && !esIr) {
@@ -257,6 +328,10 @@ app.post('/control', (req, res) => {
       ultimoEstado.pausa = estadoPausa;
       emitir('pausa', { activa: estadoPausa });
     }
+  }
+  if (cmd === 'arrancar') {
+    const r = arrancarOrquestador();
+    return res.json({ ok: r.ok, comando: cmd, motivo: r.motivo ?? null });
   }
   if (esIr) { entregarComando(cmd); return res.json({ ok: true, comando: cmd }); }
   // La velocidad la aplica el navegador al vuelo (playbackRate): no hay que
@@ -281,6 +356,8 @@ app.post('/control', (req, res) => {
 
 // El orquestador pregunta "¿qué hago ahora?" y espera aquí colgado.
 app.get('/control/esperar', (req, res) => {
+  ultimoEventoOrquestador = Date.now();
+  anunciarOrquestador();
   if (colaComandos.length) return res.json({ comando: colaComandos.shift() });
   esperandoOrquestador = { resolver: (cmd) => res.json({ comando: cmd }) };
   req.on('close', () => { if (esperandoOrquestador) esperandoOrquestador = null; });
@@ -295,10 +372,36 @@ app.post('/control/estado', (req, res) => {
 app.get('/control/estado', (req, res) => res.json(ultimoEstado.control ?? {}));
 
 // ---------- Ciclo de espera (solo cuando el orquestador está callado) ----------
+// ═══════════════════════════════════════════════════════════════════════════
+//  LA ESPERA TAMBIÉN VIGILA TUS TERRITORIOS
+//  Antes de que empiece la función (y entre fases), el globo elegía "el
+//  satélite más alto en el cielo de Lima": casi siempre sobre el Pacífico,
+//  y el plano detalle mostraba agua lisa, sin terreno.
+//  Ahora recorre tus territorios — los que tienen agente en
+//  regiones_conflicto.json —, uno cada ROTACION_ESPERA_S segundos, siempre
+//  con el satélite que en ese momento está encima. Entre un territorio y el
+//  siguiente, cada ciclo releva al satélite que acaba de llegar.
+// ═══════════════════════════════════════════════════════════════════════════
+const ROTACION_ESPERA_S = Number(process.env.ROTACION_ESPERA_S || 30);
+let territoriosEspera = [];
+try {
+  territoriosEspera = (JSON.parse(readFileSync(join(RAIZ, 'regiones_conflicto.json'), 'utf8')).regiones ?? [])
+    .filter((r) => r.agente && r.bbox);
+} catch { territoriosEspera = []; }
+let iEspera = -1, tRotacion = 0;
+
 async function cicloEspera() {
   if (orquestadorActivo()) return; // el orquestador manda: no interferir
   try {
-    const dato = await obtenerDatoOrbital({ grupo: GRUPO_SATELITAL });
+    let territorios = [];
+    if (territoriosEspera.length) {
+      if (iEspera < 0 || Date.now() - tRotacion >= ROTACION_ESPERA_S * 1000) {
+        iEspera = (iEspera + 1) % territoriosEspera.length;
+        tRotacion = Date.now();
+      }
+      territorios = [territoriosEspera[iEspera]];
+    }
+    const dato = await obtenerDatoOrbital({ grupo: GRUPO_SATELITAL, territorios, silencioso: iEspera > 0 });
 
     ultimoEstado.salud = dato.modo_datos;
     // Se manda también el conteo: así la esquina de la escena te dice cuántos
@@ -357,12 +460,14 @@ function tickRapido() {
   if (!pos || !pos.todos?.length) return;
   const ahora = new Date();
   const todos = repropagarNube(pos.todos, ahora);
-  let protagonista = pos.protagonista;
-  if (protagonista?.k) {
-    const p = repropagarNube([{ nombre: protagonista.nombre, k: protagonista.k }], ahora)[0];
-    if (p) protagonista = { ...protagonista, lat: p.lat, lon: p.lon, altKm: p.altKm };
-  }
-  emitir('posiciones', { todos, protagonista, tick: true });
+  const mover = (sat) => {
+    if (!sat?.k) return sat ?? null;
+    const p = repropagarNube([{ nombre: sat.nombre, k: sat.k }], ahora)[0];
+    return p ? { ...sat, lat: p.lat, lon: p.lon, altKm: p.altKm } : sat;
+  };
+  const protagonista = mover(pos.protagonista);
+  const protagonistaB = mover(pos.protagonistaB);
+  emitir('posiciones', { todos, protagonista, protagonistaB, tick: true });
 }
 
 server.listen(PUERTO, '0.0.0.0', () => {
@@ -381,7 +486,9 @@ server.listen(PUERTO, '0.0.0.0', () => {
   }
   console.log('════════════════════════════════════════════════════');
   console.log(`  Grupo satelital: ${GRUPO_SATELITAL} | ciclo de espera: ${POLL_MS / 1000}s`);
-  console.log('  Esperando al orquestador...\n');
+  console.log('  Arranca la performance DESDE EL CELULAR con ▶ EMPEZAR,');
+  console.log('  o a mano en otra terminal:');
+  console.log('     node --env-file=.env scripts\\correr_performance.js\n');
   cicloEspera();
   setInterval(cicloEspera, POLL_MS);
   if (TICK_MS > 0) setInterval(tickRapido, TICK_MS);

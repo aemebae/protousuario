@@ -84,8 +84,19 @@ export function emitirSatelite(dato) {
     pais: dato.pais, pais_tipo: dato.pais_tipo,
     region: dato.region, region_real: dato.region_real,
     modo_datos: dato.modo_datos, todos: dato.todos,
+    // Faltaba: sin la clave, el servidor no podía mover al protagonista
+    // durante la función (la nube se movía; el punto principal, congelado).
+    protagonista_k: dato.protagonista_k ?? null,
+    // El satélite del segundo territorio, para dibujarlo también.
+    protagonista_b: dato.protagonista_b ?? null,
   });
 }
+
+// ---------- Partitura del clon y reposos escritos ----------
+/** @CLON <figura>: le dice al clon transespecie qué rostro tomar. */
+export const emitirClon = (figura, segundos = 12) => emitirEvento('clon', { figura, segundos });
+/** @SILENCIO <s>: un reposo escrito; el clon puede quedarse quieto. */
+export const emitirSilencio = (segundos) => emitirEvento('silencio', { segundos });
 
 // ---------- Rumbo y pertenencia (para la rosa de los vientos en pantalla) ----------
 /** @param {{estado:string, cardinal:string, azimut:number, rumboAgente:string}} r */

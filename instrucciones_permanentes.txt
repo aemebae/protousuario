@@ -158,14 +158,14 @@ Si no los reventaron, saquen el globo de las máscaras.
 Les seleccionades pueden ponerse las máscaras.
 
 
-# [Pausa larga sin texto generado]… 
+@SILENCIO
 
 
 @PROMPT
 
 Luego, les invita a tomarse una foto selfie grupal de multiespecies.
 
-# [Pausa larga sin texto generado]… 
+@SILENCIO
 
 Luego, manteniendo el modo selfie, les propone, ponerse en fila, 
 
@@ -235,7 +235,7 @@ Cada vez que una sobrevuele sobre nosotros, mi sesgo cambia
 
 # Generado por Gemini: 
 # PROTOUSUARIO desde los cielos
-# • Taiwán y el estrecho de Formosa → noroeste (308°) · ★ AUTORIZADO por elevación
+# • Groenlandia → norte (10°) · ★ AUTORIZADO por elevación
 # • el desierto de Atacama → sureste (145°) · ★ AUTORIZADO por elevación
 
 
@@ -298,7 +298,7 @@ Se tumba boca abajo sobre el mismo taburete con ruedas.
 Con unos movimientos lentos y ondulantes, simula que nada en un estanque, como cual renacuajo que ha acabado su metamorfosis y nada con énfasis como rana disparándose en direcciones impredecibles.
 
 
-# [Pausa larga sin texto generado]…
+@SILENCIO
 
 
 Como un monólogo, manteniendo esta postura y movimiento, hace una pregunta a través del micrófono:
@@ -360,7 +360,7 @@ las arrastra.
 Las tira al suelo.
 
 
-# [Pausa larga sin texto generado]…
+@SILENCIO
 
 
 Protousuario ha fallado ya tres veces, 
@@ -385,19 +385,19 @@ Protousuario coge el taburete bajo de cinco ruedas,
 
 se pone de pie sobre él y gestualiza una victoria frente al público presente.
 
-# [Pausa larga sin texto generado]…
+@SILENCIO
 
 Besho
 
-# [Pausa larga sin texto generado]…
+@SILENCIO
 
 Abasho
 
-# [Pausa larga sin texto generado]…
+@SILENCIO
 
 卐
 
-# [Pausa larga sin texto generado]…
+@SILENCIO
 
 # Risa de la Señora K
 Ja ja ja ja ja ja ja Ja ja ja ja ja ja ja Ja ja ja ja ja ja ja 
@@ -405,15 +405,15 @@ Ja ja ja ja ja ja ja Ja ja ja ja ja ja ja Ja ja ja ja ja ja ja
 
 @SONIDO Sigan haciendo su tap tap tap
 
-# [Pausa larga sin texto generado]…
+@SILENCIO
 
 Mira fijamente al público.
 
-# [Pausa larga sin texto generado]…
+@SILENCIO
 
 El silencio llega primero.
 
-# [Pausa larga sin texto generado]…
+@SILENCIO
 
 
 # @NATGEO
@@ -433,7 +433,7 @@ Como un monólogo, manteniendo esta postura y movimiento, hace una pregunta a tr
 # Generado por Gemini:
 # PROTOUSUARIO desde el sur
 # • la Franja de Gaza → noreste (61°) · ✖ DESPLAZADO
-# • el sur andino del Perú (Ayacucho–Puno) → sureste (122°) · ★ AUTORIZADO
+# • el sur andino del Perú → sureste (122°) · ★ AUTORIZADO
 
 
 @PROMPT
@@ -478,7 +478,7 @@ Y así, a pesar de que todo está desmoronándose, Protousuario se moviliza.
 # Generado por Gemini.
 
 
-# [Pausa larga sin texto generado]…
+@SILENCIO
 
 
 @CIERRE
@@ -496,7 +496,7 @@ como un resto arqueológico de un...
 Protousuario es un antecedente al protocolo de acuerdos, nunca acepto los términos y condiciones.
 
 
-# [Pausa larga sin texto generado]…
+@SILENCIO
 
 
 "¿A quién le pertenece el futuro si el pasado ya fue capturado, procesado y modulado?",

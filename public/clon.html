@@ -44,6 +44,11 @@ const RUTA = '/clon-img/';
 const DEMO = new URLSearchParams(location.search).has('demo');
 
 const ESPECIES = [
+  // Tu rostro. El archivo se renombró de julix.png a jvlix.png: el código
+  // seguía pidiendo julix.png, NO lo encontraba, y el clon arrancaba desde una
+  // especie al azar — tu cara no aparecía nunca. Se piden los dos nombres;
+  // el que exista, entra.
+  { f:'jvlix.png',                    tag:'humano'  },
   { f:'julix.png',                    tag:'humano'  },
   { f:'Babosa.png',                   tag:'especie' },
   { f:'Capibara_gpt.png',             tag:'especie' },
@@ -88,6 +93,7 @@ for (const fi of [6,7]) for (const co of [2,3,4,5]) ZONA_VOCAL.push(fi*COLS+co);
 /* ── estado ── */
 const imgs = new Map(), ocupa = new Map();
 let baseF=null, baseAnt=null, baseFade=1;
+let fijaHasta=0;   // mientras dure, la mutación no cambia el rostro elegido con @CLON
 const parches = new Map();
 let pausa=false, hablando=false, finHabla=0, amplitud=0, franja=0, listo=false;
 
@@ -174,7 +180,7 @@ function mutar(t){
     for(const [c,q] of parches) if(t-q.nace>edad){edad=t-q.nace;viejo=c;}
     parches.delete(viejo);
   }
-  if(Math.random() < (p.firma==='todo'?0.09:0.03)){
+  if(t >= fijaHasta && Math.random() < (p.firma==='todo'?0.09:0.03)){
     baseAnt=baseF; baseFade=0; baseF=baseNueva();
     for(const c of [...parches.keys()]) if(ocupa.get(baseF)[c]<=90) parches.delete(c);
   }
@@ -293,6 +299,25 @@ function aplicarEstado(n){
   document.documentElement.style.setProperty('--accent-dim',PERFIL[n].dim);
 }
 
+/* ── @CLON: la partitura elige el rostro ──
+   Desde instrucciones_permanentes.txt:   @CLON Señora K      @CLON jvlix 20
+   Se busca la imagen por nombre (sin .png, sin importar tildes ni mayúsculas),
+   entra con el mismo fundido que usa el cambio de agente, y se SOSTIENE los
+   segundos indicados (12 por defecto) antes de que la mutación siga sola.
+   Este es el gancho mínimo: el chat 6 puede enriquecer lo que pasa aquí. */
+const normF=(x)=>String(x||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+  .replace(/\.png$/i,'').replace(/[^a-z0-9]+/g,' ').trim();
+function forzarFigura(nombre, segundos){
+  const q=normF(nombre); if(!q||!listo) return;
+  const lista=[...imgs.keys()];
+  const hit = lista.find(f=>normF(f)===q) ?? lista.find(f=>normF(f).startsWith(q))
+           ?? lista.find(f=>normF(f).includes(q));
+  if(!hit){ console.warn('[clon] no encuentro la figura:', nombre); return; }
+  baseAnt=baseF; baseFade=0; baseF=hit;
+  for(const c of [...parches.keys()]) if(ocupa.get(baseF)[c]<=90) parches.delete(c);
+  fijaHasta = performance.now() + (Number(segundos)>0 ? Number(segundos) : 12)*1000;
+}
+
 /* ── WebSocket: los mismos eventos que ya emite el orquestador ── */
 function conectar(){
   let ws; try{ ws=new WebSocket(`ws://${location.host}`); }catch(e){ return; }
@@ -303,7 +328,8 @@ function conectar(){
     if(m.tipo==='afecto')    aplicarEstado(d.estado);
     if(m.tipo==='segmento')  hablar(d.texto,d.audio,d.sonido);
     if(m.tipo==='preludio')  hablar(d.texto,d.audio);
-    if(m.tipo==='agente_id'){ baseAnt=baseF; baseFade=0; baseF=baseNueva(); hablar(d.texto,d.audio); }
+    if(m.tipo==='agente_id'){ fijaHasta=0; baseAnt=baseF; baseFade=0; baseF=baseNueva(); hablar(d.texto,d.audio); }
+    if(m.tipo==='clon') forzarFigura(d.figura, d.segundos);
     if(m.tipo==='pausa'){ pausa=!!d.activa;
       if(voz){ pausa ? voz.pause() : voz.play().catch(()=>{}); } }
     if(m.tipo==='velocidad'&&voz) voz.playbackRate=Math.min(2,Math.max(0.5,Number(d.valor)||1));
@@ -316,7 +342,7 @@ function conectar(){
   redim();
   await Promise.all(ESPECIES.map(cargar));
   if(!imgs.size){ document.getElementById('carga').textContent='sin imágenes en /clon-img/'; return; }
-  baseF = imgs.has('julix.png') ? 'julix.png' : baseNueva();
+  baseF = imgs.has('jvlix.png') ? 'jvlix.png' : imgs.has('julix.png') ? 'julix.png' : baseNueva();
   listo = true;
   document.getElementById('carga').classList.add('oculto');
   conectar();

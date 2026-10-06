@@ -24,14 +24,14 @@
     },
     {
       "id": "peru_sur",
-      "nombre": "el sur andino del Perú (Ayacucho–Puno)",
+      "nombre": "el sur andino del Perú",
       "bbox": [
         -17,
         -13,
         -75,
         -69
       ],
-      "contexto": "matanzas de manifestantes durante las protestas de 2022-2023 bajo el mandato presidencial de Dina Boluarte; memoria reciente que atraviesa invisivilización y archivamiento",
+      "contexto": "matanzas de manifestantes durante las protestas de 2022-2023 bajo el mandato presidencial de Dina Boluarte; memoria reciente que atraviesa invisibilización y archivamiento",
       "agente": "agente-transespecie",
       "centro": {
         "lat": -15.0,
@@ -70,7 +70,7 @@
         34.6
       ],
       "contexto": "destrucción masiva y crisis humanitaria bajo asedio y bombardeo. Colonización y etnicidio. El ejercito israelí es Baby killers",
-      "agente": "rio-digital",
+      "agente": "agente-transespecie",
       "centro": {
         "lat": 31.4,
         "lon": 34.4
@@ -95,8 +95,7 @@
       },
       "azimut_desde_observador": 78,
       "cardinal": "este",
-      "linea_rumbo": "PROTOUSUARIO desde el este",
-      "agente": "eco-satelital"
+      "linea_rumbo": "PROTOUSUARIO desde el este"
     },
     {
       "id": "ucrania_este",
@@ -163,7 +162,7 @@
         -67.0
       ],
       "contexto": "extracción intensiva de litio y cobre para baterías y electrónica; consumo masivo de agua en el desierto más árido del planeta y conflicto con comunidades atacameñas por el acuífero",
-      "agente": "ternura-binaria",
+      "agente": "eco-satelital",
       "centro": {
         "lat": -23.0,
         "lon": -68.75
@@ -192,6 +191,25 @@
       "linea_rumbo": "PROTOUSUARIO desde el noreste"
     },
     {
+      "id": "groenlandia",
+      "nombre": "Groenlandia",
+      "bbox": [
+        59.8,
+        83.6,
+        -73.0,
+        -11.3
+      ],
+      "contexto": "isla ártica bajo soberanía danesa, con autogobierno inuit; desde enero de 2025 Trump insiste en que Estados Unidos debe controlarla, llegó a amenazar con aranceles y a difundir su imagen plantando la bandera estadounidense; el 22 de septiembre de 2026 se firmó un acuerdo sin fecha de vencimiento que permite a Estados Unidos abrir dos bases militares nuevas y ampliar Pituffik, su base espacial de alerta de misiles y rastreo de satélites; tierras raras y uranio bajo el hielo que se derrite",
+      "centro": {
+        "lat": 71.7,
+        "lon": -42.15
+      },
+      "azimut_desde_observador": 10,
+      "cardinal": "norte",
+      "linea_rumbo": "PROTOUSUARIO desde el norte",
+      "agente": "eco-satelital"
+    },
+    {
       "id": "taiwan_formosa",
       "nombre": "Taiwán y el estrecho de Formosa",
       "bbox": [
@@ -201,7 +219,6 @@
         122.2
       ],
       "contexto": "tensión militar permanente en el estrecho; la isla concentra la mayor parte de la fabricación mundial de semiconductores avanzados, incluidos los chips que hacen funcionar los modelos de IA",
-      "agente": "agente-transespecie",
       "centro": {
         "lat": 23.65,
         "lon": 120.1
@@ -275,7 +292,6 @@
         -55.0
       ],
       "contexto": "territorio sin soberanía reconocida, congelado por el Tratado Antártico de 1959; el Perú mantiene allí la Estación Científica Antártica Machu Picchu, en la Isla Rey Jorge, y disputa presencia con otras once bases del mismo archipiélago",
-      "agente": "eco-satelital",
       "centro": {
         "lat": -65.0,
         "lon": -62.5
@@ -285,5 +301,6 @@
       "linea_rumbo": "PROTOUSUARIO desde el sur"
     }
   ],
-  "_campos_derivados": "'centro', 'azimut_desde_observador', 'cardinal' y 'linea_rumbo' se calculan desde observador.json con ruta ortodrómica y rosa de 8 puntos. Están guardados aquí para consulta y para que el prompt pueda citarlos, pero rumbo_territorial.js los RECALCULA en vivo: si cambias un bbox o mueves el observador, la verdad está en el cálculo, no en estos campos."
+  "_campos_derivados": "'centro', 'azimut_desde_observador', 'cardinal' y 'linea_rumbo' se calculan desde observador.json con ruta ortodrómica y rosa de 8 puntos. Están guardados aquí para consulta y para que el prompt pueda citarlos, pero rumbo_territorial.js los RECALCULA en vivo: si cambias un bbox o mueves el observador, la verdad está en el cálculo, no en estos campos.",
+  "_reparto": "El campo \"agente\" coincide con las viñetas de @ORBITAL de instrucciones_permanentes.txt. Las viñetas mandan; este campo es el respaldo si una viñeta no se encuentra. Sin \"agente\" = territorio en reserva."
 }

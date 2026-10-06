@@ -62,7 +62,7 @@ const AMBAR = '#ff9b3d';
 const MAR = '#0b1f33';
 
 let estadoActual = POR_DEFECTO, paisIdx = -1, paisNombre = null;
-let satelites = [], protagonista = null;
+let satelites = [], protagonista = null, protagonistaB = null;
 let hayTextura = false;
 
 const el = id => document.getElementById(id);
@@ -306,16 +306,22 @@ function pintarSatelites(){
     ? [{lat:protagonista.lat, lon:protagonista.lon, altKm:protagonista.altKm}]
     : [];
   prota.__prota = true;
+  // El satélite del SEGUNDO territorio: mismo color, un poco más chico.
+  // Dos ojos a la vez, uno sobre cada territorio que nombra el agente.
+  const protaB = protagonistaB
+    ? [{lat:protagonistaB.lat, lon:protagonistaB.lon, altKm:protagonistaB.altKm}]
+    : [];
+  protaB.__protaB = true;
 
-  globo.particlesData([otros, prota])
+  globo.particlesData([otros, prota, protaB])
     .particleLat('lat').particleLng('lon')
     .particleAltitude(d => Math.min(0.45, (d.altKm ?? 500) / 12000))
     // sizeAttenuation(false) = el tamaño se mide en PÍXELES y no encoge con
     // la distancia. Es lo que hace que se lean como puntos de radar y no
     // como bolitas 3D. Si los ves muy chicos, sube TAM_SATELITE.
     .particlesSizeAttenuation(false)
-    .particlesSize(set => set.__prota ? TAM_PROTA : TAM_SATELITE)
-    .particlesColor(set => set.__prota ? hex(p.accent) : AMBAR);
+    .particlesSize(set => set.__prota ? TAM_PROTA : set.__protaB ? TAM_PROTA * 0.8 : TAM_SATELITE)
+    .particlesColor(set => (set.__prota || set.__protaB) ? hex(p.accent) : AMBAR);
 
   // El globo pequeño NO recibe la nube: solo el protagonista. Era el otro
   // 50% del lag (todo se dibujaba dos veces).
@@ -332,8 +338,10 @@ function pintarSatelites(){
   // Ahí estaba el bug: el anillo se dibujaba por debajo y parecía salir
   // "del otro lado" del globo.
   const anillo = protagonista ? [{lat:protagonista.lat, lng:protagonista.lon}] : [];
+  // En el globo grande, un radar también sobre el segundo territorio.
+  const anillos = protagonistaB ? [...anillo, {lat:protagonistaB.lat, lng:protagonistaB.lon}] : anillo;
   for (const g of [globo, globoZoom]) {
-    g.ringsData(anillo).ringLat('lat').ringLng('lng')
+    g.ringsData(g === globo ? anillos : anillo).ringLat('lat').ringLng('lng')
      .ringAltitude(0.022)
      .ringColor(()=> hex(p.accent))
      .ringMaxRadius(g === globo ? 4 : 9)
@@ -648,8 +656,10 @@ function mostrarTerritorio(d){
 }
 
 function actualizarPosiciones(d){
-  satelites = (d.todos||[]).map(s=>({...s, esProtagonista: d.protagonista && s.nombre===d.protagonista.nombre}));
+  const nombresProta = new Set([d.protagonista?.nombre, d.protagonistaB?.nombre].filter(Boolean));
+  satelites = (d.todos||[]).map(s=>({...s, esProtagonista: nombresProta.has(s.nombre)}));
   protagonista = d.protagonista || null;
+  protagonistaB = d.protagonistaB || null;
   pintarSatelites();
   // TICK RÁPIDO (cada ~0,9 s): solo repinta los puntos para que la nube se
   // vea moverse. No toca telemetría ni cámara: si lo hiciera, el globo estaría

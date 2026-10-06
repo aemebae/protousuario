@@ -57,7 +57,11 @@ const MIOS = { PROMPT: 'prompt', PREGUNTA: 'pregunta', ID: 'id_agente' };
 
 const preludio = [];
 const agentes = [];
-let cierre = '';
+// El CIERRE ahora es una LISTA de bloques, igual que un agente: una línea =
+// un bloque = un audio. Antes se pegaba todo en un solo texto de 3.771
+// caracteres — las preguntas se leían de corrido, sin respiro, y el mp3 era
+// tan largo que ElevenLabs cortaba por tiempo. Eso fue lo del 27-08.
+const cierre = [];
 let agente = null;      // agente en construcción
 let modo = null;        // 'preludio' | 'cierre' | tipo de bloque mío
 let avisos = [];
@@ -118,11 +122,53 @@ for (const cruda of lineas) {
       continue;
     }
 
+    // ── @SILENCIO [segundos] ──
+    // Un reposo escrito, como el silencio de una partitura musical: no se dice
+    // nada, la pantalla se queda como está, y la escena espera.
+    //     @SILENCIO        ← lo que diga SILENCIO_S en correr_performance.js (5 s)
+    //     @SILENCIO 12     ← este en concreto, 12 s
+    // No confundir con el botón PAUSA (que es tuyo, en vivo, e indefinido).
+    if (marca === 'SILENCIO') {
+      const n = Number(resto[0]);
+      const seg = resto.length && Number.isFinite(n) ? Math.max(0, n) : null;   // null = el de siempre
+      const bloque = { tipo: 'silencio', segundos: seg, texto: '' };
+      if (modo === 'cierre') cierre.push(bloque);
+      else if (agente) agente.bloques.push(bloque);
+      else avisos.push(`línea ${nLinea}: @SILENCIO fuera de un agente o del cierre`);
+      continue;   // no toca `modo`: lo que sigue continúa en su sección
+    }
+
+    // ── @CLON figura ──
+    // Le dice al clon transespecie qué rostro tomar EN ESE PUNTO de la
+    // partitura. No se dice nada y la escena no se detiene: el rostro cambia
+    // mientras sigue el bloque siguiente. El nombre es el de la imagen, sin
+    // .png, sin importar mayúsculas ni tildes:
+    //     @CLON Señora K        ← justo antes de la risa
+    //     @CLON jvlix           ← vuelve tu rostro
+    //     @CLON Yakuruna
+    //     @CLON Señora K 10     ← un número al final = segundos que se sostiene (12 si no)
+    if (marca === 'CLON') {
+      const ultimo = Number(resto.at(-1));
+      const conSeg = resto.length > 1 && Number.isFinite(ultimo);
+      const figura = (conSeg ? resto.slice(0, -1) : resto).join(' ').trim();
+      if (!figura) { avisos.push(`línea ${nLinea}: @CLON sin figura`); continue; }
+      const bloque = { tipo: 'clon', figura, segundos: conSeg ? ultimo : 12, texto: '' };
+      if (modo === 'cierre') cierre.push(bloque);
+      else if (agente) agente.bloques.push(bloque);
+      else avisos.push(`línea ${nLinea}: @CLON fuera de un agente o del cierre`);
+      continue;   // como @SONIDO y @SILENCIO: no corta el @PROMPT en curso
+    }
+
     // ── @SONIDO ──
     // Un mp3 tuyo de la carpeta "sonidos externos". Es un bloque como los
     // demás: ocupa su AVANZAR y, en automático, la escena espera a que
     // termine de sonar. No pasa por ElevenLabs ni gasta créditos.
     //     @SONIDO Sonido Rana Croar
+    if (marca === 'SONIDO' && modo === 'cierre') {
+      const archivo = resto.join(' ').trim();
+      if (archivo) cierre.push({ tipo: 'sonido', sonido: archivo, texto: '' });
+      continue;
+    }
     if (marca === 'SONIDO') {
       if (!agente) { avisos.push(`línea ${nLinea}: @SONIDO fuera de un agente`); continue; }
       const archivo = resto.join(' ').trim();
@@ -162,7 +208,19 @@ for (const cruda of lineas) {
 
   // ── es contenido ──
   if (modo === 'preludio') { preludio.push(t); continue; }
-  if (modo === 'cierre') { cierre = cierre ? cierre + ' ' + t : t; continue; }
+  if (modo === 'cierre') {
+    // Limpia lo que queda al pegar desde un JSON:  "¿...?",  →  ¿...?
+    // SOLO si la línea viene entre comillas. Una coma al final de un verso
+    // tuyo ("como una crisálida seca,") es puntuación y se respeta.
+    let limpio = t;
+    if (/^["“]/.test(t)) {
+      limpio = t.replace(/^["“]\s*/, '').replace(/\s*["”]\s*,?\s*$/, '').trim();
+    }
+    if (!limpio) continue;
+    const esPregunta = /^¿[\s\S]*\?$/.test(limpio);
+    cierre.push({ tipo: esPregunta ? 'pregunta' : 'narracion', texto: limpio });
+    continue;
+  }
   if (!modo || typeof modo !== 'string' || !agente) {
     avisos.push(`línea ${nLinea}: texto suelto sin marca — ignorado: "${t.slice(0, 48)}…"`);
     continue;
@@ -179,7 +237,7 @@ for (const a of agentes) {
   // Un bloque @SONIDO no tiene texto y no es un hueco de Gemini, pero SÍ es
   // útil: es tu mp3. Sin esta excepción se descartaba en silencio.
   const utiles = a.bloques.filter((b) =>
-    b.gemini || b.tipo === 'sonido' || (b.texto && b.texto.trim()));
+    b.gemini || ['sonido', 'silencio', 'clon'].includes(b.tipo) || (b.texto && b.texto.trim()));
   const soloId = utiles.length > 0 && utiles.every((b) => b.tipo === 'id_agente');
   if (!utiles.length || soloId) {
     avisos.push(`${a.nombre}: sin bloques — se salta (¿"lo voy a saltar esta vez"?)`);
@@ -225,7 +283,13 @@ for (const a of vivos) {
     + (fijados ? ` · ${fijados} fijados` : '')
     + (sonidos ? ` · ${sonidos} sonidos` : '') + `)   ${JSON.stringify(c)}`);
 }
-if (cierre) { total++; console.log(`  CIERRE${''.padEnd(18)}   1 bloque`); }
+if (cierre.length) {
+  total += cierre.length;
+  const nPreg = cierre.filter((b) => b.tipo === 'pregunta').length;
+  const nSil = cierre.filter((b) => b.tipo === 'silencio').length;
+  console.log(`  CIERRE${''.padEnd(18)} ${String(cierre.length).padStart(3)} bloques  `
+    + `(${nPreg} preguntas${nSil ? ` · ${nSil} silencios` : ''})`);
+}
 
 console.log(`\n✓ ${DESTINO} · ${vivos.length} agentes · ${total} bloques en total`);
 if (preludio.length) console.log(`✓ ${PRELUDIO_JSON} · ${preludio.length} párrafos`);

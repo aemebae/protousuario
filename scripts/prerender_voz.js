@@ -50,11 +50,20 @@ for (const a of G?.agentes ?? []) {
     // tipo sonido→ es un mp3 tuyo, no pasa por ElevenLabs
     // b.fijado   → era un hueco y lo congelaste: SÍ se pre-graba, con voz IA,
     //              porque lo escribió Gemini y así conserva su timbre.
-    if (b.gemini || b.sin_voz || b.tipo === 'sonido') continue;
+    if (b.gemini || b.sin_voz || ['sonido', 'silencio', 'clon'].includes(b.tipo)) continue;
     añadir(a.nombre, b.tipo, b.texto, b.fijado ? VOZ_IA : VOZ_AUTOR);
   }
 }
-añadir('CIERRE', 'narracion', G?.cierre);
+// El CIERRE ahora es una lista de bloques (uno por línea). Voz de autor.
+// Se aceptan los dos formatos por si el guion aún es de la versión anterior.
+if (Array.isArray(G?.cierre)) {
+  for (const b of G.cierre) {
+    if (['sonido', 'silencio', 'clon'].includes(b.tipo)) continue;
+    añadir('CIERRE', b.tipo, b.texto, VOZ_AUTOR);
+  }
+} else {
+  añadir('CIERRE', 'narracion', G?.cierre, VOZ_AUTOR);
+}
 // La deriva la dice la voz IA: PROTOUSUARIO ya no está para repetirla.
 if (!SOLO_FIJOS) (PD?.preguntas ?? []).forEach((q) => añadir('DERIVA', 'pregunta', q, VOZ_IA));
 
