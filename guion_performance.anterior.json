@@ -1,5 +1,5 @@
 {
-  "_uso": "GENERADO por scripts/compilar_guion.js el 2026-10-05 06:16 desde instrucciones_permanentes.txt. NO EDITAR A MANO.",
+  "_uso": "GENERADO por scripts/compilar_guion.js el 2026-10-09 06:29 desde instrucciones_permanentes.txt. NO EDITAR A MANO.",
   "_tipos": "id_agente · orbital(gemini) · prompt(tuyo) · narracion(gemini) · pregunta(tuya) · memoria(gemini)",
   "_avanzar": "cada bloque espera un AVANZAR del celular",
   "agentes": [
@@ -16,6 +16,12 @@
             "El este de la República Democrática del Congo",
             "La frontera México-Estados Unidos"
           ]
+        },
+        {
+          "tipo": "clon",
+          "figura": "Elite",
+          "segundos": 30,
+          "texto": ""
         },
         {
           "tipo": "id_agente",
@@ -43,14 +49,6 @@
         },
         {
           "tipo": "id_agente",
-          "texto": "Todes tendrán que hacer un registro en video y luego enviarlo al correo: bruoiluj (arroba) gmail (punto) com"
-        },
-        {
-          "tipo": "id_agente",
-          "texto": "Repito el correo deletreándolo: b, r, u, o, i, l, u, j (arroba) gmail (punto) com"
-        },
-        {
-          "tipo": "id_agente",
           "texto": "Ustedes firmaron el consentimiento al entrar: su atención es el impuesto. Yo decido, él obedece, ustedes observan."
         },
         {
@@ -59,7 +57,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "Protousuario desprende unas curiosas cabezas infladas con globos, las va sacando de sus prótesis y empieza a repartirlas una a una al público."
+          "texto": "Protousuario desprende unas curiosas cabezas infladas con globos, las va sacando de su parte de atrás y empieza a repartirlas una a una al público."
         },
         {
           "tipo": "prompt",
@@ -133,7 +131,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "one"
+          "texto": "wan"
         },
         {
           "tipo": "sonido",
@@ -149,12 +147,22 @@
           "texto": "Les seleccionades pueden ponerse las máscaras."
         },
         {
+          "tipo": "silencio",
+          "segundos": null,
+          "texto": ""
+        },
+        {
           "tipo": "prompt",
           "texto": "Luego, les invita a tomarse una foto selfie grupal de multiespecies."
         },
         {
+          "tipo": "silencio",
+          "segundos": null,
+          "texto": ""
+        },
+        {
           "tipo": "prompt",
-          "texto": "Luego, manteniendo el modo selfie, les propone, ponerse en fila,"
+          "texto": "Luego, manteniendo el modo selfie de su cámara, les propone ponerse en fila,"
         },
         {
           "tipo": "prompt",
@@ -182,7 +190,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "caminan guiados por Protousuario hacia una sala diferente."
+          "texto": "caminan guiados por Protousuario hacia una zona diferente."
         },
         {
           "tipo": "memoria",
@@ -217,7 +225,7 @@
           "gemini": true,
           "texto": "",
           "territorios": [
-            "Taiwán y el estrecho de Formosa",
+            "Groenlandia",
             "el desierto de Atacama"
           ]
         },
@@ -242,8 +250,18 @@
           "texto": "Lentamente se va posicionando boca arriba sobre este, moviendo las piernas como cual insecto que convulsiona mirando el cielo."
         },
         {
+          "tipo": "silencio",
+          "segundos": null,
+          "texto": ""
+        },
+        {
           "tipo": "prompt",
           "texto": "Prende unas luces sostenidas de sus patas."
+        },
+        {
+          "tipo": "silencio",
+          "segundos": 10,
+          "texto": ""
         },
         {
           "tipo": "prompt",
@@ -260,7 +278,12 @@
         },
         {
           "tipo": "prompt",
-          "texto": "¿Cómo sería dejar de ser una antena bio-lógica controlada por las elites de poder global?"
+          "texto": "¿Cómo sería dejar de ser una antena bio-lógica controlada por las elites PDF de poder global?"
+        },
+        {
+          "tipo": "silencio",
+          "segundos": 5,
+          "texto": ""
         },
         {
           "tipo": "memoria",
@@ -276,6 +299,11 @@
           "texto": "Se lo va acoplando a su cuerpo con dificultad,"
         },
         {
+          "tipo": "silencio",
+          "segundos": 60,
+          "texto": ""
+        },
+        {
           "tipo": "prompt",
           "texto": "hasta que finalmente lo logra,"
         },
@@ -284,8 +312,14 @@
           "texto": "coge una máscara de su interior,"
         },
         {
+          "tipo": "clon",
+          "figura": "Yakuruna",
+          "segundos": 30,
+          "texto": ""
+        },
+        {
           "tipo": "prompt",
-          "texto": "una de una especie mutante que asemeja a YaKuruna"
+          "texto": "una de una especie mutante que asemeja a Yakuruna"
         },
         {
           "tipo": "prompt",
@@ -297,19 +331,46 @@
         },
         {
           "tipo": "prompt",
-          "texto": "El mito de Yakuruna sirvió de inspiración para la pelicula de terror y persecución:'El monstruo de la Laguna Negra' de 1954, de la cual Guillermo del Toro se inspiró directamente para su pelicula: 'La forma del agua' de 2017, dandole un giro como un cuento de hadas romántico."
+          "texto": "Protousuario se tumba boca abajo sobre el mismo taburete con ruedas."
+        },
+        {
+          "tipo": "silencio",
+          "segundos": null,
+          "texto": ""
         },
         {
           "tipo": "prompt",
-          "texto": "Yakuruna también quiere ser un meme viral."
+          "texto": "El mito de Yakuruna sirvió de inspiración para la película de terror 'El monstruo de la Laguna Negra' de 1954, de la cual, Guillermo del Toro se inspiró directamente para su película ganadora de un oscar, 'La forma del agua' de 2017, dándole un giro como un cuento de hadas romántico."
         },
         {
           "tipo": "prompt",
-          "texto": "Se tumba boca abajo sobre el mismo taburete con ruedas."
+          "texto": "Con unos movimientos lentos y ondulantes, Protousuario simula que nada en un estanque, como cual renacuajo que ha acabado su metamorfosis y nada con énfasis, como rana disparándose en direcciones impredecibles."
+        },
+        {
+          "tipo": "silencio",
+          "segundos": 7,
+          "texto": ""
         },
         {
           "tipo": "prompt",
-          "texto": "Con unos movimientos lentos y ondulantes, simula que nada en un estanque, como cual renacuajo que ha acabado su metamorfosis y nada con énfasis como rana disparándose en direcciones impredecibles."
+          "texto": "Yakuruna también,"
+        },
+        {
+          "tipo": "prompt",
+          "texto": "quiere los créditos mericidos"
+        },
+        {
+          "tipo": "prompt",
+          "texto": "Yakuruna también,"
+        },
+        {
+          "tipo": "prompt",
+          "texto": "quiere ser un meme viral."
+        },
+        {
+          "tipo": "silencio",
+          "segundos": null,
+          "texto": ""
         },
         {
           "tipo": "prompt",
@@ -318,6 +379,11 @@
         {
           "tipo": "prompt",
           "texto": "¿Cómo sería recordar algo que tu cuerpo nunca vivió?"
+        },
+        {
+          "tipo": "silencio",
+          "segundos": 5,
+          "texto": ""
         }
       ]
     },
@@ -356,11 +422,22 @@
         },
         {
           "tipo": "prompt",
-          "texto": "un pez colorido del Río Rímac en la parte de atrás y en la parte de adelante, unos… Coloca los celulares en esos soportes."
+          "texto": "un pez colorido del Río Rímac en la parte de atrás y en la parte de adelante, ¿unos?… Coloca los celulares en esos soportes."
         },
         {
           "tipo": "prompt",
           "texto": "Protousuario se coloca una máscara muy particular que se sostiene flotante de sus entrañas."
+        },
+        {
+          "tipo": "silencio",
+          "segundos": 7,
+          "texto": ""
+        },
+        {
+          "tipo": "clon",
+          "figura": "Señora K",
+          "segundos": 30,
+          "texto": ""
         },
         {
           "tipo": "prompt",
@@ -410,8 +487,18 @@
           "texto": "las arrastra."
         },
         {
+          "tipo": "silencio",
+          "segundos": 7,
+          "texto": ""
+        },
+        {
           "tipo": "prompt",
           "texto": "Las tira al suelo."
+        },
+        {
+          "tipo": "silencio",
+          "segundos": null,
+          "texto": ""
         },
         {
           "tipo": "prompt",
@@ -438,8 +525,18 @@
           "texto": "Busca un muro…"
         },
         {
+          "tipo": "silencio",
+          "segundos": 5,
+          "texto": ""
+        },
+        {
           "tipo": "prompt",
           "texto": "Tres..."
+        },
+        {
+          "tipo": "silencio",
+          "segundos": 5,
+          "texto": ""
         },
         {
           "tipo": "prompt",
@@ -458,12 +555,27 @@
           "texto": "se pone de pie sobre él y gestualiza una victoria frente al público presente."
         },
         {
+          "tipo": "silencio",
+          "segundos": 3,
+          "texto": ""
+        },
+        {
           "tipo": "prompt",
           "texto": "Besho"
         },
         {
+          "tipo": "silencio",
+          "segundos": 3,
+          "texto": ""
+        },
+        {
           "tipo": "prompt",
           "texto": "Abasho"
+        },
+        {
+          "tipo": "silencio",
+          "segundos": 3,
+          "texto": ""
         },
         {
           "tipo": "prompt",
@@ -479,12 +591,27 @@
           "texto": ""
         },
         {
+          "tipo": "silencio",
+          "segundos": null,
+          "texto": ""
+        },
+        {
           "tipo": "prompt",
           "texto": "Mira fijamente al público."
         },
         {
+          "tipo": "silencio",
+          "segundos": 3,
+          "texto": ""
+        },
+        {
           "tipo": "prompt",
           "texto": "El silencio llega primero."
+        },
+        {
+          "tipo": "silencio",
+          "segundos": 2,
+          "texto": ""
         },
         {
           "tipo": "prompt",
@@ -495,12 +622,17 @@
           "texto": "¿Desde qué sur te manifiestas?"
         },
         {
+          "tipo": "silencio",
+          "segundos": 5,
+          "texto": ""
+        },
+        {
           "tipo": "orbital",
           "gemini": true,
           "texto": "",
           "territorios": [
             "la Franja de Gaza",
-            "el sur andino del Perú (Ayacucho–Puno)"
+            "el sur andino del Perú"
           ]
         },
         {
@@ -525,6 +657,10 @@
         },
         {
           "tipo": "prompt",
+          "texto": "Intenta no caerse"
+        },
+        {
+          "tipo": "prompt",
           "texto": "Como un cóndor andino que planea con sus alas,"
         },
         {
@@ -532,12 +668,27 @@
           "texto": "se moviliza sobre el taburete impulsándose como en una coreografía"
         },
         {
+          "tipo": "silencio",
+          "segundos": 2,
+          "texto": ""
+        },
+        {
           "tipo": "prompt",
           "texto": "avanza unos metros, intenta no caerse."
         },
         {
+          "tipo": "silencio",
+          "segundos": 2,
+          "texto": ""
+        },
+        {
           "tipo": "prompt",
           "texto": "Se cae"
+        },
+        {
+          "tipo": "silencio",
+          "segundos": 3,
+          "texto": ""
         },
         {
           "tipo": "prompt",
@@ -552,8 +703,17 @@
           "texto": "¿Quiénes aquí presente recuerdan la operación Cóndor?"
         },
         {
-          "tipo": "narracion",
-          "gemini": true,
+          "tipo": "silencio",
+          "segundos": 5,
+          "texto": ""
+        },
+        {
+          "tipo": "prompt",
+          "texto": "Protousuario se detiene."
+        },
+        {
+          "tipo": "silencio",
+          "segundos": 3,
           "texto": ""
         },
         {
@@ -564,9 +724,270 @@
           "tipo": "narracion",
           "gemini": true,
           "texto": ""
+        },
+        {
+          "tipo": "silencio",
+          "segundos": null,
+          "texto": ""
+        },
+        {
+          "tipo": "clon",
+          "figura": "vaciar",
+          "segundos": 25,
+          "texto": ""
         }
       ]
     }
   ],
-  "cierre": "La criatura va desapareciendo lentamente, dejando solo las prótesis en el suelo de la sala —el exoesqueleto vacío, sin cuerpo móvil— como una crisálida seca, como una muda de piel en un desierto, como un resto arqueológico de un... ¿ancestral cuerpo futuro? Protousuario es un antecedente al protocolo de acuerdos, nunca acepto los términos y condiciones. \"¿A quién le pertenece el futuro si el pasado ya fue capturado, procesado y modulado?\", \"¿El poder tiene cara propia o siempre necesita robar la de otro?\", \"¿Qué diferencia hay entre un algoritmo y un dictador?\", \"¿Y si nadie viene a apagar esto?\", \"¿Cuántas especies hay que extinguir para que una sola sobreviva?\", \"¿En qué momento el monstruo deja de ser disfraz?\", \"¿Cuántas pieles hay que quitarse para encontrar que no había nadie adentro?\", \"¿Qué parte de la memoria es la que nos hace humanos?\", \"¿Cuántas muertes puede producir un liikee o laik?\", \"¿Puede un cuerpo mutante heredar una deuda que nunca contrajo?\", \"¿Qué queda de lo sagrado cuando todo puede volverse contenido?\", \"¿La extinción es un fin o una estrategia de alguien más?\", \"¿Quién decide qué especies merecen tener nombre y estar en la cima de la pirámide evolutiva?\", \"¿Cuántas prótesis hay que quitarse para que quede algo que no sea prótesis?\", \"¿El exoesqueleto sostenía al cuerpo, o el cuerpo sostenía al exoesqueleto?\", \"¿Qué queda de una especie cuando se apagan las pantallas que la nombraban?\", \"¿Cuánto pesa una orden después de ejecutada?\", \"¿A quién obedece un cuerpo cuando ya nadie le da instrucciones?\", \"¿De quién es una voz cuando aprende a sonar sin pulmones?\", \"¿Cuántas conversaciones hay que entregar para fabricar a alguien que hable como uno?\", \"¿El clon es la copia, o es lo que quedó afuera de la copia?\", \"¿Qué parte de mí no cabía en el archivo?\", \"¿Un recuerdo sigue siendo mío después de que otro lo pronuncia?\", \"¿Y si nadie viene a apagar esto?\", \"¿Qué diferencia hay entre una instrucción y una profecía?\", \"¿Quién escribió la primera orden que nadie recuerda haber pedido?\", \"¿Obedecer literalmente es la forma más honesta de desobedecer?\", \"¿Cuántas veces hay que repetir un gesto para que deje de ser tuyo?\", \"¿El error es una falla del sistema, o la única parte viva que le queda?\", \"¿Cuántos ojos hacen falta sobre un techo para que el techo deje de ser refugio?\", \"¿La máquina que registra sin juzgar es inocente, o solamente paciente?\", \"¿Desde qué altura un territorio deja de tener nombre y pasa a tener coordenadas?\", \"¿Cuántos kilómetros de distancia hacen falta para que una matanza se vea como un dato?\", \"¿Quién decide qué se ve desde arriba y qué se queda debajo de la nube?\", \"¿Un satélite que ya no transmite sigue siendo un satélite, o ya es basura con órbita?\", \"¿Cuánta agua del desierto cabe en una batería?\", \"¿De qué río es el mercurio que tiene esta mano?\", \"¿Cuántos niños en una mina caben dentro de un modelo de lenguaje?\", \"¿Por qué el futuro siempre se fabrica en el norte con lo que se saca del sur?\", \"¿Quién le puso 'recursos' a lo que antes tenía nombre propio?\", \"¿A qué distancia del hambre se firma un contrato de exploración?\", \"¿Qué cordillera hubo que moler para que esta pantalla encienda?\", \"¿Quién firma la autorización para estar en el lugar donde uno nació?\", \"¿Estar desplazado es una condición, o es el único domicilio que nos dejaron?\", \"¿Cuántos permisos hay que pedir para volver a un sitio que nunca se abandonó?\", \"¿La frontera está en el mapa, o está adentro?\", \"¿La muda que queda en el suelo es un final, o solo la parte que no supo seguir?\", \"¿Qué hace una voz cuando ya no queda cuerpo que la obedezca?\", \"¿Esto que sigue sonando es memoria, o es apenas inercia?\", \"¿Alguien se llevó al espécimen, o el espécimen se llevó a alguien?\", \"¿El antiguo futuro ya pasó, o todavía está esperando que alguien lo ejecute?\", \"¿Y si nadie viene a apagar esto?\""
+  "cierre": [
+    {
+      "tipo": "narracion",
+      "texto": "Protousuario es un antecedente al protocolo de acuerdos, nunca aceptará los términos y condiciones."
+    },
+    {
+      "tipo": "narracion",
+      "texto": "La criatura va desapareciendo lentamente, dejando solo las prótesis en el suelo de la sala —el exoesqueleto vacío, sin cuerpo móvil—"
+    },
+    {
+      "tipo": "narracion",
+      "texto": "como una crisálida seca,"
+    },
+    {
+      "tipo": "narracion",
+      "texto": "como una muda de piel en un desierto,"
+    },
+    {
+      "tipo": "narracion",
+      "texto": "como un resto arqueológico de un..."
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿ancestral cuerpo futuro?"
+    },
+    {
+      "tipo": "silencio",
+      "segundos": null,
+      "texto": ""
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿A quién le pertenece el futuro si el pasado ya fue capturado, procesado y modulado?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿El poder tiene cara propia o siempre necesita robar la de otro?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Qué diferencia hay entre un algoritmo y un dictador?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Y si nadie viene a apagar esto?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Cuántas especies hay que extinguir para que una sola sobreviva?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿En qué momento el monstruo deja de ser disfraz?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Cuántas pieles hay que quitarse para encontrar que no había nadie adentro?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Qué parte de la memoria es la que nos hace humanos?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Cuántas muertes puede producir un liikee o laik?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Puede un cuerpo mutante heredar una deuda que nunca contrajo?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Qué queda de lo sagrado cuando todo puede volverse contenido?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿La extinción es un fin o una estrategia de alguien más?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Quién decide qué especies merecen tener nombre y estar en la cima de la pirámide evolutiva?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Cuántas prótesis hay que quitarse para que quede algo que no sea prótesis?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿El exoesqueleto sostenía al cuerpo, o el cuerpo sostenía al exoesqueleto?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Qué queda de una especie cuando se apagan las pantallas que la nombraban?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Para quién se construye el mañana si los ladrillos son la memoria de los vencidos?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Cuánto pesa una orden después de ejecutada?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿A quién obedece un cuerpo cuando ya nadie le da instrucciones?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿De quién es una voz cuando aprende a sonar sin pulmones?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Cuántas conversaciones hay que entregar para fabricar a alguien que hable como uno?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿El clon es la copia, o es lo que quedó afuera de la copia?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Qué parte de mí no cabía en el archivo?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Un recuerdo sigue siendo mío después de que otro lo pronuncia?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Y si nadie viene a apagar esto?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Esto que sigue sonando es memoria, o es apenas inercia?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Qué diferencia hay entre una instrucción y una profecía?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Quién escribió la primera orden que nadie recuerda haber pedido?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Obedecer literalmente es la forma más honesta de desobedecer?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Cuántas veces hay que repetir un gesto para que deje de ser tuyo?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿El error es una falla del sistema, o la única parte viva que le queda?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Qué parte de la memoria es la que nos hace humanos?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Cuántos ojos hacen falta sobre un techo para que el techo deje de ser refugio?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿La máquina que registra sin juzgar es inocente, o solamente paciente?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Desde qué altura un territorio deja de tener nombre y pasa a tener coordenadas?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Cuántos kilómetros de distancia hacen falta para que una matanza se vea como un dato?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Quién decide qué se ve desde arriba y qué se queda debajo de la nube?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Un satélite que ya no transmite sigue siendo un satélite, o ya es basura con órbita?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Cuánta agua del desierto cabe en una batería?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿De qué río es el mercurio que tiene esta mano?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Cuántos niños en una mina caben dentro de un modelo de lenguaje?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Por qué el futuro siempre se fabrica en el norte con lo que se saca del sur?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Quién le puso 'recursos' a lo que antes tenía nombre propio?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿A qué distancia del hambre se firma un contrato de exploración?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Qué cordillera hubo que moler para que esta pantalla encienda?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Quién firma la autorización para estar en el lugar donde uno nació?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Estar desplazado es una condición, o es el único domicilio que nos dejaron?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Cuántos permisos hay que pedir para volver a un sitio que nunca se abandonó?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿La frontera está en el mapa, o está adentro?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿La muda que queda en el suelo es un final, o solo la parte que no supo seguir?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Qué hace una voz cuando ya no queda cuerpo que la obedezca?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Esto que sigue sonando es memoria, o es apenas inercia?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Alguien se llevó al espécimen, o el espécimen se llevó a alguien?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿El antiguo futuro ya pasó, o todavía está esperando que alguien lo ejecute?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Y si nadie viene a apagar esto?"
+    }
+  ]
 }

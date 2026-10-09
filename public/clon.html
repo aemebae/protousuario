@@ -12,348 +12,809 @@
     letter-spacing:.24em;text-transform:uppercase;color:var(--accent);opacity:.7;
     text-shadow:0 0 8px var(--accent-dim);pointer-events:none;}
   #carga{position:absolute;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;
-    color:var(--accent-dim);font:10px monospace;letter-spacing:.2em;text-transform:uppercase;
-    transition:opacity .8s;}
-  #carga.oculto{opacity:0;pointer-events:none;}
+    color:var(--accent-dim);font:10px monospace;letter-spacing:.2em;text-transform:uppercase;}
+  #carga.oculto{display:none;}
+  #diag{position:absolute;left:8px;bottom:8px;z-index:6;display:none;max-width:calc(100% - 16px);
+    font:10px/1.5 monospace;color:var(--accent);background:rgba(13,10,16,.84);
+    border:1px solid var(--accent-dim);padding:6px 8px;white-space:pre-wrap;pointer-events:none;}
+  #rotulo{position:absolute;right:10px;top:10px;z-index:6;display:none;max-width:60%;
+    font:9px/1.6 monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);
+    text-align:right;pointer-events:none;}
 </style>
 </head>
 <body>
 <canvas id="lienzo"></canvas>
 <div id="titulo">CLON TRANSESPECIE</div>
 <div id="carga">encarnando…</div>
+<div id="diag"></div>
+<div id="rotulo"></div>
 <script>
 'use strict';
 /* ═══════════════════════════════════════════════════════════════════════
-   CLON TRANSESPECIE — Capa de encarnación
+   CLON TRANSESPECIE — Capa de encarnación  ·  v3 (cierre de VIDEOAKT 5)
    PROTOUSUARIO / [AGENTE-ESPEJO] · Museo de la Nación
 
-   Cabeza BASE completa + PARCHES de retícula 8×11 tomados de otras
-   especies en la MISMA celda. La fragmentación es virtual: drawImage con
-   rectángulo de origen. Nadie recorta archivos.
+   QUÉ CAMBIÓ EN v3
+   · Ya NO hay cabeza base. El rostro es SIEMPRE un mosaico de fragmentos:
+     cada celda es un pedazo de alguna cabeza del ELENCO (las 2 a 8 cabezas
+     activas en ese momento). La silueta sale de la unión de esas cabezas,
+     como en tus maquetas: orejas, antenas y aletas incluidas.
+   · Retícula 11×11 de celdas CUADRADAS: es la de tus maquetas. Sus cortes
+     caen en múltiplos de 93 px (1024/11) y la cara ocupa unas 8 columnas:
+     de ahí el "8 × 11" que veías. La v2 partía el cuadro en 8 columnas
+     (celdas de 128×93) que no calzaban con ningún corte tuyo.
+   · Todo cambio es un CORTE. Ningún fundido, en ningún lado.
+   · Los cambios van por PARCHES: 1 a 4 celdas vecinas de la misma cabeza en
+     un solo corte, para que se armen órganos enteros (un hocico, un ojo con
+     su mejilla) y no un tablero de ruido.
+   · @CLON figura s: la cabeza se ARMA corte a corte hasta verse sola, se
+     SOSTIENE s segundos y se PIERDE entre otras cabezas, continuamente.
+   · Señora K se pierde SOLO entre sus Monstruos (01 y 02), que no aparecen
+     en ningún otro momento de la obra (SEQUITO, más abajo).
+   · @CLON vaciar: tu retrato aparece entre especies y se VACÍA celda a
+     celda hasta que solo quedan especies. La muda.
+   · rumbo: DESPLAZADO desarma la cara (celdas fuera de sitio, mutación más
+     rápida, más cabezas); AUTORIZADO la consolida (todo en su sitio, más
+     lento, menos cabezas). La autorización geopolítica es integridad.
+   · @SILENCIO: la boca se cierra en el acto y el rostro se descompone muy
+     despacio. Nunca sigue "hablando" por inercia. Tampoco habla si un bloque
+     llega sin audio.
+   · El título propio solo se ve cuando el clon está SOLO (Celular 2). Dentro
+     de la escena compuesta ya hay uno: antes se pisaban los dos.
 
-   MAPA DE OCUPACIÓN: cada PNG se reduce a 8×11 px (un píxel por celda) y
-   se lee su alfa. Sin esto, la mitad de los parches cae en el vacío
-   transparente de las esquinas y el rostro se deshace en ruido.
+   SE CONSERVAN LOS CINCO CAMBIOS DE LA v2 (todos siguen aquí):
+   · jvlix.png / julix.png: entra el que exista (ahora vale para cualquier
+     imagen renombrada: ver la lista de respaldo y /clon-lista).
+   · El clon croa: un @SONIDO pasa por el mismo analizador que la voz.
+   · Una sola fuente conectada al analizador (se desconecta la anterior).
+   · El analizador arranca solo (Chrome con --autoplay-policy=…).
+   · @CLON desde la partitura (ahora con ensamble, sostén y pérdida).
 
-   100% offline. Sin API, sin red. Solo archivos locales.
-   Demo sin orquestador:  /clon.html?demo=1
+   100 % offline. Sin API. Solo archivos locales.
+   Demo sin orquestador:      /clon.html?demo=1        (teclas, ver abajo)
+   Diagnóstico para ensayo:   /clon.html?diag=1        (se combina con demo)
    ═══════════════════════════════════════════════════════════════════════ */
 
-const COLS = 8, FILAS = 11, CELDAS = COLS*FILAS, SRC = 1024;
-const RUTA = '/clon-img/';
-const DEMO = new URLSearchParams(location.search).has('demo');
+/* ───────────────── AJUSTES: lo que se toca ───────────────── */
+const COLS = 11, FILAS = 11, NN = COLS * FILAS, SRC = 1024;
+const CARNE = 110;        // alfa medio de la celda: esa cabeza tiene cuerpo ahí
+const RASGO = 22;         // tiene algo: punta de antena, oreja, aleta
+const ENSAMBLE_S = 2.6;   // @CLON: lo que tarda la cabeza en armarse, corte a corte
+const SOSTEN_S = 12;      // @CLON sin número
+const PERDIDA_S = 24;     // lo que tarda la figura en perderse entre otras cabezas
+const RETRATO_S = 4;      // @CLON vaciar: tu retrato completo antes de vaciarse
+const VACIAR_S = 24;      // @CLON vaciar sin número: lo que dura el vaciado
+const ELENCO_BASE = 4;    // cabezas activas a la vez (el perfil y el rumbo suman o restan)
+const PESO_JVLIX = 2;     // tu rostro entra al elenco el doble de seguido
+const PESO_GRANDE = 0.45; // las que llenan casi todo el cuadro (oso, cuy, capibara)
 
-const ESPECIES = [
-  // Tu rostro. El archivo se renombró de julix.png a jvlix.png: el código
-  // seguía pidiendo julix.png, NO lo encontraba, y el clon arrancaba desde una
-  // especie al azar — tu cara no aparecía nunca. Se piden los dos nombres;
-  // el que exista, entra.
-  { f:'jvlix.png',                    tag:'humano'  },
-  { f:'julix.png',                    tag:'humano'  },
-  { f:'Babosa.png',                   tag:'especie' },
-  { f:'Capibara_gpt.png',             tag:'especie' },
-  { f:'Cerdo.png',                    tag:'especie' },
-  { f:'Chiribaya_gpt.png',            tag:'especie' },
-  { f:'Cucaracha_gemini_2.png',       tag:'especie' },
-  { f:'Cuy_gemini.png',               tag:'especie' },
-  { f:'Cóndor_gpt.png',               tag:'especie' },
-  { f:'Dálmata_gpt.png',              tag:'especie' },
-  { f:'El oso de anteojos_01°.png',   tag:'especie' },
-  { f:'Gallina-1_gpt.png',            tag:'especie' },
-  { f:'Gallinazo_gemini.png',         tag:'especie' },
-  { f:'Gato gris_gpt.png',            tag:'especie' },
-  { f:'Jaguar_gpt.png',               tag:'especie' },
-  { f:'Llama_gpt.png',                tag:'especie' },
-  { f:'Muy-muy_01°.png',              tag:'especie' },
-  { f:'Viringo.png',                  tag:'especie' },
-  { f:'Yakuruna_cabeza-1_gemini.png', tag:'especie' },
-  { f:'Elite_01°.png',                tag:'poder'   },
-  { f:'Monstruo_01°.png',             tag:'poder'   },
-  { f:'Monstruo_02°.png',             tag:'poder'   },
-  { f:'Señora K.png',                 tag:'poder'   },
-];
-// Las maquetas jvlix-transespecie quedan fuera: son modelo, no material.
+// Cabezas de poder: entran al mosaico según el perfil del agente.
+const PODER = ['elite', 'senora k', 'monstruo'];
+// Cabezas RESERVADAS: solo existen dentro de la figura dueña. Fuera de ella,
+// nunca. Nombres sin .png, sin tildes ni mayúsculas, como en @CLON.
+const SEQUITO = { 'senora k': ['monstruo 01', 'monstruo 02'] };
+// true: Señora K se pierde SOLO entre sus Monstruos.
+// false: se pierde entre todas las cabezas, Monstruos incluidos.
+const SEQUITO_SOLO = true;
 
-/* Perfiles: uno por ID del CRONISTA. Mismas claves que PALETA en app.js. */
-const PERFIL = {
-  PANOPTICO:  {acc:'#55ffa6',dim:'#2b6b49',ms:620, max:26,poder:0.42,firma:'seco',   entra:90},
-  LIMINAL:    {acc:'#c9a6ff',dim:'#6b4f96',ms:1900,max:12,poder:0.00,firma:'suave',  entra:600},
-  CORRIENTE:  {acc:'#5fe0e8',dim:'#256b74',ms:1000,max:20,poder:0.04,firma:'onda',   entra:380},
-  ORBITAL:    {acc:'#ffc65f',dim:'#8a6520',ms:820, max:22,poder:0.08,firma:'franja', entra:200},
-  POLIFONICO: {acc:'#ff7ad1',dim:'#8a3a6b',ms:700, max:30,poder:0.14,firma:'todo',   entra:260},
-};
-let estado = 'PANOPTICO';
-const perfil = () => PERFIL[estado] ?? PERFIL.PANOPTICO;
+// ── Desfase de la boca (ver en el ensayo con ?diag=1) ──
+// La copia silenciosa que mueve la boca se descarga aparte de la voz que suena.
+// false = como siempre.  true = cuando la copia termina de descargarse, salta
+// hasta donde ya va la voz real. También: ?sincro=1 o ?sincro=0 en la URL.
+const SINCRO_BOCA = false;
+const SINCRO_EXTRA_MS = 0;   // si aún va tarde, súmale aquí (o ?sincroms=80)
 
-/* Zona vocal: banda de boca/hocico. Late con la voz sea cual sea el
-   órgano que ocupe esas celdas — la babosa enuncia con lo que tiene. */
+/* Zona vocal: filas 6–7 × columnas 4–6. Ahí caen la boca de tu retrato, la
+   de la Señora K, la de Elite, los labios de la Yakuruna, el pico del cóndor.
+   Late con la voz SEA CUAL SEA el órgano que ocupe esas celdas: la babosa
+   enuncia con su cuerpo, el viringo con los ojos. */
 const ZONA_VOCAL = [];
-for (const fi of [6,7]) for (const co of [2,3,4,5]) ZONA_VOCAL.push(fi*COLS+co);
+for (const fi of [6, 7]) for (const co of [4, 5, 6]) ZONA_VOCAL.push(fi * COLS + co);
 
-/* ── estado ── */
-const imgs = new Map(), ocupa = new Map();
-let baseF=null, baseAnt=null, baseFade=1;
-let fijaHasta=0;   // mientras dure, la mutación no cambia el rostro elegido con @CLON
-const parches = new Map();
-let pausa=false, hablando=false, finHabla=0, amplitud=0, franja=0, listo=false;
+/* Perfiles: uno por ID del CRONISTA. Mismas claves que PALETA en app.js.
+   ms = ritmo de mutación · elenco = cabezas de más o de menos ·
+   poder = probabilidad de que entre una cabeza de poder · firma = gesto */
+const PERFIL = {
+  PANOPTICO:  { acc: '#55ffa6', dim: '#2b6b49', ms: 620,  elenco: 0,  poder: 0.42, firma: 'seco'   },
+  LIMINAL:    { acc: '#c9a6ff', dim: '#6b4f96', ms: 1700, elenco: -1, poder: 0.00, firma: 'suave'  },
+  CORRIENTE:  { acc: '#5fe0e8', dim: '#256b74', ms: 1000, elenco: 0,  poder: 0.04, firma: 'onda'   },
+  ORBITAL:    { acc: '#ffc65f', dim: '#8a6520', ms: 820,  elenco: 0,  poder: 0.08, firma: 'franja' },
+  POLIFONICO: { acc: '#ff7ad1', dim: '#8a3a6b', ms: 700,  elenco: 1,  poder: 0.14, firma: 'todo'   },
+};
+/* Rumbo = integridad del rostro.
+   ritmo multiplica el intervalo (más alto = más lento) · fuera = fracción de
+   celdas fuera de sitio */
+const RUMBO = {
+  AUTORIZADO: { elenco: -1, ritmo: 1.7,  fuera: 0.00 },
+  DESPLAZADO: { elenco: 2,  ritmo: 0.55, fuera: 0.30 },
+  NEUTRO:     { elenco: 0,  ritmo: 1.0,  fuera: 0.00 },
+};
 
-/* ── lienzo ── */
-const cv=document.getElementById('lienzo'), cx=cv.getContext('2d');
-let W=0,H=0,lado=0,ox=0,oy=0,celW=0,celH=0;
-function redim(){
-  const dpr=Math.min(devicePixelRatio||1,1.5);
-  W=cv.clientWidth; H=cv.clientHeight;
-  cv.width=W*dpr; cv.height=H*dpr; cx.setTransform(dpr,0,0,dpr,0,0);
-  lado=Math.min(W,H)*0.97; ox=(W-lado)/2; oy=(H-lado)/2;
-  celW=lado/COLS; celH=lado/FILAS;
+/* Lista de respaldo: solo se usa si el servidor no responde /clon-lista.
+   Cada fila es UNA cabeza con sus nombres posibles: entra el primero que
+   exista. Así un renombre (julix → jvlix, Yakuruna_cabeza → Yakuruna) ya
+   no deja la cabeza afuera sin avisar. */
+const RESPALDO = [
+  ['jvlix.png', 'julix.png'],
+  ['Babosa.png'], ['Capibara_gpt.png'], ['Cerdo.png'], ['Chiribaya_gpt.png'],
+  ['Cucaracha_gemini_2.png'], ['Cuy_gemini.png'], ['Cóndor_gpt.png'], ['Dálmata_gpt.png'],
+  ['El oso de anteojos_01°.png'], ['Gallina-1_gpt.png'], ['Gallinazo_gemini.png'],
+  ['Gato gris_gpt.png'], ['Jaguar_gpt.png'], ['Llama_gpt.png'], ['Muy-muy_01°.png'],
+  ['Viringo.png'], ['Yakuruna.png', 'Yakuruna_cabeza-1_gemini.png'],
+  ['Elite_01°.png'], ['Monstruo_01°.png'], ['Monstruo_02°.png'], ['Señora K.png'],
+];
+const RUTA = '/clon-img/';
+/* ─────────────────────────────────────────────────────────── */
+
+const PARAMS = new URLSearchParams(location.search);
+const DEMO = PARAMS.has('demo');
+const DIAG = PARAMS.has('diag');
+const SINCRO = PARAMS.get('sincro') === '1' ? true : PARAMS.get('sincro') === '0' ? false : SINCRO_BOCA;
+const SINCRO_MS = Number(PARAMS.get('sincroms')) || SINCRO_EXTRA_MS;
+const EMBEBIDO = (() => { try { return window.self !== window.top; } catch (_) { return true; } })();
+
+// El título doble: en la escena compuesta el panel ya dice CLON TRANSESPECIE.
+// Este solo existe cuando el clon está solo en pantalla (Celular 2).
+if (EMBEBIDO) document.getElementById('titulo').remove();
+
+/* ── utilidades ── */
+const rnd = (n) => Math.floor(Math.random() * n);
+const azar = (a) => (a.length ? a[rnd(a.length)] : null);
+function barajar(a) { for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function sorteo(items, pesos) {
+  let tot = 0; for (const p of pesos) tot += p;
+  let r = Math.random() * tot;
+  for (let i = 0; i < items.length; i++) { r -= pesos[i]; if (r <= 0) return items[i]; }
+  return items[items.length - 1];
 }
-addEventListener('resize',redim);
-
-/* ── carga + mapa de ocupación ── */
-const mini=document.createElement('canvas'); mini.width=COLS; mini.height=FILAS;
-const mcx=mini.getContext('2d',{willReadFrequently:true});
-function mapear(im){
-  mcx.clearRect(0,0,COLS,FILAS);
-  mcx.drawImage(im,0,0,COLS,FILAS);
-  const d=mcx.getImageData(0,0,COLS,FILAS).data, a=new Uint8Array(CELDAS);
-  for(let i=0;i<CELDAS;i++) a[i]=d[i*4+3];
-  return a;
+const normF = (x) => String(x || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  .replace(/\.png$/i, '').replace(/[^a-z0-9]+/g, ' ').trim();
+const MAQUETA = /^jvlix transespecie/;   // modelos, no material
+function vecinos(c) {
+  const x = c % COLS, y = (c - x) / COLS, v = [];
+  if (x > 0) v.push(c - 1); if (x < COLS - 1) v.push(c + 1);
+  if (y > 0) v.push(c - COLS); if (y < FILAS - 1) v.push(c + COLS);
+  return v;
 }
-function cargar(e){
-  return new Promise(res=>{
-    const im=new Image();
-    im.onload=()=>{ imgs.set(e.f,im); ocupa.set(e.f,mapear(im)); res(); };
-    im.onerror=()=>{ console.warn('no cargó',e.f); res(); };
-    im.src=RUTA+encodeURIComponent(e.f);
+
+/* ═══ ESTADO ═══ */
+const CAB = new Map();                  // archivo → { im, oc, huella, tag }
+const NUCLEO = new Uint8Array(NN);      // 1 = la mitad o más de las cabezas tiene carne ahí
+const celdas = new Array(NN).fill(null);// qué cabeza ocupa cada celda (null = vacía)
+const desp = new Map();                 // celdas fuera de sitio: c → { dx, dy, src }
+const muda = new Set();                 // celdas vaciadas por @CLON vaciar
+let elenco = [], elencoFijo = null;
+let estado = 'PANOPTICO', rumbo = null, poderHabilitado = DEMO;
+let figura = null, vaciado = null;
+let pausa = false, pausaDesde = 0, silencioFin = 0;
+let reloj = 0, proximo = 0, barajadaHasta = 0, ticks = 0, ultimaSemilla = -1, franja = 0;
+let listo = false, sucio = true, ultimoAviso = '';
+function avisar(t) { ultimoAviso = t; console.warn('[clon] ' + t); }
+
+const perfil = () => PERFIL[estado] ?? PERFIL.PANOPTICO;
+const integ = () => RUMBO[rumbo] ?? RUMBO.NEUTRO;
+const enSilencio = () => performance.now() < silencioFin;
+const libre = (c) => !muda.has(c);
+
+/* ═══ CARGA + ANÁLISIS ═══ */
+const ANA = document.createElement('canvas'); ANA.width = COLS * 8; ANA.height = FILAS * 8;
+const acx = ANA.getContext('2d', { willReadFrequently: true });
+/* Mapa de ocupación: alfa medio de cada celda (bloques de 8×8 de una copia
+   chica). Sin él, los fragmentos caen en el vacío de las esquinas. */
+function analizar(im) {
+  acx.clearRect(0, 0, ANA.width, ANA.height);
+  acx.imageSmoothingEnabled = true; acx.imageSmoothingQuality = 'high';
+  acx.drawImage(im, 0, 0, ANA.width, ANA.height);
+  const d = acx.getImageData(0, 0, ANA.width, ANA.height).data;
+  const oc = new Uint8Array(NN); let huella = 0, firma = '';
+  for (let r = 0; r < FILAS; r++) for (let c = 0; c < COLS; c++) {
+    let s = 0;
+    for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) s += d[((r * 8 + y) * ANA.width + c * 8 + x) * 4 + 3];
+    const a = Math.round(s / 64); oc[r * COLS + c] = a; if (a > CARNE) huella++;
+  }
+  // huella digital: descubre el mismo dibujo guardado con dos nombres
+  for (let i = 0; i < d.length; i += 4 * 61) firma += (d[i] >> 4).toString(16) + (d[i + 3] >> 4).toString(16);
+  return { oc, huella, firma };
+}
+function etiqueta(f) {
+  const n = normF(f);
+  if (n.startsWith('jvlix') || n.startsWith('julix')) return 'humano';
+  if (Object.values(SEQUITO).flat().some((p) => n.startsWith(p))) return 'reservada';
+  if (PODER.some((p) => n.startsWith(p))) return 'poder';
+  return 'especie';
+}
+function cargarImagen(nombre) {
+  return new Promise((res) => {
+    const im = new Image();
+    im.onload = () => res(im); im.onerror = () => res(null);
+    im.src = RUTA + encodeURIComponent(nombre);
   });
 }
-const azar=a=>a[Math.floor(Math.random()*a.length)];
-const vivas=()=>ESPECIES.filter(e=>imgs.has(e.f));
-
-/* Fuente para UNA celda: solo especies con carne ahí. */
-function fuentePara(celda){
-  const p=perfil();
-  const conPoder = Math.random()<p.poder;
-  let pool = vivas().filter(e => (conPoder ? e.tag==='poder' : e.tag!=='poder')
-                                && ocupa.get(e.f)[celda] > 110);
-  if(!pool.length) pool = vivas().filter(e=>ocupa.get(e.f)[celda]>110);
-  return pool.length ? azar(pool).f : null;
+async function cargarGrupo(nombres) {
+  for (const n of nombres) { const im = await cargarImagen(n); if (im) return { f: n, im }; }
+  avisar('no cargó: ' + nombres.join(' | '));
+  return null;
 }
-/* Base nueva: cabeza con suficiente cuerpo para sostener el rostro. */
-function baseNueva(){
-  const p=perfil();
-  const conPoder = Math.random()<p.poder*0.6;
-  let pool = vivas().filter(e=>{
-    const o=ocupa.get(e.f); let n=0; for(let i=0;i<CELDAS;i++) if(o[i]>90) n++;
-    return n>=26 && (conPoder ? e.tag==='poder' : e.tag!=='poder');
-  });
-  if(!pool.length) pool=vivas();
-  return azar(pool).f;
-}
-
-/* ── mutación ── */
-let proximo=0;
-function mutar(t){
-  const p=perfil();
-  if(t<proximo) return;
-  proximo = t + (p.ms*0.7 + Math.random()*p.ms*0.6) * (hablando?0.5:1);
-
-  const oBase = ocupa.get(baseF);
-  for(let i=0, n=1+Math.floor(Math.random()*3); i<n; i++){
-    let celda;
-    if(p.firma==='franja'){
-      celda = franja*COLS + Math.floor(Math.random()*COLS);
-      if(Math.random()<0.34) franja=(franja+1)%FILAS;
-    } else if(p.firma==='onda' && parches.size){
-      celda = (azar([...parches.keys()])+COLS) % CELDAS;
-    } else {
-      celda = Math.floor(Math.random()*CELDAS);
+async function listaDeImagenes() {
+  // El servidor nuevo lista la carpeta: una imagen nueva o renombrada entra sola.
+  try {
+    const r = await fetch('/clon-lista', { cache: 'no-store' });
+    if (r.ok) {
+      const lista = await r.json();
+      if (Array.isArray(lista) && lista.length) {
+        return lista.filter((n) => /\.png$/i.test(n) && !MAQUETA.test(normF(n)))
+          .sort((a, b) => a.length - b.length || a.localeCompare(b)).map((n) => [n]);
+      }
     }
-    if(oBase[celda] <= 90) continue;              // no parchear el vacío
-    const f = fuentePara(celda);
-    if(!f) continue;
-    const vida = p.firma==='suave' ? 7000+Math.random()*8000 : 3000+Math.random()*5000;
-    parches.set(celda,{f,nace:t,vida});
+  } catch (_) { /* servidor viejo: respaldo */ }
+  return RESPALDO;
+}
+async function cargarTodo() {
+  const grupos = await listaDeImagenes();
+  const cargadas = await Promise.all(grupos.map(cargarGrupo));
+  const vistas = new Map();
+  for (const x of cargadas) {
+    if (!x) continue;
+    const a = analizar(x.im);
+    if (vistas.has(a.firma)) { console.info('[clon] duplicado, se omite:', x.f, '=', vistas.get(a.firma)); continue; }
+    vistas.set(a.firma, x.f);
+    CAB.set(x.f, { im: x.im, oc: a.oc, huella: a.huella, tag: etiqueta(x.f) });
   }
-  while(parches.size>p.max){
-    let viejo=null,edad=-1;
-    for(const [c,q] of parches) if(t-q.nace>edad){edad=t-q.nace;viejo=c;}
-    parches.delete(viejo);
+  const n = CAB.size || 1;
+  for (let c = 0; c < NN; c++) {
+    let k = 0; for (const v of CAB.values()) if (v.oc[c] > CARNE) k++;
+    NUCLEO[c] = k / n >= 0.5 ? 1 : 0;
   }
-  if(t >= fijaHasta && Math.random() < (p.firma==='todo'?0.09:0.03)){
-    baseAnt=baseF; baseFade=0; baseF=baseNueva();
-    for(const c of [...parches.keys()]) if(ocupa.get(baseF)[c]<=90) parches.delete(c);
+}
+function buscar(q) {
+  const lista = [...CAB.keys()];
+  return lista.find((f) => normF(f) === q) ?? lista.find((f) => normF(f).startsWith(q))
+      ?? lista.find((f) => normF(f).includes(q)) ?? null;
+}
+
+/* ═══ ELENCO: las cabezas activas ═══ */
+function permitida(f) {
+  const t = CAB.get(f)?.tag;
+  if (!t) return false;
+  if (elencoFijo) return elencoFijo.includes(f);
+  if (vaciado) return t === 'especie';
+  if (t === 'reservada') return false;
+  if (t === 'poder') return poderHabilitado && perfil().poder > 0;
+  return true;
+}
+function poolGeneral() {
+  const vivas = [...CAB.keys()].filter(permitida);
+  if (vaciado) return vivas;
+  if (Math.random() < perfil().poder) {
+    const pod = vivas.filter((f) => CAB.get(f).tag === 'poder');
+    if (pod.length) return pod;
+  }
+  return vivas.filter((f) => CAB.get(f).tag !== 'poder');
+}
+function pesoElenco(f) {
+  const k = CAB.get(f);
+  if (k.tag === 'humano') return PESO_JVLIX;
+  return k.huella > 95 ? PESO_GRANDE : 1;
+}
+function tamElenco() {
+  return Math.max(2, Math.min(8, ELENCO_BASE + perfil().elenco + integ().elenco));
+}
+function sumarAlElenco() {
+  const pool = (elencoFijo ?? poolGeneral()).filter((f) => !elenco.includes(f));
+  if (!pool.length) return false;
+  elenco.push(sorteo(pool, pool.map(pesoElenco)));
+  return true;
+}
+function ajustarElenco() {
+  elenco = elenco.filter(permitida);
+  const k = tamElenco();
+  while (elenco.length > k) elenco.splice(rnd(elenco.length), 1);
+  for (let i = 0; i < 12 && elenco.length < k; i++) if (!sumarAlElenco()) break;
+}
+function rotarElenco() {
+  if (elenco.length > 1) elenco.splice(rnd(elenco.length), 1);
+  sumarAlElenco();
+}
+
+/* ═══ CELDAS ═══ */
+function poner(c, f) {
+  if (f && muda.has(c)) return;
+  if (celdas[c] !== f) { celdas[c] = f; sucio = true; }
+  if (!f && desp.delete(c)) sucio = true;
+}
+/* Quién puede ocupar la celda c. En el núcleo, cualquiera con carne. En la
+   periferia ganan los rasgos finos (antenas, orejas, aletas): peso inverso a
+   la huella, para que la silueta no la dicte el pelaje de las cabezas grandes. */
+function candidato(c, lista = elenco, excluir = null) {
+  if (NUCLEO[c]) {
+    let cand = lista.filter((f) => f !== excluir && CAB.get(f).oc[c] > CARNE);
+    if (!cand.length) cand = lista.filter((f) => f !== excluir && CAB.get(f).oc[c] > RASGO);
+    return azar(cand);
+  }
+  const cand = lista.filter((f) => f !== excluir && CAB.get(f).oc[c] > RASGO);
+  return cand.length ? sorteo(cand, cand.map((f) => 1 / Math.max(8, CAB.get(f).huella))) : null;
+}
+/* Un parche: la celda c y hasta tam-1 vecinas donde f tenga algo, en UN corte. */
+function parche(c, f, tam, puede = libre) {
+  const hechas = [c]; poner(c, f);
+  const frontera = vecinos(c);
+  while (hechas.length < tam && frontera.length) {
+    const v = frontera.splice(rnd(frontera.length), 1)[0];
+    if (hechas.includes(v) || !puede(v)) continue;
+    if (CAB.get(f).oc[v] <= (NUCLEO[v] ? CARNE : RASGO)) continue;
+    poner(v, f); hechas.push(v); frontera.push(...vecinos(v));
+  }
+  return hechas;
+}
+function componerDeCero() {
+  for (const c of barajar([...Array(NN).keys()])) {
+    if (celdas[c] || !libre(c)) continue;
+    const f = candidato(c);
+    if (f) parche(c, f, 1 + rnd(4));
   }
 }
 
-/* ── dibujo ── */
-function celdaAt(f,celda,alfa,latido){
-  const co=celda%COLS, fi=(celda-co)/COLS;
-  const sw=SRC/COLS, sh=SRC/FILAS;
-  let dx=ox+co*celW, dy=oy+fi*celH, dw=celW, dh=celH;
-  if(latido>0){ const k=1+latido*0.30; dy-=celH*(k-1)/2; dh=celH*k; }
-  cx.globalAlpha=alfa;
-  cx.drawImage(imgs.get(f), co*sw, fi*sh, sw, sh, dx, dy, dw+0.6, dh+0.6);
-  cx.globalAlpha=1;
-}
-function cuadro(t){
-  requestAnimationFrame(cuadro);
-  if(!listo) return;
-  const p=perfil();
-  if(!pausa) mutar(t);
-  if(hablando && !fuenteReal && t>finHabla) hablando=false;
-
-  cx.clearRect(0,0,W,H);
-  if(baseFade<1) baseFade=Math.min(1,baseFade+0.018);
-  if(baseAnt && baseFade<1){ cx.globalAlpha=1-baseFade; cx.drawImage(imgs.get(baseAnt),ox,oy,lado,lado); }
-  cx.globalAlpha = (baseAnt&&baseFade<1)?baseFade:1;
-  cx.drawImage(imgs.get(baseF),ox,oy,lado,lado);
-  cx.globalAlpha=1;
-
-  for(const [celda,q] of parches){
-    const edad=t-q.nace;
-    if(!pausa && edad>q.vida){ parches.delete(celda); continue; }
-    const entra=Math.min(1,edad/p.entra);
-    const sale=pausa?1:Math.min(1,(q.vida-edad)/600);
-    celdaAt(q.f,celda,Math.max(0,Math.min(entra,sale)),0);
+/* ═══ MUTACIÓN NORMAL (sin figura) ═══ */
+function semillas(firma) {
+  const cuantas = { seco: 2 + rnd(2), suave: 1, onda: 1 + rnd(2), franja: 2 + rnd(2), todo: 3 + rnd(2) }[firma] ?? 2;
+  const out = [];
+  for (let i = 0; i < cuantas; i++) {
+    let c;
+    if (firma === 'onda' && ultimaSemilla >= 0) {        // CORRIENTE: baja por la cara
+      const x = Math.min(COLS - 1, Math.max(0, (ultimaSemilla % COLS) + rnd(3) - 1));
+      const y = Math.floor(ultimaSemilla / COLS) + 1;
+      c = y < FILAS ? y * COLS + x : rnd(COLS);
+    } else if (firma === 'franja') {                     // ORBITAL: barrido por filas
+      c = franja * COLS + rnd(COLS);
+      if (Math.random() < 0.4) franja = (franja + 1) % FILAS;
+    } else c = rnd(NN);
+    ultimaSemilla = c; out.push(c);
   }
+  return out;
+}
+const tamParche = (firma) => (firma === 'suave' ? 1 + rnd(2) : firma === 'todo' ? 1 + rnd(4) : 1 + rnd(3));
+function desarmarCelda(c) {
+  const v = vecinos(c);
+  desp.set(c, { dx: (Math.random() * 2 - 1) * 0.42, dy: (Math.random() * 2 - 1) * 0.42,
+                src: Math.random() < 0.3 ? azar(v) : c });
+  sucio = true;
+}
+/* El rumbo sobre el rostro: DESPLAZADO saca celdas de sitio (y algunas
+   muestran el pedazo de la celda vecina: un ojo donde iba la mejilla);
+   AUTORIZADO las devuelve a su lugar. Siempre por cortes. */
+function integridad() {
+  for (const c of [...desp.keys()]) if (!celdas[c]) desp.delete(c);
+  const llenas = []; for (let c = 0; c < NN; c++) if (celdas[c]) llenas.push(c);
+  const meta = Math.round(llenas.length * integ().fuera);
+  if (desp.size < meta) {
+    const sentadas = llenas.filter((c) => !desp.has(c));
+    for (let k = 0; k < 3 && desp.size < meta && sentadas.length; k++) desarmarCelda(sentadas.splice(rnd(sentadas.length), 1)[0]);
+  } else if (desp.size > meta) {
+    const fuera = [...desp.keys()];
+    for (let k = 0; k < 4 && desp.size > meta; k++) { desp.delete(fuera.splice(rnd(fuera.length), 1)[0]); sucio = true; }
+  }
+  if (meta > 0) for (let k = 0; k < 2 && desp.size; k++) desarmarCelda(azar([...desp.keys()]));   // tiemblan, por cortes
+}
+/* @SILENCIO: nadie habla y el rostro se descompone muy despacio. */
+function descomponer() {
+  const llenas = []; for (let c = 0; c < NN; c++) if (celdas[c]) llenas.push(c);
+  const c = azar(llenas); if (c == null) return;
+  if (Math.random() < 0.6) poner(c, null);
+  else { const f = candidato(c); if (f) poner(c, f); }
+}
+function tick() {
+  if (enSilencio()) { descomponer(); return; }
+  ajustarElenco();
+  ticks++;
+  if (barajadaHasta > reloj || ticks % 9 === 0) rotarElenco();
+  // primero lo pendiente: celdas de cabezas que salieron, huecos que ya tienen quién los llene
+  const pend = [];
+  for (let c = 0; c < NN; c++) {
+    if (!libre(c)) continue;
+    const f = celdas[c];
+    if (f ? !elenco.includes(f) : candidato(c)) pend.push(c);
+  }
+  barajar(pend);
+  for (let i = 0; i < Math.min(3, pend.length); i++) {
+    const c = pend[i], f = candidato(c);
+    if (f) parche(c, f, 1 + rnd(2)); else poner(c, null);
+  }
+  const p = perfil();
+  for (const c of semillas(p.firma)) {
+    if (!libre(c)) continue;
+    const f = candidato(c);
+    if (f) parche(c, f, tamParche(p.firma));
+  }
+  integridad();
+}
+function intervalo() {
+  if (barajadaHasta > reloj) return 140;
+  return perfil().ms * integ().ritmo * (hablando ? 0.6 : 1) * (0.7 + Math.random() * 0.6);
+}
 
-  if(hablando){
-    const amp = fuenteReal ? amplitud
-      : 0.30+0.70*Math.abs(Math.sin(t/88)+0.5*Math.sin(t/53))/1.5;
-    const oBase=ocupa.get(baseF);
-    for(const celda of ZONA_VOCAL){
-      if(oBase[celda]<=90) continue;
-      celdaAt(parches.get(celda)?.f ?? baseF, celda, 0.92, amp);
+/* ═══ @CLON: ensamble → sostén → pérdida ═══ */
+function forzarFigura(nombre, segundos) {
+  const q = normF(nombre);
+  if (!q || !listo) return;
+  if (q === 'vaciar') return iniciarVaciado(segundos);
+  const f = buscar(q);
+  if (!f) { avisar(`@CLON ${nombre}: no encuentro esa imagen`); return; }
+  restaurar();
+  const clave = normF(f);
+  const dueno = Object.keys(SEQUITO).find((k) => clave.startsWith(k));
+  const sequito = dueno ? [...CAB.keys()].filter((g) => SEQUITO[dueno].some((p) => normF(g).startsWith(p))) : null;
+  const objetivo = [];
+  for (let c = 0; c < NN; c++) objetivo[c] = CAB.get(f).oc[c] > RASGO ? f : null;
+  const orden = barajar([...Array(NN).keys()].filter((c) => celdas[c] !== objetivo[c] || desp.has(c)));
+  figura = { f, sequito, fase: 'ensambla', t: 0, objetivo, orden, hechas: 0,
+             sostenMs: (Number(segundos) > 0 ? Number(segundos) : SOSTEN_S) * 1000 };
+  sucio = true;
+}
+function avanzarFigura(dt) {
+  const F = figura; F.t += dt;
+  if (F.fase === 'ensambla') {           // aparece con fragmentos hasta verse sola
+    const meta = Math.ceil(Math.min(1, F.t / (ENSAMBLE_S * 1000)) * F.orden.length);
+    while (F.hechas < meta) {
+      const c = F.orden[F.hechas++];
+      if (desp.delete(c)) sucio = true;
+      if (F.objetivo[c]) { muda.delete(c); poner(c, F.objetivo[c]); } else poner(c, null);
     }
+    if (F.t >= ENSAMBLE_S * 1000) { F.fase = 'sostiene'; F.t = 0; }
+    return;
   }
-
-  cx.strokeStyle=p.dim; cx.globalAlpha=0.20; cx.lineWidth=1;
-  for(let c=1;c<COLS;c++){cx.beginPath();cx.moveTo(ox+c*celW,oy);cx.lineTo(ox+c*celW,oy+lado);cx.stroke();}
-  for(let f=1;f<FILAS;f++){cx.beginPath();cx.moveTo(ox,oy+f*celH);cx.lineTo(ox+lado,oy+f*celH);cx.stroke();}
-  cx.globalAlpha=1;
+  if (F.fase === 'sostiene') {           // la cabeza sola, el tiempo escrito
+    if (F.t < F.sostenMs) return;
+    F.fase = 'pierde'; F.t = 0; F.relleno = 0;
+    F.restan = barajar([...Array(NN).keys()].filter((c) => celdas[c] === F.f));
+    F.total = F.restan.length;
+    elencoFijo = F.sequito && F.sequito.length && SEQUITO_SOLO ? F.sequito : null;
+    elenco = elenco.filter((g) => g !== F.f);
+    ajustarElenco();
+    if (!elencoFijo && F.sequito) for (const g of F.sequito) if (!elenco.includes(g)) elenco.push(g);
+    return;
+  }
+  // pierde: otras cabezas se le superponen al azar, continuamente
+  const prog = Math.min(1, F.t / (PERDIDA_S * 1000));
+  const quedan = Math.ceil(F.total * (1 - prog));
+  // Con séquito (Señora K → Monstruos) la silueta de la figura se conserva y
+  // se rellena de otras caras: los Monstruos son collages a sangre y, si
+  // pudieran crecer al vacío, terminarían en un cuadrado. Sin séquito, la
+  // pérdida también se come el vacío de alrededor (vuelven orejas, antenas).
+  const comer = elencoFijo ? (v) => celdas[v] === F.f : (v) => celdas[v] === F.f || !celdas[v];
+  while (F.restan.length > quedan) {
+    const c = F.restan.pop();
+    if (celdas[c] !== F.f) continue;
+    const g = candidato(c, elenco, F.f);
+    if (g) parche(c, g, 1 + rnd(3), comer); else poner(c, null);
+  }
+  if (!enSilencio() && !elencoFijo) F.relleno += dt;   // vuelven orejas, antenas, aletas (no en silencio ni con séquito)
+  if (F.relleno > 420) {
+    F.relleno = 0;
+    const vacias = []; for (let c = 0; c < NN; c++) if (!celdas[c] && libre(c)) vacias.push(c);
+    const c = azar(vacias);
+    if (c != null) { const g = candidato(c, elenco, F.f); if (g) parche(c, g, 1 + rnd(2), (v) => !celdas[v]); }
+  }
+  if (prog >= 1) {
+    for (const c of F.restan) if (celdas[c] === F.f) poner(c, candidato(c, elenco, F.f));
+    figura = null; elencoFijo = null;    // las reservadas se van: quedan huérfanas y se reemplazan primero
+    proximo = reloj;
+  }
 }
 
-/* ── voz: se analiza en silencio; el sonido sale por la página principal ── */
-let actx=null,analiz=null,datos=null,voz=null,fuenteReal=false,nodoVoz=null;
-function abrirAudio(){
-  if(actx) return;
-  try{
-    actx=new (window.AudioContext||window.webkitAudioContext)();
-    analiz=actx.createAnalyser(); analiz.fftSize=256;
-    datos=new Uint8Array(analiz.frequencyBinCount);
-  }catch(e){ console.warn('sin WebAudio'); }
+/* ═══ @CLON vaciar: la muda ═══ */
+function iniciarVaciado(segundos) {
+  figura = null; elencoFijo = null;
+  rumbo = null;                          // la muda queda quieta, en su sitio: un resto, no un temblor
+  const yo = buscar('jvlix') ?? buscar('julix');
+  vaciado = { fase: 'retrato', t: 0, yo, hechas: 0,
+              ms: Math.max(8, Number(segundos) > 0 ? Number(segundos) : VACIAR_S) * 1000 };
+  ajustarElenco();                       // desde ahora: solo especies
+  const plan = [];
+  for (let c = 0; c < NN; c++) {
+    if (yo && CAB.get(yo).oc[c] > CARNE) { if (celdas[c] !== yo || desp.has(c)) plan.push([c, yo]); }
+    else if (celdas[c] && CAB.get(celdas[c]).tag !== 'especie') plan.push([c, null]);
+  }
+  vaciado.plan = barajar(plan);
+  sucio = true;
 }
-// Si Chrome se abrió con --autoplay-policy=no-user-gesture-required (el
-// comando que ya usas para la TV), el analizador puede arrancar SOLO, sin que
-// nadie toque el iframe. Antes solo arrancaba con un clic DENTRO del clon, y
-// en la escena compuesta nadie hace clic ahí: la boca caía a sílabas falsas.
+function avanzarVaciado(dt) {
+  const V = vaciado; V.t += dt;
+  if (V.fase === 'retrato') {            // tu cara, entre especies
+    const meta = Math.ceil(Math.min(1, V.t / (ENSAMBLE_S * 1000)) * V.plan.length);
+    while (V.hechas < meta) {
+      const [c, f] = V.plan[V.hechas++];
+      if (desp.delete(c)) sucio = true;
+      poner(c, f ?? candidato(c));
+    }
+    if (V.t >= ENSAMBLE_S * 1000) { V.fase = 'sostiene'; V.t = 0; }
+  } else if (V.fase === 'sostiene') {
+    if (V.t < RETRATO_S * 1000) return;
+    V.fase = 'vacia'; V.t = 0;
+    V.restan = barajar([...Array(NN).keys()].filter((c) => celdas[c] && CAB.get(celdas[c]).tag !== 'especie'));
+    V.total = V.restan.length;
+  } else if (V.fase === 'vacia') {       // se vacía celda a celda
+    const prog = Math.min(1, V.t / V.ms);
+    const quedan = Math.ceil(V.total * (1 - prog));
+    while (V.restan.length > quedan) { const c = V.restan.pop(); poner(c, null); muda.add(c); }
+    if (prog >= 1) { V.fase = 'hecho'; proximo = reloj; }
+  }
+}
+/* Un rostro nuevo (o un preludio nuevo) re-habita el clon vaciado. */
+function restaurar() {
+  if (!vaciado && !muda.size) return;
+  vaciado = null; muda.clear(); ajustarElenco(); sucio = true;
+}
+
+/* ═══ LIENZO ═══ */
+const cv = document.getElementById('lienzo'), cx = cv.getContext('2d');
+let W = 0, H = 0, lado = 0, ox = 0, oy = 0, celW = 0, celH = 0;
+function redim() {
+  const dpr = Math.min(devicePixelRatio || 1, 1.5);
+  W = cv.clientWidth; H = cv.clientHeight;
+  cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  lado = Math.min(W, H) * 0.97; ox = (W - lado) / 2; oy = (H - lado) / 2;
+  celW = lado / COLS; celH = lado / FILAS;
+  sucio = true;
+}
+addEventListener('resize', redim);
+function pinta(f, src, dst, dx, dy, latido) {
+  const sw = SRC / COLS, sh = SRC / FILAS;
+  const sc = src % COLS, sr = (src - sc) / COLS, dc = dst % COLS, dr = (dst - dc) / COLS;
+  let y = oy + (dr + dy) * celH, h = celH;
+  if (latido > 0) { const k = 1 + latido * 0.30; y -= h * (k - 1) / 2; h *= k; }
+  cx.drawImage(CAB.get(f).im, sc * sw, sr * sh, sw, sh, ox + (dc + dx) * celW, y, celW + 0.6, h + 0.6);
+}
+function dibujar() {
+  sucio = false;
+  cx.clearRect(0, 0, W, H);
+  for (let c = 0; c < NN; c++) { const f = celdas[c]; if (f && !desp.has(c)) pinta(f, c, c, 0, 0, 0); }
+  for (const [c, d] of desp) { const f = celdas[c]; if (f) pinta(f, d.src, c, d.dx, d.dy, 0); }
+  if (amp > 0.02) for (const c of ZONA_VOCAL) { const f = celdas[c]; if (f && !desp.has(c)) pinta(f, c, c, 0, 0, amp); }
+  cx.strokeStyle = perfil().dim; cx.globalAlpha = 0.2; cx.lineWidth = 1;
+  cx.beginPath();
+  for (let c = 1; c < COLS; c++) { cx.moveTo(ox + c * celW, oy); cx.lineTo(ox + c * celW, oy + lado); }
+  for (let f = 1; f < FILAS; f++) { cx.moveTo(ox, oy + f * celH); cx.lineTo(ox + lado, oy + f * celH); }
+  cx.stroke(); cx.globalAlpha = 1;
+}
+
+/* ═══ VOZ: se analiza en silencio; el sonido sale por la página principal ═══ */
+let actx = null, analiz = null, datos = null, voz = null, nodoVoz = null;
+let hablando = false, fuenteReal = false, finHabla = 0, amp = 0, velocidadVoz = 1;
+const retrasos = [];                     // llegada del evento → la copia suena (ms)
+function abrirAudio() {
+  if (actx) return;
+  try {
+    actx = new (window.AudioContext || window.webkitAudioContext)();
+    analiz = actx.createAnalyser(); analiz.fftSize = 256;
+    datos = new Uint8Array(analiz.frequencyBinCount);
+  } catch (e) { console.warn('[clon] sin WebAudio'); }
+}
+// Con --autoplay-policy=no-user-gesture-required (el comando de la TV) el
+// analizador arranca solo, sin que nadie toque el iframe.
 abrirAudio();
-setTimeout(()=>{ try{ if(actx && actx.state==='suspended') actx.resume(); }catch(_){} }, 600);
-addEventListener('click',abrirAudio,{once:true});
-addEventListener('touchstart',abrirAudio,{once:true});
-addEventListener('keydown',abrirAudio,{once:true});
+setTimeout(() => { try { if (actx && actx.state === 'suspended') actx.resume(); } catch (_) {} }, 600);
+addEventListener('click', abrirAudio, { once: true });
+addEventListener('touchstart', () => { abrirAudio(); try { actx?.resume(); } catch (_) {} }, { once: true });
+addEventListener('keydown', abrirAudio, { once: true });
 
-(function medir(){
-  if(fuenteReal&&analiz){
-    analiz.getByteFrequencyData(datos);
-    let s=0; for(let i=2;i<40;i++) s+=datos[i];
-    amplitud=Math.min(1,(s/38)/105);
-    if(!pausa && voz && voz.ended){ hablando=false; fuenteReal=false; }
+/* hablar: SOLO si el bloque trae audio. Un bloque sin voz no mueve la boca. */
+function hablar(texto, archivo, sonido) {
+  // @SONIDO (la rana, el Kuak) pasa por el mismo analizador: el clon croa.
+  const url = sonido ? '/sonido/' + encodeURIComponent(sonido) : archivo ? '/audio/' + archivo : null;
+  if (!url) return;
+  silencioFin = 0;
+  hablando = true; fuenteReal = false;
+  const llegada = performance.now();
+  finHabla = llegada + Math.max(2500, (texto?.length ?? 40) * 72) / velocidadVoz;
+  if (!actx) return;                     // sin WebAudio: sílabas por duración
+  try {
+    if (voz) { try { voz.pause(); } catch (_) {} }
+    // Una sola fuente conectada: la anterior se desconecta.
+    if (nodoVoz) { try { nodoVoz.disconnect(); } catch (_) {} nodoVoz = null; }
+    const a = new Audio();
+    a.crossOrigin = 'anonymous'; a.preload = 'auto'; a.src = url;
+    voz = a;
+    nodoVoz = actx.createMediaElementSource(a);
+    nodoVoz.connect(analiz);             // NO a destination: es mudo
+    a.playbackRate = velocidadVoz;
+    a.addEventListener('loadedmetadata', () => {
+      if (voz === a && isFinite(a.duration)) finHabla = performance.now() + a.duration * 1000 / a.playbackRate + 300;
+    });
+    a.addEventListener('playing', () => {
+      if (voz !== a) return;
+      retrasos.push(Math.round(performance.now() - llegada)); if (retrasos.length > 6) retrasos.shift();
+    }, { once: true });
+    const arrancar = () => {
+      if (voz !== a || pausa || enSilencio()) return;
+      if (SINCRO) {                      // salta hasta donde ya va la voz real
+        const adelanto = (performance.now() - llegada + SINCRO_MS) / 1000 * a.playbackRate;
+        if (adelanto > 0.04 && isFinite(a.duration) && adelanto < a.duration) a.currentTime = adelanto;
+      }
+      a.play().then(() => { if (voz === a) fuenteReal = true; }).catch(() => { if (voz === a) fuenteReal = false; });
+    };
+    if (SINCRO) a.addEventListener('canplay', arrancar, { once: true }); else arrancar();
+  } catch (e) { fuenteReal = false; }
+}
+function callar(segundos) {             // @SILENCIO: boca cerrada en el acto
+  silencioFin = performance.now() + Math.max(0.5, Number(segundos) || 5) * 1000;
+  hablando = false; fuenteReal = false;
+  if (voz) { try { voz.pause(); } catch (_) {} }
+  sucio = true;
+}
+function fijarPausa(activa) {
+  if (activa === pausa) return;
+  const ahora = performance.now();
+  if (activa) { pausaDesde = ahora; if (voz) { try { voz.pause(); } catch (_) {} } }
+  else {
+    const d = ahora - pausaDesde;
+    if (silencioFin) silencioFin += d;
+    finHabla += d;
+    if (voz && hablando && !voz.ended) voz.play().catch(() => {});
   }
-  setTimeout(medir,40);
-})();
-
-/* ── v2: la boca también habla con TUS SONIDOS ──
-   Un bloque @SONIDO (el croar de la rana, el Cuak) llega con `sonido` y sin
-   `audio`. Antes el clon lo ignoraba y "hablaba" 2,5 s con sílabas falsas
-   mientras sonaba la rana. Ahora ese mp3 pasa por el mismo analizador: la
-   boca se mueve con la amplitud REAL del croar. El clon croa.
-   (La ruta es /sonido/ en vez de /audio/: son tus archivos, no ElevenLabs.) */
-function hablar(texto,archivo,sonido){
-  hablando=true; fuenteReal=false;
-  finHabla=performance.now()+Math.max(2500,(texto?.length??40)*72);
-  const url = sonido ? '/sonido/'+encodeURIComponent(sonido)
-            : (archivo ? '/audio/'+archivo : null);
-  if(!url||!actx) return;
-  try{
-    if(voz){ try{voz.pause();}catch(_){} }
-    // Se DESCONECTA el nodo anterior. Antes cada bloque dejaba el suyo
-    // enganchado al analizador: tras 190 bloques quedaban 190 fuentes
-    // colgando. Con esto, siempre hay exactamente una.
-    if(nodoVoz){ try{nodoVoz.disconnect();}catch(_){} nodoVoz=null; }
-    voz=new Audio(url);
-    voz.crossOrigin='anonymous'; voz.muted=false;
-    const nodo=actx.createMediaElementSource(voz);
-    nodoVoz=nodo;
-    nodo.connect(analiz);                       // NO a destination: es mudo
-    voz.addEventListener('loadedmetadata',()=>{ finHabla=performance.now()+voz.duration*1000+400; });
-    voz.play().then(()=>{fuenteReal=true;}).catch(()=>{fuenteReal=false;});
-  }catch(e){ fuenteReal=false; }
+  pausa = activa;
+}
+function hablarSimulado(ms) {            // solo para el demo
+  if (enSilencio() || pausa) return;
+  hablando = true; fuenteReal = false; finHabla = performance.now() + ms;
 }
 
-function aplicarEstado(n){
-  if(!PERFIL[n]) return;
-  estado=n;
-  document.documentElement.style.setProperty('--accent',PERFIL[n].acc);
-  document.documentElement.style.setProperty('--accent-dim',PERFIL[n].dim);
+/* ═══ PERFIL Y RUMBO ═══ */
+function aplicarEstado(n) {
+  if (!PERFIL[n]) return;
+  const cambio = n !== estado;
+  estado = n;
+  document.documentElement.style.setProperty('--accent', PERFIL[n].acc);
+  document.documentElement.style.setProperty('--accent-dim', PERFIL[n].dim);
+  if (cambio && !figura && !vaciado) { barajadaHasta = reloj + 1600; proximo = reloj; }
+  sucio = true;
+}
+function fijarRumbo(e) {
+  const nuevo = e === 'AUTORIZADO' || e === 'DESPLAZADO' ? e : null;
+  if (nuevo === rumbo) return;
+  rumbo = nuevo;
+  if (!figura && !vaciado) { barajadaHasta = Math.max(barajadaHasta, reloj + 900); proximo = reloj; }
 }
 
-/* ── @CLON: la partitura elige el rostro ──
-   Desde instrucciones_permanentes.txt:   @CLON Señora K      @CLON jvlix 20
-   Se busca la imagen por nombre (sin .png, sin importar tildes ni mayúsculas),
-   entra con el mismo fundido que usa el cambio de agente, y se SOSTIENE los
-   segundos indicados (12 por defecto) antes de que la mutación siga sola.
-   Este es el gancho mínimo: el chat 6 puede enriquecer lo que pasa aquí. */
-const normF=(x)=>String(x||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-  .replace(/\.png$/i,'').replace(/[^a-z0-9]+/g,' ').trim();
-function forzarFigura(nombre, segundos){
-  const q=normF(nombre); if(!q||!listo) return;
-  const lista=[...imgs.keys()];
-  const hit = lista.find(f=>normF(f)===q) ?? lista.find(f=>normF(f).startsWith(q))
-           ?? lista.find(f=>normF(f).includes(q));
-  if(!hit){ console.warn('[clon] no encuentro la figura:', nombre); return; }
-  baseAnt=baseF; baseFade=0; baseF=hit;
-  for(const c of [...parches.keys()]) if(ocupa.get(baseF)[c]<=90) parches.delete(c);
-  fijaHasta = performance.now() + (Number(segundos)>0 ? Number(segundos) : 12)*1000;
+/* ═══ BUCLE ═══ */
+let ultimoCuadro = performance.now(), bocaAbierta = false;
+function cuadro(ahora) {
+  requestAnimationFrame(cuadro);
+  const dt = Math.min(60000, Math.max(0, ahora - ultimoCuadro)); ultimoCuadro = ahora;
+  if (!listo) return;
+  // Pausa: todo quieto. Silencio: el tiempo del rostro corre a un cuarto.
+  const velo = pausa ? 0 : enSilencio() ? 0.25 : 1;
+  const dtE = dt * velo;
+  reloj += dtE;
+  if (figura) avanzarFigura(dtE);
+  else if (vaciado && vaciado.fase !== 'hecho') avanzarVaciado(dtE);
+  else if (!pausa && reloj >= proximo) { tick(); proximo = reloj + intervalo(); }
+
+  // Análisis real solo si el contexto de audio corre: suspendido (un celular
+  // que nadie tocó), el analizador lee ceros y la boca quedaría muerta.
+  const real = fuenteReal && actx && actx.state === 'running';
+  if (hablando && !pausa) {
+    if ((real && voz && voz.ended) || ahora > finHabla + (real ? 1500 : 0)) hablando = false;
+  }
+  if (hablando && !pausa) {
+    let a;
+    if (real && analiz) {
+      analiz.getByteFrequencyData(datos);
+      let s = 0; for (let i = 2; i < 40; i++) s += datos[i];
+      a = Math.min(1, s / 38 / 105);
+    } else a = 0.30 + 0.70 * Math.abs(Math.sin(ahora / 88) + 0.5 * Math.sin(ahora / 53)) / 1.5;
+    amp = Math.max(a, amp * 0.8);
+  } else if (!pausa) amp = amp * 0.7 < 0.02 ? 0 : amp * 0.7;
+  const boca = amp > 0.02;
+  if (sucio || boca || boca !== bocaAbierta) dibujar();
+  bocaAbierta = boca;
 }
 
-/* ── WebSocket: los mismos eventos que ya emite el orquestador ── */
-function conectar(){
-  let ws; try{ ws=new WebSocket(`ws://${location.host}`); }catch(e){ return; }
-  ws.onmessage=e=>{
-    let m; try{ m=JSON.parse(e.data); }catch(_){ return; }
-    const d=m.datos??m;
-    if(actx && actx.state==='suspended'){ try{actx.resume();}catch(_){} }
-    if(m.tipo==='afecto')    aplicarEstado(d.estado);
-    if(m.tipo==='segmento')  hablar(d.texto,d.audio,d.sonido);
-    if(m.tipo==='preludio')  hablar(d.texto,d.audio);
-    if(m.tipo==='agente_id'){ fijaHasta=0; baseAnt=baseF; baseFade=0; baseF=baseNueva(); hablar(d.texto,d.audio); }
-    if(m.tipo==='clon') forzarFigura(d.figura, d.segundos);
-    if(m.tipo==='pausa'){ pausa=!!d.activa;
-      if(voz){ pausa ? voz.pause() : voz.play().catch(()=>{}); } }
-    if(m.tipo==='velocidad'&&voz) voz.playbackRate=Math.min(2,Math.max(0.5,Number(d.valor)||1));
+/* ═══ WEBSOCKET: los mismos eventos que ya emite el orquestador ═══ */
+// Antes de la función (y en reposo tras un ensayo) el clon muestra solo
+// especies y tu rostro. Las caras de poder se habilitan con actividad real de
+// la obra, no con el estado que el servidor reenvía al conectarse.
+const ACTIVIDAD = new Set(['segmento', 'preludio', 'agente_id', 'clon', 'silencio']);
+function alEvento(m) {
+  const d = m.datos ?? {};
+  if (ACTIVIDAD.has(m.tipo)) poderHabilitado = true;
+  switch (m.tipo) {
+    case 'afecto':    aplicarEstado(d.estado); break;
+    case 'rumbo':     fijarRumbo(d.estado); break;
+    case 'segmento':  hablar(d.texto, d.audio, d.sonido); break;
+    // El preludio va antes de todo agente: rostro neutro, aunque el servidor
+    // recuerde el rumbo del ensayo anterior.
+    case 'preludio':  restaurar(); fijarRumbo(null); hablar(d.texto, d.audio); break;
+    case 'agente_id': hablar(d.texto, d.audio); break;   // ya no cambia el rostro: eso lo dice @CLON
+    case 'clon':      forzarFigura(d.figura, d.segundos); break;
+    case 'silencio':  callar(d.segundos); break;
+    case 'pausa':     fijarPausa(!!d.activa); break;
+    case 'velocidad':
+      velocidadVoz = Math.min(2, Math.max(0.5, Number(d.valor) || 1));
+      if (voz) voz.playbackRate = velocidadVoz;
+      break;
+  }
+}
+function conectar() {
+  let ws; try { ws = new WebSocket(`ws://${location.host}`); } catch (e) { return; }
+  ws.onmessage = (e) => {
+    let m; try { m = JSON.parse(e.data); } catch (_) { return; }
+    if (actx && actx.state === 'suspended') { try { actx.resume(); } catch (_) {} }
+    alEvento(m);
   };
-  ws.onclose=()=>setTimeout(conectar,2000);
+  ws.onclose = () => setTimeout(conectar, 2000);
 }
 
-/* ── arranque ── */
-(async function(){
+/* ═══ DIAGNÓSTICO (?diag=1) ═══ */
+function diagnostico() {
+  const nombre = (f) => normF(f).replace(/ (gpt|gemini|cabeza).*$/, '');
+  const F = figura, V = vaciado;
+  const lineas = [
+    `perfil ${estado} · rumbo ${rumbo ?? '—'} · fuera de sitio ${desp.size}`,
+    `elenco (${elenco.length}): ${elenco.map(nombre).join(', ')}${elencoFijo ? '  [séquito]' : ''}`,
+    F ? `figura ${nombre(F.f)} · ${F.fase} ${(F.t / 1000).toFixed(1)} s` + (F.fase === 'sostiene' ? ` / ${F.sostenMs / 1000}` : '') +
+        (F.sequito ? ` · séquito ${F.sequito.map(nombre).join(', ')}` : '')
+      : V ? `vaciar · ${V.fase} ${(V.t / 1000).toFixed(1)} s · vaciadas ${muda.size}` : 'figura —',
+    `silencio ${enSilencio() ? ((silencioFin - performance.now()) / 1000).toFixed(1) + ' s' : 'no'} · pausa ${pausa ? 'SÍ' : 'no'}`,
+    `voz ${hablando ? 'hablando' : 'callada'} · ${fuenteReal ? 'análisis real' : 'sílabas por duración'} · audio ${actx ? actx.state : 'sin WebAudio'}`,
+    `retraso de la copia (llegada → suena): ${retrasos.length ? retrasos.join(' · ') + ' ms' : '—'}`,
+    `sincro ${SINCRO ? 'ON' + (SINCRO_MS ? ' +' + SINCRO_MS + ' ms' : '') : 'OFF'} · ${CAB.size} cabezas · ${EMBEBIDO ? 'en escena' : 'solo'}`,
+  ];
+  if (ultimoAviso) lineas.push('⚠ ' + ultimoAviso);
+  document.getElementById('diag').textContent = lineas.join('\n');
+}
+
+/* ═══ DEMO (?demo=1): la obra entera en ~2 min, con sostenes cortos ═══
+   Teclas: 1-5 perfil · A autorizado · D desplazado · N sin rumbo ·
+   S silencio · J jvlix · E Elite · K Señora K · Y Yakuruna · V vaciar ·
+   P pausa · H voz · R re-habitar. Una tecla pasa el demo a modo manual. */
+let manual = false;
+function rotulo(t) { const r = document.getElementById('rotulo'); r.style.display = 'block'; r.textContent = t; }
+async function demo() {
+  const esp = (ms) => new Promise((r) => setTimeout(r, ms));
+  const paso = async (txt, fn, ms) => { if (manual) return; rotulo(txt); fn(); await esp(ms); };
+  setInterval(() => { if (!manual && Math.random() < 0.8) hablarSimulado(2500 + Math.random() * 2500); }, 6500);
+  while (!manual) {
+    await paso('preludio · @CLON jvlix', () => { aplicarEstado('LIMINAL'); fijarRumbo(null); forzarFigura('jvlix', 6); }, 16000);
+    await paso('Donald-Prompt · desplazado', () => { aplicarEstado('PANOPTICO'); fijarRumbo('DESPLAZADO'); }, 9000);
+    await paso('@CLON Elite', () => forzarFigura('Elite', 6), 18000);
+    await paso('@SILENCIO 6', () => callar(6), 7000);
+    await paso('Eco-Satelital · autorizado', () => { aplicarEstado('ORBITAL'); fijarRumbo('AUTORIZADO'); }, 9000);
+    await paso('@CLON Yakuruna', () => forzarFigura('Yakuruna', 6), 18000);
+    await paso('Quimera · desplazado', () => { aplicarEstado('POLIFONICO'); fijarRumbo('DESPLAZADO'); }, 8000);
+    await paso('@CLON Señora K → monstruos', () => forzarFigura('Señora K', 6), 26000);
+    await paso('cierre · @CLON vaciar', () => { aplicarEstado('LIMINAL'); fijarRumbo(null); forzarFigura('vaciar', 12); }, 26000);
+  }
+}
+if (DEMO) addEventListener('keydown', (e) => {
+  const k = e.key.toLowerCase(), ids = Object.keys(PERFIL);
+  const acc = {
+    a: () => fijarRumbo('AUTORIZADO'), d: () => fijarRumbo('DESPLAZADO'), n: () => fijarRumbo(null),
+    s: () => callar(6), j: () => forzarFigura('jvlix', 10), e: () => forzarFigura('Elite', 10),
+    k: () => forzarFigura('Señora K', 10), y: () => forzarFigura('Yakuruna', 10),
+    v: () => forzarFigura('vaciar', 12), p: () => fijarPausa(!pausa), h: () => hablarSimulado(4000),
+    r: () => restaurar(),
+  };
+  if (k >= '1' && k <= '5') { manual = true; aplicarEstado(ids[Number(k) - 1]); }
+  else if (acc[k]) { manual = true; acc[k](); }
+  else return;
+  rotulo('manual · 1-5 perfil · A D N rumbo · S silencio · J E K Y figura · V vaciar · P pausa · H voz · R re-habitar');
+});
+
+/* ═══ ARRANQUE ═══ */
+(async function () {
   redim();
-  await Promise.all(ESPECIES.map(cargar));
-  if(!imgs.size){ document.getElementById('carga').textContent='sin imágenes en /clon-img/'; return; }
-  baseF = imgs.has('jvlix.png') ? 'jvlix.png' : imgs.has('julix.png') ? 'julix.png' : baseNueva();
+  await cargarTodo();
+  if (!CAB.size) { document.getElementById('carga').textContent = 'sin imágenes en /clon-img/'; return; }
+  ajustarElenco();
+  componerDeCero();
   listo = true;
   document.getElementById('carga').classList.add('oculto');
-  conectar();
+  if (DIAG) { document.getElementById('diag').style.display = 'block'; setInterval(diagnostico, 250); }
+  // El demo es una vista previa autónoma: no escucha al servidor (si no, el
+  // último estado de la escena le pisa los pasos).
+  if (!DEMO) conectar();
   requestAnimationFrame(cuadro);
-
-  if(DEMO){                                  // prueba sin orquestador
-    const ids=Object.keys(PERFIL); let i=0;
-    setInterval(()=>{ hablar('x'.repeat(60+Math.random()*90)); }, 6500);
-    setInterval(()=>{ aplicarEstado(ids[i++%ids.length]); }, 22000);
-    hablar('x'.repeat(80));
-  }
+  if (DEMO) demo();
 })();
 </script>
 </body>

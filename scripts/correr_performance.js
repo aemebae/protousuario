@@ -621,7 +621,15 @@ async function funcion() {
     await emitirAfecto('LIMINAL');
     const vozPre = await vozLote(parrafos.map((t) => ({ texto: t, cual: VOZ_AUTOR })), { etiqueta: 'preludio' });
     await emitirSecuencia(parrafos.map((t) => ({ tipo: 'narracion', texto: t })), { agente: 'PRELUDIO' });
+    // @CLON escritos dentro del preludio (los guarda compilar_guion.js en
+    // preludio.json → clon): cada uno sale justo antes de su párrafo.
+    const clonesPre = Array.isArray(PRELUDIO.clon) ? PRELUDIO.clon : [];
     for (let i = 0; i < parrafos.length; i++) {
+      for (const c of clonesPre) {
+        if (c.antes !== i) continue;
+        console.log(`\n  ◐ CLON → ${c.figura} (${c.segundos ?? 12} s)`);
+        await emitirClon(c.figura, c.segundos ?? 12);
+      }
       console.log(`\n  [${i + 1}/${parrafos.length}] PRELUDIO`);
       console.log('  ' + parrafos[i].replace(/(.{88})/g, '$1\n  '));
       const mp3Pre = vozPre.get(parrafos[i]) ?? null;
@@ -637,6 +645,8 @@ async function funcion() {
         if (Number.isFinite(d) && d >= 0 && d < parrafos.length) i = d - 1;
       }
     }
+    // un @CLON escrito después del último párrafo sale al terminar el preludio
+    for (const c of clonesPre) if (c.antes >= parrafos.length) await emitirClon(c.figura, c.segundos ?? 12);
   }
 
   // ── ADELANTARSE ──

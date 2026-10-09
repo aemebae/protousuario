@@ -31,6 +31,15 @@
 //    @CIERRE                            el último texto de la obra
 //    # …                                nota tuya, se ignora
 //
+//  MARCAS CON ALGO DETRÁS (también solas en su línea)
+//    @SONIDO nombre                     un mp3 tuyo de "sonidos externos"
+//    @SILENCIO [s]                      reposo escrito (SILENCIO_S si no hay número)
+//    @CLON figura [s]                   el clon toma ese rostro: se arma corte a
+//                                       corte, se sostiene s segundos (12 si no hay
+//                                       número) y se pierde entre otras cabezas.
+//                                       Vale en el preludio, en un agente y en el
+//                                       cierre.   @CLON vaciar [s] = la muda.
+//
 //  UNA LÍNEA = UN BLOQUE = UN AVANZAR = UN AUDIO.
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -56,6 +65,10 @@ const HUECOS = { ORBITAL: 'orbital', NATGEO: 'narracion', MEMORIA: 'memoria' };
 const MIOS = { PROMPT: 'prompt', PREGUNTA: 'pregunta', ID: 'id_agente' };
 
 const preludio = [];
+// Los @CLON escritos dentro del preludio: { antes: nº de párrafo, figura, segundos }.
+// Van aparte de `parrafos` para no mover la numeración de los párrafos (la
+// usan la voz pregrabada y el salto ir:N del celular).
+const clonesPreludio = [];
 const agentes = [];
 // El CIERRE ahora es una LISTA de bloques, igual que un agente: una línea =
 // un bloque = un audio. Antes se pegaba todo en un solo texto de 3.771
@@ -153,6 +166,11 @@ for (const cruda of lineas) {
       const figura = (conSeg ? resto.slice(0, -1) : resto).join(' ').trim();
       if (!figura) { avisos.push(`línea ${nLinea}: @CLON sin figura`); continue; }
       const bloque = { tipo: 'clon', figura, segundos: conSeg ? ultimo : 12, texto: '' };
+      // En el preludio: se dispara justo antes del párrafo que le sigue.
+      if (modo === 'preludio') {
+        clonesPreludio.push({ antes: preludio.length, figura, segundos: bloque.segundos });
+        continue;
+      }
       if (modo === 'cierre') cierre.push(bloque);
       else if (agente) agente.bloques.push(bloque);
       else avisos.push(`línea ${nLinea}: @CLON fuera de un agente o del cierre`);
@@ -264,12 +282,14 @@ if (preludio.length) {
     _uso: `GENERADO desde ${ORIGEN}. Se reproduce UNA SOLA VEZ al inicio, párrafo a párrafo.`,
     titulo: 'Preludio.',
     parrafos: preludio,
+    ...(clonesPreludio.length ? { clon: clonesPreludio } : {}),
   }, null, 2), 'utf8');
 }
 
 // ── Informe ──
 console.log('');
-if (preludio.length) console.log(`  PRELUDIO${''.padEnd(16)} ${preludio.length} párrafos`);
+if (preludio.length) console.log(`  PRELUDIO${''.padEnd(16)} ${preludio.length} párrafos`
+  + (clonesPreludio.length ? `  · clon: ${clonesPreludio.map((c) => `${c.figura} ${c.segundos}s antes del ${c.antes + 1}`).join(', ')}` : ''));
 let total = preludio.length;
 for (const a of vivos) {
   const c = a.bloques.reduce((m, b) => ({ ...m, [b.tipo]: (m[b.tipo] ?? 0) + 1 }), {});

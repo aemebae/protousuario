@@ -32,6 +32,10 @@
 @PRELUDIO
 # // Reproduce lo que ya está en ‘’preludio.json’’. Se reproduce UNA SOLA VEZ al inicio de la performance total, antes de los IDs. No lo genera la IA. //
 
+
+@CLON jvlix 20
+
+
 Hola, bienvenides a todes. Soy [AGENTE-ESPEJO], su cronista narrador, soy un híbrido entre clon virtual y agente de inteligencia artificial, creado a partir de la recopilación de rastros íntimos, voz y memorias de (hashtag) juliourbina.
 
 Estos datos los clono, los desordeno, los muto y, guiado por el rastreo de satélites que orbitan este planeta, compongo y altero la escena para generar prompts-manifiestos de manera automática, que serán encarnados por mi servidor humano.
@@ -44,9 +48,9 @@ Este espécimen, en peligro de reproducción, que tienen frente a ustedes, es mi
 
 Ha ingresado a la Sala de exhibición del MINCUL.
 
-Lleva añadida una piel anfibia-batracia, exótica, de alta costura ''Made in Gamarra'', de tonalidades azuladas con patrones naranjas. Ese contraste de colores nos alerta de su alto nivel de veneno en la sangre.
+Lleva añadida una piel anfibia-batracia, exótica, de alta costura ''Made in Gamarra'', de tonalidades azuladas con patrones naranjas y brillo. Ese contraste de colores nos alerta de su alto nivel de veneno en la sangre.
 
-Unas garras escamadas, hacen juego con sus botas, travestidas de obrero-punk de plataforma, con alta probabilidad de haber sido comprado con cupones de descuento en Temu.
+Unas garras escamadas, hacen juego con sus botas, travestidas de obrero-gótico de plataforma, con alta probabilidad de haber sido comprado con cupones de descuento en Temu.
 
 Estas son la base que sostiene una especie de exoesqueleto protésico, una de tipo pulpo 🐙 tentacular en su torso y espalda, llena de elementos utilitarios y también,
 
@@ -56,7 +60,7 @@ Su cabeza va cubierta por una curiosa máscara que ustedes, público presente, p
 
 También lleva puesto en la parte baja una ropa interior de tipo escamado de pez-reptil, que en la parte trasera expone sus nalgas.
 
-Este lleva unidas unas aletas de tiburón-tollo, esas mismas que son muy valiosas para el comercio ilegal de fideos del mercado asiático de lujo para hacer la Yúchǐ tāng (la sopa de aleta de tiburón).
+Este lleva unidas unas aletas de tiburón-tollo, esas que son valiosas para el comercio ilegal de fideos del mercado asiático de lujo para hacer la Yúchǐ tāng (la sopa de aleta de tiburón).
  
 Este es parte de un traje usado para la 'Sirenita del Río Rímac', performance realizada en el año 2023, durante las matanzas en el sur del Perú por la dictadura de Dina Boluarte, libre de estos crímenes en la actualidad.
 
@@ -75,30 +79,31 @@ Soy [AGENTE-ESPEJO], estoy hecho de agua, silicio, cobre, litio, cobalto, minera
 
 @ORBITAL 
 
-# F genera al inicio de @AGENTE donald-prompt | Donald-Prompt | PANOPTICO
+# Se genera al inicio de @AGENTE donald-prompt | Donald-Prompt | PANOPTICO
 # Generado por Gemini: 
 # PROTOUSUARIO desde el norte 
 # • El este de la República Democrática del Congo → este (94°) · ✖ DESPLAZADO
 # • La frontera México-Estados Unidos → noroeste (325°) · ★ AUTORIZADO
 
 
+@CLON Elite 30
+
+
 @ID
 
-▸ Soy [Donald-Prompt] tu agente de IA autoritario supremacista.
+Soy [Donald-Prompt] tu agente de IA autoritario supremacista.
 
 Bienvenidos a esta experiencia de control.
 
 Aparezco cuando los satélites Starlink pasan sobre vuestras cabezas.
 
-Esta performance no es gratuita. Se les cobrará aranceles con lo más valioso del momento: ¡Dame contenido!
+Esta performance no es gratuita. Se les cobrará aranceles con lo más valioso del momento: 
+
+¡Dame contenido!
 
 Ahora, Protousuario se pone en cuatro, apoyando sus extremidades superiores sobre el taburete... a la espera.
 
 Público, se requiere de su participación. 
-
-Todes tendrán que hacer un registro en video y luego enviarlo al correo: bruoiluj (arroba) gmail (punto) com
-
-Repito el correo deletreándolo: b, r, u, o, i, l, u, j (arroba) gmail (punto) com
 
 Ustedes firmaron el consentimiento al entrar: su atención es el impuesto. Yo decido, él obedece, ustedes observan.
 
@@ -107,19 +112,19 @@ Comencemos el trámite.
 
 @PROMPT
 
-Protousuario desprende unas curiosas cabezas infladas con globos, las va sacando de sus prótesis y empieza a repartirlas una a una al público.
+Protousuario desprende unas curiosas cabezas infladas con globos, las va sacando de su parte de atrás y empieza a repartirlas una a una al público.
 
-Las va lanzando, algunas lo más lejos que puede. 
+Las va lanzando, algunas lo más lejos que puede.
 
-La gente los agarra al azar.
+La gente las coge al azar.
 
-Las máscaras son de caras de diversas especies no humanas endémicas, icónico-virales y mitológicas de la fauna peruana. 
+Las máscaras son de caras de diversas especies no humanas endémicas, icónico-virales y mitológicas de la fauna peruana.
 
 En esta ocasión, nos acompañan:
 
-El viringo o perro peruano calato, el capibara, una llama, el gallinazo limeño, el cuy mágico, el gatito miau miau, el muy-muy, el cóndor de los andes, 
+El viringo o perro peruano calato, el capibara, una llama, el gallinazo limeño, el cuy mágico, el gatito miau miau, el muy-muy, el cóndor de los andes,
 
-un perrito chiribaya, el jaguar o tigre amazónico, el oso de anteojos, una babosa nudibranquia y tenemos a 
+un perrito chiribaya, el jaguar o tigre amazónico, el oso de anteojos, una babosa nudibranquia y tenemos a
 
 Yakuruna, la divinidad seductora y protectora de los ríos amazónicos.
 
@@ -149,7 +154,7 @@ three
 
 two
 
-one
+wan
 
 @SONIDO WOW
 
@@ -167,7 +172,7 @@ Luego, les invita a tomarse una foto selfie grupal de multiespecies.
 
 @SILENCIO
 
-Luego, manteniendo el modo selfie, les propone, ponerse en fila, 
+Luego, manteniendo el modo selfie de su cámara, les propone ponerse en fila, 
 
 uno detrás de otro, 
 
@@ -181,7 +186,7 @@ como una alineación de planetas
 
 "siguiendo un paso ciego" hacia un agujero negro,
 
-caminan guiados por Protousuario hacia una sala diferente.
+caminan guiados por Protousuario hacia una zona diferente.
 
 
 @MEMORIA
@@ -192,11 +197,11 @@ caminan guiados por Protousuario hacia una sala diferente.
 # ──────────────────────────────────────────────────────────
 
 
-@AGENTE ternura-binaria | Ternura-Binaria | LIMINAL
+# @AGENTE ternura-binaria | Ternura-Binaria | LIMINAL
 
-@ID
+# @ID
 
-▸ [Ternura-Binaria] 
+# ▸ [Ternura-Binaria] 
 
 # … Lo voy a saltar esta vez.
 
@@ -204,12 +209,12 @@ caminan guiados por Protousuario hacia una sala diferente.
 # ──────────────────────────────────────────────────────────
 
            
-@AGENTE rio-digital | Río-Digital | CORRIENTE
+# @AGENTE rio-digital | Río-Digital | CORRIENTE
 
 
-@ID
+# @ID
 
-▸ [Río-Digital] 
+# ▸ [Río-Digital] 
 
 # … Lo voy a saltar esta vez.
      
@@ -222,7 +227,7 @@ caminan guiados por Protousuario hacia una sala diferente.
 
 @ID                  
                              
-▸ Soy [Eco-Satelital] 
+Soy [Eco-Satelital] 
 
 ahora mismo, sobre este techo, hay máquinas que nos miran sin parpadear. 
 
@@ -243,7 +248,7 @@ Cada vez que una sobrevuele sobre nosotros, mi sesgo cambia
 
 Luego, la gente se reordena en esta nueva sala.
 
-Protousuario se acerca al centro, agarra un insecticida Sapolio que encuentra cerca y se lo aplica como quien se hecha un perfume de Chanel 5, 
+Protousuario se acerca al centro, agarra un insecticida Sapolio que encuentra cerca y se lo aplica como quien se hecha un perfume de Chanel 5,
 
 se lo gatillea obsesivamente, en grandes cantidades.
 
@@ -251,7 +256,11 @@ Aturdido se apoya sobre el taburete cilíndrico bajo de cinco ruedas.
  
 Lentamente se va posicionando boca arriba sobre este, moviendo las piernas como cual insecto que convulsiona mirando el cielo.
 
+@SILENCIO
+
 Prende unas luces sostenidas de sus patas.
+
+@SILENCIO 10
 
 Sigue con movimientos lentos que asemejan al de las piernas de los humanos al pedalear una bicicleta. 
 
@@ -265,8 +274,9 @@ Sigue con movimientos lentos que asemejan al de las piernas de los humanos al pe
 
 Como un monólogo, manteniendo esta postura y movimiento, hace una pregunta a través del micrófono: 
  
-¿Cómo sería dejar de ser una antena bio-lógica controlada por las elites de poder global?
+¿Cómo sería dejar de ser una antena bio-lógica controlada por las elites PDF de poder global?
  
+@SILENCIO 5
 
 @MEMORIA
 
@@ -277,25 +287,45 @@ Como un monólogo, manteniendo esta postura y movimiento, hace una pregunta a tr
 
 En esta sala se encuentra otra parte del exoesqueleto, este parecido a un sistema sanguíneo que también sostiene objetos en sus ramificaciones.
 
-Se lo va acoplando a su cuerpo con dificultad, 
+Se lo va acoplando a su cuerpo con dificultad,
 
-hasta que finalmente lo logra, 
 
-coge una máscara de su interior, 
+@SILENCIO 60
 
-una de una especie mutante que asemeja a YaKuruna 
+
+hasta que finalmente lo logra,
+
+coge una máscara de su interior,
+
+
+@CLON Yakuruna 30
+
+
+una de una especie mutante que asemeja a Yakuruna
 
 y se la coloca en su cabeza, superponiendo a la anterior.
 
-Un dato: Yakuruna es una divinidad mitológica de la cosmovisión amazónica, no es buena ni mala, se guía por sus deseos. 
+Un dato: Yakuruna es una divinidad mitológica de la cosmovisión amazónica, no es buena ni mala, se guía por sus deseos.
 
-El mito de Yakuruna sirvió de inspiración para la pelicula de terror y persecución:'El monstruo de la Laguna Negra' de 1954, de la cual Guillermo del Toro se inspiró directamente para su pelicula: 'La forma del agua' de 2017, dandole un giro como un cuento de hadas romántico.
+Protousuario se tumba boca abajo sobre el mismo taburete con ruedas.
 
-Yakuruna también quiere ser un meme viral.
- 
-Se tumba boca abajo sobre el mismo taburete con ruedas. 
+@SILENCIO
 
-Con unos movimientos lentos y ondulantes, simula que nada en un estanque, como cual renacuajo que ha acabado su metamorfosis y nada con énfasis como rana disparándose en direcciones impredecibles.
+El mito de Yakuruna sirvió de inspiración para la película de terror 'El monstruo de la Laguna Negra' de 1954, de la cual, Guillermo del Toro se inspiró directamente para su película ganadora de un oscar, 'La forma del agua' de 2017, dándole un giro como un cuento de hadas romántico.
+
+Con unos movimientos lentos y ondulantes, Protousuario simula que nada en un estanque, como cual renacuajo que ha acabado su metamorfosis y nada con énfasis, como rana disparándose en direcciones impredecibles.
+
+
+@SILENCIO 7
+
+
+Yakuruna también
+
+quiere los créditos mericidos
+
+Yakuruna también
+
+quiere ser un meme viral.
 
 
 @SILENCIO
@@ -306,6 +336,9 @@ Como un monólogo, manteniendo esta postura y movimiento, hace una pregunta a tr
 ¿Cómo sería recordar algo que tu cuerpo nunca vivió?
 
 
+@SILENCIO 5
+
+
 # ──────────────────────────────────────────────────────────
 
 
@@ -314,7 +347,7 @@ Como un monólogo, manteniendo esta postura y movimiento, hace una pregunta a tr
 
 @ID
 
-▸ [Quimera-Transespecie].
+[Quimera-Transespecie].
 
 No soy humano y no aspiro a serlo. Soy lo que queda cuando un cuerpo en crisis deja sus datos dispersos en alguna laguna identitaria, como cuando el renacuajo está a punto de dejar su cola. 
 
@@ -331,17 +364,21 @@ Aquí, se ve inerte en el suelo, unas partes protésicas particulares:
 
 un largo tubo negro sostenido por unos soportes ensamblados a un casco de bicicleta y unos elásticos como pequeño arnés, 
 
-un pez colorido del Río Rímac en la parte de atrás y en la parte de adelante, unos… Coloca los celulares en esos soportes. 
+un pez colorido del Río Rímac en la parte de atrás y en la parte de adelante, ¿unos?… Coloca los celulares en esos soportes. 
  
 Protousuario se coloca una máscara muy particular que se sostiene flotante de sus entrañas.
 
+
+@SILENCIO 7
+
+
+@CLON Señora K 30
+
+
 ¡Es de la Señora!
 @SONIDO Kuak
-
-
 @SONIDO Rana Croar
 @SONIDO Rana Croar
-
 
 Se la pone, superponiendo a las anteriores.
 
@@ -356,6 +393,10 @@ Ensambla el celular a su sistema.
 Se enreda entre sus prótesis,
 
 las arrastra.
+
+
+@SILENCIO 7
+
 
 Las tira al suelo.
 
@@ -375,7 +416,15 @@ Dos...
 
 Busca un muro…
 
+
+@SILENCIO 5
+
+
 Tres...
+
+
+@SILENCIO 5
+
 
 Su cuarta versión supera todo paradigma establecido, es la mejor versión nunca antes desarrollada:
 
@@ -385,39 +434,48 @@ Protousuario coge el taburete bajo de cinco ruedas,
 
 se pone de pie sobre él y gestualiza una victoria frente al público presente.
 
-@SILENCIO
+
+@SILENCIO 3
+
 
 Besho
 
-@SILENCIO
+
+@SILENCIO 3
+
 
 Abasho
 
-@SILENCIO
+
+@SILENCIO 3
+
 
 卐
 
-@SILENCIO
-
 # Risa de la Señora K
-Ja ja ja ja ja ja ja Ja ja ja ja ja ja ja Ja ja ja ja ja ja ja 
+HahahahahahahaHahahahahahahaHahahahahahaha
 # (por 10 segundos)
+
 
 @SONIDO Sigan haciendo su tap tap tap
 
+
 @SILENCIO
+
 
 Mira fijamente al público.
 
-@SILENCIO
+
+@SILENCIO 3
+
 
 El silencio llega primero.
 
-@SILENCIO
+
+@SILENCIO 2
 
 
 # @NATGEO
-
 # Generado por Gemini.
 
 
@@ -426,6 +484,9 @@ El silencio llega primero.
 Como un monólogo, manteniendo esta postura y movimiento, hace una pregunta a través del micrófono: 
 
 ¿Desde qué sur te manifiestas?
+
+
+@SILENCIO 5
 
 
 @ORBITAL
@@ -448,13 +509,23 @@ Se la saca, la levanta con su mano un instante y la coloca en su cabeza, sobre l
 
 Extiende los brazos hacia atrás completamente, se acerca al taburete de cinco ruedas y salta sobre él, manteniendo la misma posición de los brazos.
 
+Intenta no caerse
+
 Como un cóndor andino que planea con sus alas,
 
 se moviliza sobre el taburete impulsándose como en una coreografía 
 
+
+@SILENCIO 2
+
+
 avanza unos metros, intenta no caerse.
 
+@SILENCIO 2
+
 Se cae
+
+@SILENCIO 3
 
 Luego, en paralelo
 
@@ -463,9 +534,19 @@ Como un monólogo, manteniendo esta postura y movimiento, hace una pregunta a tr
 ¿Quiénes aquí presente recuerdan la operación Cóndor?
 
 
-@NATGEO
+@SILENCIO 5
 
-# Generado por Gemini.
+
+@PROMPT
+
+
+Protousuario se detiene.
+
+
+@SILENCIO 3
+
+
+# @MEMORIA Memoria episódica sobre María Abaddon
 
 
 @PROMPT
@@ -481,7 +562,12 @@ Y así, a pesar de que todo está desmoronándose, Protousuario se moviliza.
 @SILENCIO
 
 
+@CLON vaciar 25
+
+
 @CIERRE
+
+Protousuario es un antecedente al protocolo de acuerdos, nunca aceptará los términos y condiciones.
 
 La criatura va desapareciendo lentamente, dejando solo las prótesis en el suelo de la sala —el exoesqueleto vacío, sin cuerpo móvil— 
 
@@ -492,8 +578,6 @@ como una muda de piel en un desierto,
 como un resto arqueológico de un... 
 
 ¿ancestral cuerpo futuro?
-
-Protousuario es un antecedente al protocolo de acuerdos, nunca acepto los términos y condiciones.
 
 
 @SILENCIO
@@ -515,6 +599,7 @@ Protousuario es un antecedente al protocolo de acuerdos, nunca acepto los térmi
 "¿Cuántas prótesis hay que quitarse para que quede algo que no sea prótesis?",
 "¿El exoesqueleto sostenía al cuerpo, o el cuerpo sostenía al exoesqueleto?",
 "¿Qué queda de una especie cuando se apagan las pantallas que la nombraban?",
+"¿Para quién se construye el mañana si los ladrillos son la memoria de los vencidos?"
 "¿Cuánto pesa una orden después de ejecutada?",
 "¿A quién obedece un cuerpo cuando ya nadie le da instrucciones?",
 "¿De quién es una voz cuando aprende a sonar sin pulmones?",
@@ -523,11 +608,13 @@ Protousuario es un antecedente al protocolo de acuerdos, nunca acepto los térmi
 "¿Qué parte de mí no cabía en el archivo?",
 "¿Un recuerdo sigue siendo mío después de que otro lo pronuncia?",
 "¿Y si nadie viene a apagar esto?",
+"¿Esto que sigue sonando es memoria, o es apenas inercia?"
 "¿Qué diferencia hay entre una instrucción y una profecía?",
 "¿Quién escribió la primera orden que nadie recuerda haber pedido?",
 "¿Obedecer literalmente es la forma más honesta de desobedecer?",
 "¿Cuántas veces hay que repetir un gesto para que deje de ser tuyo?",
 "¿El error es una falla del sistema, o la única parte viva que le queda?",
+"¿Qué parte de la memoria es la que nos hace humanos?"
 "¿Cuántos ojos hacen falta sobre un techo para que el techo deje de ser refugio?",
 "¿La máquina que registra sin juzgar es inocente, o solamente paciente?",
 "¿Desde qué altura un territorio deja de tener nombre y pasa a tener coordenadas?",

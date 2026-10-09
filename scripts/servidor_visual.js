@@ -28,7 +28,7 @@
 import express from 'express';
 import { WebSocketServer } from 'ws';
 import { createServer } from 'node:http';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { networkInterfaces } from 'node:os';
@@ -74,6 +74,17 @@ app.use('/clon-img', express.static(join(RAIZ, 'CLON TRANSESPECIE'), {
   fallthrough: true,
 }));
 
+// La lista de esa carpeta. El clon la pide al arrancar: así una imagen nueva
+// o renombrada entra sola, sin tocar clon.html (julix → jvlix, Yakuruna…).
+// Las maquetas jvlix-transespecie las descarta el propio clon.
+app.get('/clon-lista', (req, res) => {
+  try {
+    res.json(readdirSync(join(RAIZ, 'CLON TRANSESPECIE')).filter((n) => /\.png$/i.test(n)));
+  } catch {
+    res.json([]);
+  }
+});
+
 const server = createServer(app);
 const wss = new WebSocketServer({ server });
 const clientes = new Set();
@@ -90,6 +101,9 @@ wss.on('connection', (ws) => {
   enviarA(ws, 'salud', { modo: ultimoEstado.salud });
   if (ultimoEstado.posiciones) enviarA(ws, 'posiciones', ultimoEstado.posiciones);
   if (ultimoEstado.territorio) enviarA(ws, 'territorio', ultimoEstado.territorio);
+  // El rumbo también: una pantalla que se recarga a media función recupera la
+  // rosa de los vientos y el clon recupera su integridad (AUTORIZADO / DESPLAZADO).
+  if (ultimoEstado.rumbo) enviarA(ws, 'rumbo', ultimoEstado.rumbo);
   if (ultimoEstado.secuencia) enviarA(ws, 'secuencia', ultimoEstado.secuencia);
   if (ultimoEstado.deriva) enviarA(ws, 'deriva', { activa: true });
   if (ultimoEstado.control) enviarA(ws, 'control_estado', ultimoEstado.control);
@@ -170,6 +184,7 @@ app.post('/evento', (req, res) => {
   }
 
   if (tipo === 'afecto' && datos?.estado) ultimoEstado.afecto = datos.estado;
+  if (tipo === 'rumbo' && datos?.estado) ultimoEstado.rumbo = datos;
   // La secuencia completa se guarda: un celular que se reconecta a media
   // función recupera de golpe todos los textos que faltan.
   if (tipo === 'secuencia') {
