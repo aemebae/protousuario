@@ -1,5 +1,5 @@
 {
-  "_uso": "GENERADO por scripts/compilar_guion.js el 2026-10-09 06:29 desde instrucciones_permanentes.txt. NO EDITAR A MANO.",
+  "_uso": "GENERADO por scripts/compilar_guion.js el 2026-10-10 08:55 desde instrucciones_permanentes.txt. NO EDITAR A MANO.",
   "_tipos": "id_agente · orbital(gemini) · prompt(tuyo) · narracion(gemini) · pregunta(tuya) · memoria(gemini)",
   "_avanzar": "cada bloque espera un AVANZAR del celular",
   "agentes": [
@@ -25,7 +25,7 @@
         },
         {
           "tipo": "id_agente",
-          "texto": "▸ Soy [Donald-Prompt] tu agente de IA autoritario supremacista."
+          "texto": "Soy [Donald-Prompt] tu agente de IA autoritario supremacista."
         },
         {
           "tipo": "id_agente",
@@ -37,7 +37,11 @@
         },
         {
           "tipo": "id_agente",
-          "texto": "Esta performance no es gratuita. Se les cobrará aranceles con lo más valioso del momento: ¡Dame contenido!"
+          "texto": "Esta performance no es gratuita. Se les cobrará aranceles con lo más valioso del momento:"
+        },
+        {
+          "tipo": "id_agente",
+          "texto": "¡Dame contenido!"
         },
         {
           "tipo": "id_agente",
@@ -65,7 +69,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "La gente los agarra al azar."
+          "texto": "La gente las coge al azar."
         },
         {
           "tipo": "prompt",
@@ -131,7 +135,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "wan"
+          "texto": "guan"
         },
         {
           "tipo": "sonido",
@@ -206,7 +210,7 @@
       "bloques": [
         {
           "tipo": "id_agente",
-          "texto": "▸ Soy [Eco-Satelital]"
+          "texto": "Soy [Eco-Satelital]"
         },
         {
           "tipo": "id_agente",
@@ -278,7 +282,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "¿Cómo sería dejar de ser una antena bio-lógica controlada por las elites PDF de poder global?"
+          "texto": "¿Cómo sería dejar de ser una antena bio-lógica controlada por las elites PDF (Pe, Do, Fi, Las) de poder global?"
         },
         {
           "tipo": "silencio",
@@ -353,7 +357,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "Yakuruna también,"
+          "texto": "Yakuruna también"
         },
         {
           "tipo": "prompt",
@@ -361,7 +365,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "Yakuruna también,"
+          "texto": "Yakuruna también"
         },
         {
           "tipo": "prompt",
@@ -394,7 +398,7 @@
       "bloques": [
         {
           "tipo": "id_agente",
-          "texto": "▸ [Quimera-Transespecie]."
+          "texto": "[Quimera-Transespecie]."
         },
         {
           "tipo": "id_agente",
@@ -583,7 +587,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "Ja ja ja ja ja ja ja Ja ja ja ja ja ja ja Ja ja ja ja ja ja ja"
+          "texto": "HahahahahahahaHahahahahahahaHahahahahahaha"
         },
         {
           "tipo": "sonido",
@@ -718,6 +722,10 @@
         },
         {
           "tipo": "prompt",
+          "texto": "Ahora, Protousuario le rinde un homenaje a María Luisa, conocido como Maria Abaddon"
+        },
+        {
+          "tipo": "prompt",
           "texto": "Y así, a pesar de que todo está desmoronándose, Protousuario se moviliza."
         },
         {
@@ -780,6 +788,10 @@
     {
       "tipo": "pregunta",
       "texto": "¿Qué diferencia hay entre un algoritmo y un dictador?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Les artistas de esta epoca también podrian ser materia a explotar?"
     },
     {
       "tipo": "pregunta",

@@ -1,5 +1,5 @@
 {
-  "_uso": "GENERADO por scripts/compilar_guion.js el 2026-10-09 07:42 desde instrucciones_permanentes.txt. NO EDITAR A MANO.",
+  "_uso": "GENERADO por scripts/compilar_guion.js el 2026-10-10 08:56 desde instrucciones_permanentes.txt. NO EDITAR A MANO.",
   "_tipos": "id_agente · orbital(gemini) · prompt(tuyo) · narracion(gemini) · pregunta(tuya) · memoria(gemini)",
   "_avanzar": "cada bloque espera un AVANZAR del celular",
   "agentes": [
@@ -135,7 +135,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "wan"
+          "texto": "guan"
         },
         {
           "tipo": "sonido",
@@ -282,7 +282,7 @@
         },
         {
           "tipo": "prompt",
-          "texto": "¿Cómo sería dejar de ser una antena bio-lógica controlada por las elites PDF de poder global?"
+          "texto": "¿Cómo sería dejar de ser una antena bio-lógica controlada por las elites PDF (Pe, Do, Fi, Las) de poder global?"
         },
         {
           "tipo": "silencio",
@@ -722,6 +722,10 @@
         },
         {
           "tipo": "prompt",
+          "texto": "Ahora, Protousuario le rinde un homenaje a María Luisa, conocido por todes como Maria Abaddon"
+        },
+        {
+          "tipo": "prompt",
           "texto": "Y así, a pesar de que todo está desmoronándose, Protousuario se moviliza."
         },
         {
@@ -784,6 +788,10 @@
     {
       "tipo": "pregunta",
       "texto": "¿Qué diferencia hay entre un algoritmo y un dictador?"
+    },
+    {
+      "tipo": "pregunta",
+      "texto": "¿Les artistas de esta epoca también podrian ser materia a explotar?"
     },
     {
       "tipo": "pregunta",

@@ -141,8 +141,6 @@ Alguien lo agarra.
 
 @NATGEO
 
-# Generado por Gemini.
-
 
 @PROMPT
 
@@ -154,7 +152,7 @@ three
 
 two
 
-wan
+guan
 
 @SONIDO WOW
 
@@ -267,14 +265,12 @@ Sigue con movimientos lentos que asemejan al de las piernas de los humanos al pe
 
 @NATGEO
 
-# Generado por Gemini.
-
 
 @PROMPT
 
 Como un monólogo, manteniendo esta postura y movimiento, hace una pregunta a través del micrófono: 
  
-¿Cómo sería dejar de ser una antena bio-lógica controlada por las elites PDF de poder global?
+¿Cómo sería dejar de ser una antena bio-lógica controlada por las elites PDF (Pe, Do, Fi, Las) de poder global?
  
 @SILENCIO 5
 
@@ -586,6 +582,7 @@ como un resto arqueológico de un...
 "¿A quién le pertenece el futuro si el pasado ya fue capturado, procesado y modulado?",
 "¿El poder tiene cara propia o siempre necesita robar la de otro?",
 "¿Qué diferencia hay entre un algoritmo y un dictador?",
+"¿Les artistas de esta epoca también podrian ser materia a explotar?",
 "¿Y si nadie viene a apagar esto?",
 "¿Cuántas especies hay que extinguir para que una sola sobreviva?",
 "¿En qué momento el monstruo deja de ser disfraz?",
