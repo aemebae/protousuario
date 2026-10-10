@@ -388,7 +388,7 @@ Protousuario se coloca una máscara muy particular que se sostiene flotante de s
 @SILENCIO 7
 
 
-@CLON Señora K 30
+@CLON Señora K 20
 
 
 ¡Es de la Señora!
