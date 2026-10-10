@@ -40,7 +40,14 @@ const MOSTRAR_BORDES = true;       // fronteras de países sobre la textura
 // 3.4 px. Con la textura NASA puesta el planeta es MUCHO más claro que el
 // modo mapa oscuro de antes, así que los puntos ámbar necesitan más cuerpo
 // para leerse. Si los quieres finos otra vez, baja a 2.2.
-const TAM_SATELITE   = 3.4;        // px del punto de los satélites de fondo
+let TAM_SATELITE     = 3.4;        // px del punto de los satélites de fondo
+// ABRAZO: cuánto se pega la nube al planeta. 1 = la altura de siempre;
+// 0.4 = todos los satélites bajan a ras del suelo y lo envuelven como una
+// piel. ALTURA_MAX es el techo (los geoestacionarios, a 36.000 km, quedan
+// ahí). Las tres cosas se ajustan desde el servidor, sin tocar este archivo:
+//   $env:TAM_SATELITE=2.6 ; $env:ABRAZO=0.5 ; node scripts\servidor_visual.js
+let ABRAZO           = 1;
+let ALTURA_MAX       = 0.45;
 // Cuántos satélites dibuja el navegador. La capa de partículas los pinta
 // TODOS en una sola llamada de dibujo, así que 1000 cuesta prácticamente lo
 // mismo que 200: el límite real es cuántos manda el servidor (MAX_SATELITES).
@@ -206,6 +213,7 @@ function centroideLat(f){
 // firma = huella del estado visual. Solo repinta si CAMBIÓ algo. Antes se
 // reconstruían 250 polígonos extruidos en cada tic de satélite: eso, dos
 // veces por segundo, es un buen pedazo del lag.
+let firmaPoligonosGrande = '';
 let firmaPoligonos = '';
 function pintarPoligonos(){
   if (!paises.length) return;
@@ -214,9 +222,17 @@ function pintarPoligonos(){
   // detalle se rehace cuando el satélite se mueve lo suficiente, no en cada tic.
   const celda = protagonista
     ? `${Math.round(protagonista.lat / 5)}:${Math.round(protagonista.lon / 5)}` : '-';
-  const firma = `${estadoActual}|${paisIdx}|${paisNombre}|${hayTextura}|${celda}`;
+  // v16: DOS firmas. El globo GRANDE (242 países) solo se rehace cuando cambia
+  // el país resaltado, el estado o la textura. Antes también se rehacía cada
+  // vez que el satélite cambiaba de celda (~cada minuto): un tirón de cientos
+  // de milisegundos en tu laptop que, con el texto viejo, atrasaba la escritura.
+  // El plano detalle (unos 30 países) sí sigue al satélite celda a celda.
+  const firmaGrande = `${estadoActual}|${paisIdx}|${paisNombre}|${hayTextura}`;
+  const firma = `${firmaGrande}|${celda}`;
   if (firma === firmaPoligonos) return;
+  const rehacerGrande = firmaGrande !== firmaPoligonosGrande;
   firmaPoligonos = firma;
+  firmaPoligonosGrande = firmaGrande;
 
   // ── AQUÍ ESTABA EL FALLO DEL PLANO DETALLE ──
   // El servidor manda el país EN ESPAÑOL ("Brasil", "Sudán del Sur": sale del
@@ -236,25 +252,25 @@ function pintarPoligonos(){
 
   const datos = MOSTRAR_BORDES ? paises : paises.filter(esResaltado);
 
-  globo.polygonsData(datos)
-    // ── EL ARREGLO DE GROENLANDIA ──
-    // Un polígono es un contorno plano (lat/lon) que hay que "pegar" sobre una
-    // esfera. Para eso se parte en triángulos. Si los triángulos son grandes,
-    // sus caras rectas se hunden POR DEBAJO de la superficie curva y la esfera
-    // se los come: eso son las astillas negras y los agujeros que viste, y por
-    // eso pasaba justo en Groenlandia, que es enorme y tiene pocos vértices.
-    // Esta línea obliga a subdividir cada 1,5° en vez de cada 5°: más
-    // triángulos, más pequeños, y la tapa abraza la curva sin hundirse.
-    .polygonCapCurvatureResolution(1.5)
-    .polygonCapColor((f)=> {
-      if (esResaltado(f)) return hex(p.accent) + (hayTextura ? '55' : '99');
-      return hayTextura ? 'rgba(0,0,0,0)' : colorTierra(f);
-    })
-    .polygonSideColor(()=> 'rgba(0,0,0,0.12)')
-    .polygonStrokeColor((f)=> esResaltado(f) ? hex(p.accent) : hex(p.grid))
-    // Un pelo más alto que antes: aleja la tapa de la esfera y elimina el
-    // parpadeo entre las dos superficies (lo que se llama "z-fighting").
-    .polygonAltitude((f)=> esResaltado(f) ? 0.016 : 0.005);
+  if (rehacerGrande)   globo.polygonsData(datos)
+      // ── EL ARREGLO DE GROENLANDIA ──
+      // Un polígono es un contorno plano (lat/lon) que hay que "pegar" sobre una
+      // esfera. Para eso se parte en triángulos. Si los triángulos son grandes,
+      // sus caras rectas se hunden POR DEBAJO de la superficie curva y la esfera
+      // se los come: eso son las astillas negras y los agujeros que viste, y por
+      // eso pasaba justo en Groenlandia, que es enorme y tiene pocos vértices.
+      // Esta línea obliga a subdividir cada 1,5° en vez de cada 5°: más
+      // triángulos, más pequeños, y la tapa abraza la curva sin hundirse.
+      .polygonCapCurvatureResolution(1.5)
+      .polygonCapColor((f)=> {
+        if (esResaltado(f)) return hex(p.accent) + (hayTextura ? '55' : '99');
+        return hayTextura ? 'rgba(0,0,0,0)' : colorTierra(f);
+      })
+      .polygonSideColor(()=> 'rgba(0,0,0,0.12)')
+      .polygonStrokeColor((f)=> esResaltado(f) ? hex(p.accent) : hex(p.grid))
+      // Un pelo más alto que antes: aleja la tapa de la esfera y elimina el
+      // parpadeo entre las dos superficies (lo que se llama "z-fighting").
+      .polygonAltitude((f)=> esResaltado(f) ? 0.016 : 0.005);
 
   // ── PLANO DETALLE: el terreno SIEMPRE ──
   // Antes el globo pequeño solo dibujaba el país resaltado. Cuando el satélite
@@ -296,58 +312,56 @@ function centroideAprox(f){
 // como un único THREE.Points: un draw call para miles de satélites.
 // Marcamos cada conjunto con `__prota` para poder darle color y tamaño
 // distintos sin recorrer partícula por partícula.
-function pintarSatelites(){
-  const p = paleta();
-
-  const otros = satelites.filter(s => !s.esProtagonista);
-  otros.__prota = false;
-
-  const prota = protagonista
-    ? [{lat:protagonista.lat, lon:protagonista.lon, altKm:protagonista.altKm}]
-    : [];
-  prota.__prota = true;
-  // El satélite del SEGUNDO territorio: mismo color, un poco más chico.
-  // Dos ojos a la vez, uno sobre cada territorio que nombra el agente.
-  const protaB = protagonistaB
-    ? [{lat:protagonistaB.lat, lon:protagonistaB.lon, altKm:protagonistaB.altKm}]
-    : [];
-  protaB.__protaB = true;
-
-  globo.particlesData([otros, prota, protaB])
-    .particleLat('lat').particleLng('lon')
-    .particleAltitude(d => Math.min(0.45, (d.altKm ?? 500) / 12000))
+// ── Capas de puntos y radar: se CONFIGURAN una vez; cada tic solo se mueven ──
+// v16: antes, en cada tic (0,9 s) se volvían a armar los anillos del radar
+// desde cero. Un pulso tarda 1,4 s en expandirse: el radar se reiniciaba
+// antes de completar uno solo, y a veces casi no se veía. Ahora los anillos
+// son SIEMPRE los mismos objetos: solo cambian de lugar, y el pulso sigue.
+const altSat = (d) => Math.min(ALTURA_MAX, (d.altKm ?? 500) / 12000 * ABRAZO);
+const anilloA = { lat: 0, lng: 0 }, anilloB = { lat: 0, lng: 0 };
+let capasListas = false;
+function configurarCapas(){
+  globo.particleLat('lat').particleLng('lon').particleAltitude(altSat)
     // sizeAttenuation(false) = el tamaño se mide en PÍXELES y no encoge con
-    // la distancia. Es lo que hace que se lean como puntos de radar y no
-    // como bolitas 3D. Si los ves muy chicos, sube TAM_SATELITE.
+    // la distancia: se leen como puntos de radar, no como bolitas 3D.
     .particlesSizeAttenuation(false)
     .particlesSize(set => set.__prota ? TAM_PROTA : set.__protaB ? TAM_PROTA * 0.8 : TAM_SATELITE)
-    .particlesColor(set => (set.__prota || set.__protaB) ? hex(p.accent) : AMBAR);
-
-  // El globo pequeño NO recibe la nube: solo el protagonista. Era el otro
-  // 50% del lag (todo se dibujaba dos veces).
-  const protaZoom = prota.slice(); protaZoom.__prota = true;
-  globoZoom.particlesData([protaZoom])
-    .particleLat('lat').particleLng('lon')
-    .particleAltitude(d => Math.min(0.45, (d.altKm ?? 500) / 12000))
-    .particlesSizeAttenuation(false)
-    .particlesSize(() => TAM_PROTA)
-    .particlesColor(() => hex(p.accent));
-
-  // ── EL RADAR ──
+    .particlesColor(set => (set.__prota || set.__protaB) ? hex(paleta().accent) : AMBAR);
+  globoZoom.particleLat('lat').particleLng('lon').particleAltitude(altSat)
+    .particlesSizeAttenuation(false).particlesSize(() => TAM_PROTA)
+    .particlesColor(() => hex(paleta().accent));
   // ringAltitude por ENCIMA de la capa de países (0.014) y de la esfera.
-  // Ahí estaba el bug: el anillo se dibujaba por debajo y parecía salir
-  // "del otro lado" del globo.
-  const anillo = protagonista ? [{lat:protagonista.lat, lng:protagonista.lon}] : [];
-  // En el globo grande, un radar también sobre el segundo territorio.
-  const anillos = protagonistaB ? [...anillo, {lat:protagonistaB.lat, lng:protagonistaB.lon}] : anillo;
   for (const g of [globo, globoZoom]) {
-    g.ringsData(g === globo ? anillos : anillo).ringLat('lat').ringLng('lng')
-     .ringAltitude(0.022)
-     .ringColor(()=> hex(p.accent))
+    g.ringLat('lat').ringLng('lng').ringAltitude(0.022)
+     .ringColor(() => hex(paleta().accent))
      .ringMaxRadius(g === globo ? 4 : 9)
      .ringPropagationSpeed(2).ringRepeatPeriod(1400)
      .ringResolution(72);
   }
+  capasListas = true;
+}
+
+function pintarSatelites(){
+  if (!capasListas) configurarCapas();
+  const otros = satelites.filter(s => !s.esProtagonista);
+  const prota = protagonista ? [{lat:protagonista.lat, lon:protagonista.lon, altKm:protagonista.altKm}] : [];
+  prota.__prota = true;
+  // El satélite del SEGUNDO territorio: mismo color, un poco más chico.
+  // Dos ojos a la vez, uno sobre cada territorio que nombra el agente.
+  const protaB = protagonistaB ? [{lat:protagonistaB.lat, lon:protagonistaB.lon, altKm:protagonistaB.altKm}] : [];
+  protaB.__protaB = true;
+  globo.particlesData([otros, prota, protaB]);
+  // El globo pequeño NO recibe la nube: solo el protagonista.
+  const protaZoom = prota.slice(); protaZoom.__prota = true;
+  globoZoom.particlesData([protaZoom]);
+
+  // ── EL RADAR: los mismos anillos, movidos de lugar ──
+  if (protagonista) { anilloA.lat = protagonista.lat; anilloA.lng = protagonista.lon; }
+  if (protagonistaB) { anilloB.lat = protagonistaB.lat; anilloB.lng = protagonistaB.lon; }
+  // Misma lista de objetos en cada tic: three-globe solo actualiza su posición.
+  const uno = protagonista ? [anilloA] : [];
+  globo.ringsData(protagonistaB ? [...uno, anilloB] : uno);
+  globoZoom.ringsData(uno);
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -414,7 +428,6 @@ const VEL = 22;                        // ms por carácter
 // Ahora la máquina de escribir consulta `pausado` en cada tic: si está activa,
 // el tic no avanza ni un carácter y no pierde el sitio. Al reanudar, sigue
 // exactamente donde se quedó, aunque sea a mitad de una palabra.
-let escribiendo = null;
 let pausado = false;
 let segActivo = null;   // { div, cuerpo, texto, i }
 let promptYaRotulado = false;
@@ -462,12 +475,16 @@ function sonarExterno(archivo){
   if (!archivo) return null;
   const a = new Audio('/sonido/' + encodeURIComponent(archivo));
   a.preload = 'auto';
+  a.defaultPlaybackRate = 1;
   a.playbackRate = 1;            // tus sonidos NO cambian con la velocidad de voz
+  a.__externo = true;            // ← para que el botón de velocidad no los toque
   vozActual = a;
   a.play().catch((e) => {
+    a.__fallo = true;
     if (!audioDesbloqueado) mostrarAvisoAudio();
     console.warn('[sonido]', e.message);
   });
+  a.addEventListener('error', () => { a.__fallo = true; });
   return a;
 }
 
@@ -476,29 +493,175 @@ function sonar(archivo){
   if (!archivo) return null;
   const a = new Audio('/audio/' + archivo);
   a.preload = 'auto';
+  // defaultPlaybackRate además de playbackRate: si el navegador recarga el
+  // audio, vuelve a la velocidad por defecto. Así la velocidad no se pierde.
+  a.defaultPlaybackRate = velocidadVoz;
   a.playbackRate = velocidadVoz;
   vozActual = a;
   a.play().catch((e) => {
+    a.__fallo = true;
     if (!audioDesbloqueado) mostrarAvisoAudio();
     console.warn('[voz] no se pudo reproducir:', e.message);
   });
+  a.addEventListener('error', () => { a.__fallo = true; });
   return a;
 }
 
-/** Reparte la duración del mp3 entre las letras del texto. */
-function sincronizarConVoz(audio, texto){
-  if (!audio || !texto?.length) return;
-  const ajustar = () => {
-    const dur = audio.duration;
-    if (!isFinite(dur) || dur <= 0) return;
-    // ×0.92: el texto termina un pelín antes que la voz, nunca después.
-    // Se divide por la velocidad: si la voz va a 1,5×, el texto también.
-    const porLetra = Math.min(90, Math.max(8,
-      (dur * 1000 * 0.92) / texto.length / Math.max(0.25, velocidadVoz)));
-    arrancarEscritura(porLetra);
-  };
-  if (audio.readyState >= 1) ajustar();
-  else audio.addEventListener('loadedmetadata', ajustar, { once:true });
+// ═══════════════════════════════════════════════════════════════════════
+//  EL TEXTO OBEDECE AL RELOJ DE LA VOZ  (v16, 10-10)
+//
+//  ANTES: al empezar cada bloque se calculaba "X milisegundos por letra" y un
+//  temporizador escribía una letra cada X ms. Ese temporizador NO miraba la
+//  voz. Si el navegador se cargaba (el globo, la nube de satélites, el clon
+//  animándose a la vez), los tics se atrasaban y el texto se quedaba atrás
+//  — y nunca recuperaba. Al cambiar la velocidad se recalculaba, pero sin
+//  corregir lo ya atrasado. Eso era lo que veías: texto lento, desfasado.
+//
+//  AHORA: cada 33 ms se mira EN QUÉ SEGUNDO VA LA VOZ (audio.currentTime) y se
+//  muestran exactamente las letras que corresponden a ese segundo. Si el
+//  navegador se atrasa, en el tic siguiente se pone al día de un salto. La
+//  velocidad, la PAUSA y REPETIR quedan sincronizadas solas, porque el audio
+//  ya las aplica: el texto solo lo sigue.
+//
+//  Las comas y los puntos pesan más que una letra: la voz se detiene ahí, y
+//  el texto también. Sin audio (no hay mp3, o el navegador no lo deja sonar),
+//  se escribe con un reloj propio que respeta la velocidad y la pausa.
+// ═══════════════════════════════════════════════════════════════════════
+const ARRANQUE_S = 0.08;          // la voz tarda un instante en sonar
+const MS_POR_LETRA = 62;          // ritmo de lectura en voz alta, sin audio (a 1×)
+let canalFin = null;              // el WebSocket, para avisar "terminó la voz"
+
+/** Peso acumulado de cada letra: la voz respira DESPUÉS de cada signo. */
+function pesosDe(texto){
+  const acc = new Float64Array(texto.length + 1);
+  let suma = 0;
+  for (let i = 0; i < texto.length; i++) {
+    const antes = i ? texto[i - 1] : '';
+    let w = texto[i] === ' ' ? 0.9 : 1;
+    if (antes === ',') w += 3.5;
+    else if ('.;:?!…'.includes(antes)) w += 6;
+    else if (antes === '\n') w += 5;
+    suma += w; acc[i + 1] = suma;
+  }
+  return acc;
+}
+/** Cuántas letras corresponden a una fracción (0–1) del tiempo de la voz. */
+function letrasPara(acc, f){
+  const n = acc.length - 1;
+  if (!(f > 0)) return 0;
+  if (f >= 1) return n;
+  const meta = f * acc[n];
+  let lo = 0, hi = n;
+  while (lo < hi) { const m = (lo + hi + 1) >> 1; if (acc[m] <= meta) lo = m; else hi = m - 1; }
+  return lo;
+}
+/** Fracción de la voz ya dicha, según el reloj del propio audio. */
+function fraccionDeAudio(a){
+  const dur = a.duration;
+  if (!isFinite(dur) || dur <= 0) return null;
+  // termina un pelín antes que la voz (nunca después): ElevenLabs deja un
+  // respiro de silencio al final de cada mp3.
+  const fin = Math.max(ARRANQUE_S + 0.25, dur - Math.min(0.35, dur * 0.06));
+  return (a.currentTime - ARRANQUE_S) / (fin - ARRANQUE_S);
+}
+/** Prepara el reloj de escritura de un segmento recién llegado (o repetido). */
+function prepararEscritura(s, audio, durMs){
+  s.audio = audio || null;
+  s.pesos = pesosDe(s.texto || '');
+  s.i = 0; s.completo = !(s.texto && s.texto.length);
+  s.inicio = performance.now(); s.ultimoTic = s.inicio; s.relojMs = 0;
+  s.durMs = durMs > 0 ? durMs : Math.max(1600, (s.texto || '').length * MS_POR_LETRA);
+  s.finAvisado = false;
+  if (audio) {
+    // El aviso de "terminó la voz" sale del FIN REAL del audio: el orquestador
+    // pasa al bloque siguiente con eso, no con una estimación.
+    audio.addEventListener('ended', () => { if (segActivo === s) avisarFin(s); }, { once: true });
+  }
+  if (s.completo) { s.cuerpo.classList.remove('cursor'); }
+}
+function avisarFin(s){
+  if (s.finAvisado || !s.token) return;
+  s.finAvisado = true;
+  try { canalFin?.readyState === 1 && canalFin.send(JSON.stringify({ tipo: 'fin_bloque', token: s.token })); } catch {}
+  // Si este bloque es donde termina la música de fondo, se corta AQUÍ, en la
+  // última palabra (ver FONDO más abajo).
+  if (s.cortarFondo) fondoParar(40);
+}
+/** El tic: pone en pantalla las letras que tocan en este instante. */
+function ticEscritura(){
+  const s = segActivo;
+  if (!s) return;
+  const ahora = performance.now();
+  const dt = ahora - s.ultimoTic; s.ultimoTic = ahora;
+  if (s.completo) return;
+  let f = null;
+  const a = s.audio;
+  if (a && !a.__fallo) {
+    if (a.ended) f = 1;
+    else {
+      f = fraccionDeAudio(a);
+      // ¿El audio nunca arrancó? (red, bloqueo del navegador) → reloj propio.
+      if (!pausado && a.paused && a.currentTime === 0 && ahora - s.inicio > 1800) a.__fallo = true;
+    }
+  }
+  if (!a || a.__fallo) {
+    if (!pausado) s.relojMs += dt * velocidadVoz;
+    f = s.relojMs / s.durMs;
+  }
+  if (f == null) return;                 // el audio aún no sabe cuánto dura
+  const n = letrasPara(s.pesos, f);
+  if (n > s.i) {                         // solo avanza: nunca borra letras
+    s.i = n;
+    s.cuerpo.textContent = s.texto.slice(0, n);
+    const corrido = el('corrido');
+    corrido.scrollTop = corrido.scrollHeight;
+  }
+  if (s.i >= s.texto.length) {
+    s.completo = true;
+    s.cuerpo.classList.remove('cursor');
+    // sin audio, el fin del bloque es el fin del texto
+    if (!a || a.__fallo) avisarFin(s);
+  }
+}
+setInterval(ticEscritura, 33);
+
+// ═══════════════════════════════════════════════════════════════════════
+//  FONDO — música que suena DEBAJO de la voz  (@FONDO en el guion)
+//  Es un canal aparte: la voz y tus @SONIDO siguen en el suyo, encima.
+//  Suena bajo (FONDO_VOLUMEN o el % escrito en la marca) para que la voz se
+//  entienda. Si la canción se acaba antes de tiempo, vuelve a empezar: nunca
+//  queda en silencio antes del corte. El corte es seco (40 ms, solo para que
+//  no chasquee el parlante) y cae en la última palabra del bloque marcado.
+//  PAUSA la congela con todo lo demás. Al clon no le llega: su boca sigue a
+//  la voz, no a la canción.
+// ═══════════════════════════════════════════════════════════════════════
+let fondo = null;   // { a, id, vol }
+function rampaVolumen(a, hasta, ms, alTerminar){
+  const desde = a.volume, pasos = Math.max(1, Math.round(ms / 10));
+  let k = 0;
+  const iv = setInterval(() => {
+    k++;
+    try { a.volume = Math.min(1, Math.max(0, desde + (hasta - desde) * (k / pasos))); } catch {}
+    if (k >= pasos) { clearInterval(iv); alTerminar?.(); }
+  }, 10);
+}
+function fondoIniciar(d){
+  if (fondo && fondo.id === d.id) return;           // ya suena este mismo
+  fondoParar(300);
+  const a = new Audio('/sonido/' + encodeURIComponent(d.archivo));
+  a.preload = 'auto';
+  a.loop = d.bucle !== false;
+  a.volume = 0;
+  const vol = Math.min(1, Math.max(0.02, Number(d.volumen) || 0.22));
+  fondo = { a, id: d.id, vol };
+  const sonar = () => a.play().then(() => rampaVolumen(a, vol, 700))
+    .catch((e) => { if (!audioDesbloqueado) mostrarAvisoAudio(); console.warn('[fondo]', e.message); });
+  if (!pausado) sonar(); else fondo.pendiente = sonar;
+}
+function fondoParar(msFade = 40){
+  if (!fondo) return;
+  const a = fondo.a; fondo = null;
+  rampaVolumen(a, 0, msFade, () => { try { a.pause(); a.removeAttribute('src'); a.load(); } catch {} });
 }
 
 /** Congela / descongela la escena entera: texto, cursor y audio. */
@@ -515,6 +678,11 @@ function aplicarPausa(activa) {
     if (pausado) { try { a.pause(); } catch {} }
     else { a.play?.().catch(() => {}); }
   });
+  if (fondo) {
+    if (pausado) { try { fondo.a.pause(); } catch {} }
+    else if (fondo.pendiente) { const f = fondo.pendiente; fondo.pendiente = null; f(); }
+    else { fondo.a.play?.().catch(() => {}); }
+  }
 }
 
 const ROTULO = {
@@ -540,6 +708,8 @@ const ROTULO = {
       color:var(--text); text-shadow:var(--glow);
       border:none; padding:0;
     }
+    /* Tus saltos de línea se respetan (memorias y narraciones en verso). */
+    .seg .cuerpo{ white-space: pre-line; }
     /* PAUSA — visible pero sin gritar. Si el sistema está detenido a propósito,
        tiene que notarse; si no, parece colgado. */
     html[data-pausa="1"] .panel-texto{opacity:.55;}
@@ -559,23 +729,15 @@ const ROTULO = {
 // para que los logs y scripts antiguos no rompan la pantalla.
 const normalizar = (t) => (t === 'reflexion' ? 'narracion' : t);
 
-/** Arranca (o retoma) la máquina de escribir sobre el segmento activo. */
-function arrancarEscritura(velocidad = VEL){
-  clearInterval(escribiendo);
-  const corrido = el('corrido');
-  escribiendo = setInterval(()=>{
-    if (pausado) return;              // ← congelado: no avanza, no pierde el sitio
-    const s = segActivo; if(!s) { clearInterval(escribiendo); return; }
-    s.cuerpo.textContent = s.texto.slice(0, ++s.i);
-    corrido.scrollTop = corrido.scrollHeight;
-    if(s.i >= s.texto.length){
-      clearInterval(escribiendo);
-      s.cuerpo.classList.remove('cursor');
-    }
-  }, velocidad);
+/** Compatibilidad: completar de golpe el segmento visible. */
+function completarSegmento(s){
+  if (!s || s.completo) return;
+  s.i = s.texto.length; s.completo = true;
+  s.cuerpo.textContent = s.texto;
+  s.cuerpo.classList.remove('cursor');
 }
 
-function nuevoSegmento(tipoCrudo, texto, archivoVoz, sonidoExterno){
+function nuevoSegmento(tipoCrudo, texto, archivoVoz, sonidoExterno, extra = {}){
   const tipo = normalizar(tipoCrudo);
   const corrido = el('corrido');
 
@@ -594,22 +756,18 @@ function nuevoSegmento(tipoCrudo, texto, archivoVoz, sonidoExterno){
     && texto && segActivo.texto === texto
     && (segActivo.sonido ?? null) === (sonidoExterno ?? null);
   if (mismoBloque) {
-    segActivo.i = 0;
     segActivo.cuerpo.textContent = '';
     segActivo.cuerpo.classList.add('cursor');
+    segActivo.token = extra.token ?? null;
+    segActivo.cortarFondo = !!extra.cortarFondo;
     const a = segActivo.sonido ? sonarExterno(segActivo.sonido)
                                : sonar(archivoVoz ?? segActivo.voz);   // REPETIR
-    arrancarEscritura();
-    sincronizarConVoz(a, texto);
+    prepararEscritura(segActivo, a, extra.dur);
     return;
   }
 
   // Cierra de golpe el segmento anterior en vez de truncarlo a medias.
-  if (segActivo && segActivo.i < segActivo.texto.length) {
-    clearInterval(escribiendo);
-    segActivo.cuerpo.textContent = segActivo.texto;
-    segActivo.cuerpo.classList.remove('cursor');
-  }
+  completarSegmento(segActivo);
   corrido.querySelectorAll('.seg.activo').forEach(n=>n.classList.remove('activo'));
 
   const div = document.createElement('div');
@@ -624,15 +782,14 @@ function nuevoSegmento(tipoCrudo, texto, archivoVoz, sonidoExterno){
     (rotulo ? `<span class="rotulo">${rotulo}</span>` : '') +
     `<span class="cuerpo cursor"></span>`;
   corrido.appendChild(div);
-  segActivo = { div, cuerpo: div.querySelector('.cuerpo'), texto, i: 0,
-                voz: archivoVoz, sonido: sonidoExterno };
+  segActivo = { div, cuerpo: div.querySelector('.cuerpo'), texto: texto || '', i: 0,
+                voz: archivoVoz, sonido: sonidoExterno,
+                token: extra.token ?? null, cortarFondo: !!extra.cortarFondo };
   const a = sonidoExterno ? sonarExterno(sonidoExterno) : sonar(archivoVoz);
-  arrancarEscritura();
-  sincronizarConVoz(a, texto);
+  prepararEscritura(segActivo, a, extra.dur);
 }
 
 function limpiarPantalla(){
-  clearInterval(escribiendo);
   if (vozActual) { try { vozActual.pause(); } catch {} vozActual = null; }
   segActivo = null;
   el('corrido').innerHTML = '';
@@ -655,9 +812,25 @@ function mostrarTerritorio(d){
   pintarPoligonos();
 }
 
+/** Densidad de la nube, ajustada desde el servidor ($env:TAM_SATELITE, $env:ABRAZO…). */
+function aplicarConfigEscena(d){
+  if (Number(d.tamSatelite) > 0) TAM_SATELITE = Number(d.tamSatelite);
+  if (Number(d.abrazo) > 0) ABRAZO = Number(d.abrazo);
+  if (Number(d.alturaMax) > 0) ALTURA_MAX = Number(d.alturaMax);
+  pintarSatelites();
+}
+
 function actualizarPosiciones(d){
-  const nombresProta = new Set([d.protagonista?.nombre, d.protagonistaB?.nombre].filter(Boolean));
-  satelites = (d.todos||[]).map(s=>({...s, esProtagonista: nombresProta.has(s.nombre)}));
+  if (Array.isArray(d.nube)) {
+    // FORMATO COMPACTO (v16): [lat, lon, alt, lat, lon, alt, …]. Con miles de
+    // satélites, mandar nombre y clave de cada uno pesaba 6 veces más.
+    const n = d.nube, lista = new Array(Math.floor(n.length / 3));
+    for (let i = 0, k = 0; k < lista.length; i += 3, k++) lista[k] = { lat: n[i], lon: n[i + 1], altKm: n[i + 2] };
+    satelites = lista;
+  } else {
+    const nombresProta = new Set([d.protagonista?.nombre, d.protagonistaB?.nombre].filter(Boolean));
+    satelites = (d.todos||[]).map(s=>({...s, esProtagonista: nombresProta.has(s.nombre)}));
+  }
   protagonista = d.protagonista || null;
   protagonistaB = d.protagonistaB || null;
   pintarSatelites();
@@ -711,6 +884,9 @@ function actualizarSalud(modo, sats, total){
 // ══════════════════════════════════════════════════════════════════════
 function conectar(){
   const ws = new WebSocket(`ws://${location.host}`);
+  canalFin = ws;
+  // Esta es la ESCENA: recibe la nube de satélites y avisa el fin de cada voz.
+  ws.onopen = () => { try { ws.send(JSON.stringify({ soy: 'escena' })); } catch {} };
   ws.onmessage = e => {
     let m; try{ m = JSON.parse(e.data); }catch{ return; }
     const d = m.datos;
@@ -719,27 +895,34 @@ function conectar(){
     if(m.tipo==='afecto')       aplicarEstado(d.estado);
     if(m.tipo==='salud')        actualizarSalud(d.modo, d.sats, d.total);
     if(m.tipo==='rumbo')        actualizarRumbo(d);
-    if(m.tipo==='segmento')     nuevoSegmento(d.tipo, d.texto, d.audio, d.sonido);
+    if(m.tipo==='segmento')     nuevoSegmento(d.tipo, d.texto, d.audio, d.sonido, d);
     if(m.tipo==='preludio'){
       limpiarPantalla();
       el('cabAgente').textContent='PRELUDIO';
-      nuevoSegmento('narracion', d.texto||'', d.audio);
+      nuevoSegmento('narracion', d.texto||'', d.audio, null, d);
     }
     if(m.tipo==='agente_id'){
       limpiarPantalla();                       // cada agente entra con pantalla limpia
       el('cabAgente').textContent=d.nombre||'';
-      nuevoSegmento('narracion', d.texto||'', d.audio);
+      nuevoSegmento('narracion', d.texto||'', d.audio, null, d);
     }
+    if(m.tipo==='fondo'){
+      if (d.accion === 'iniciar' && d.archivo) fondoIniciar(d);
+      else fondoParar(d.fade ?? 40);
+    }
+    if(m.tipo==='config_escena') aplicarConfigEscena(d);
     if(m.tipo==='pausa') aplicarPausa(d.activa);
     if(m.tipo==='velocidad'){
       velocidadVoz = Math.min(2, Math.max(0.5, Number(d.valor) || 1));
-      if (vozActual) {
+      // Solo la VOZ cambia de velocidad; tus @SONIDO y el fondo, nunca.
+      // El texto no necesita reajuste: sigue al reloj del audio.
+      if (vozActual && !vozActual.__externo) {
+        vozActual.defaultPlaybackRate = velocidadVoz;
         vozActual.playbackRate = velocidadVoz;
-        // Reajustar el ritmo del texto a mitad de bloque, sin cortar nada.
-        if (segActivo) sincronizarConVoz(vozActual, segActivo.texto);
       }
     }
     if(m.tipo==='deriva' && d.activa){
+      fondoParar(300);
       limpiarPantalla();
       el('cabAgente').textContent = '◈  D E R I V A';
       el('cabMarca').textContent = '';
@@ -760,6 +943,6 @@ function conectar(){
 (async () => {
   if (MODO_GLOBO === 'satelite') hayTextura = await aplicarTextura();
   if (!hayTextura) console.warn('[escena] sin textura satelital: modo mapa por biomas');
-  firmaPoligonos = ''; pintarPoligonos();
+  firmaPoligonos = ''; firmaPoligonosGrande = ''; pintarPoligonos();
   conectar();
 })();

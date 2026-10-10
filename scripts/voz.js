@@ -165,7 +165,7 @@ export async function grabar(texto, { dir = DIR_CACHE, cual = VOZ_AUTOR } = {}) 
   for (let intento = 1; intento <= 3; intento++) {
     try {
       const r = await fetch(
-        `https://api.elevenlabs.io/v1/text-to-speech/${vozId}?output_format=mp3_44100_128`,
+        `${process.env.ELEVENLABS_URL || 'https://api.elevenlabs.io'}/v1/text-to-speech/${vozId}?output_format=mp3_44100_128`,
         {
           method: 'POST',
           headers: { 'xi-api-key': API(), 'Content-Type': 'application/json' },

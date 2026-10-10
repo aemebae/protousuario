@@ -50,15 +50,21 @@ for (const a of G?.agentes ?? []) {
     // tipo sonido→ es un mp3 tuyo, no pasa por ElevenLabs
     // b.fijado   → era un hueco y lo congelaste: SÍ se pre-graba, con voz IA,
     //              porque lo escribió Gemini y así conserva su timbre.
-    if (b.gemini || b.sin_voz || ['sonido', 'silencio', 'clon'].includes(b.tipo)) continue;
-    añadir(a.nombre, b.tipo, b.texto, b.fijado ? VOZ_IA : VOZ_AUTOR);
+    if (b.sin_voz || ['sonido', 'silencio', 'clon', 'fondo'].includes(b.tipo)) continue;
+    // Tu FRASE BASE de @NATGEO / @MEMORIA se pre-graba sola: es lo que suena
+    // si Gemini falla. (Con la continuación de Gemini se graba en vivo.)
+    if (b.gemini) { if (b.base) añadir(a.nombre, `${b.tipo} · frase base`, b.base, VOZ_IA); continue; }
+    // MISMA regla que correr_performance.js (vozDe): orbital, natgeo y
+    // memoria —escritos por Gemini, por ti o congelados— van con voz IA.
+    const ia = b.fijado || ['orbital', 'narracion', 'memoria'].includes(b.tipo);
+    añadir(a.nombre, b.tipo, b.texto, ia ? VOZ_IA : VOZ_AUTOR);
   }
 }
 // El CIERRE ahora es una lista de bloques (uno por línea). Voz de autor.
 // Se aceptan los dos formatos por si el guion aún es de la versión anterior.
 if (Array.isArray(G?.cierre)) {
   for (const b of G.cierre) {
-    if (['sonido', 'silencio', 'clon'].includes(b.tipo)) continue;
+    if (['sonido', 'silencio', 'clon', 'fondo'].includes(b.tipo)) continue;
     añadir('CIERRE', b.tipo, b.texto, VOZ_AUTOR);
   }
 } else {

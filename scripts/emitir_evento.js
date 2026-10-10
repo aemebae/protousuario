@@ -29,7 +29,7 @@ async function emitirEvento(tipo, datos) {
 }
 
 // ---------- Ceremoniales (pantalla completa, una sola vez) ----------
-export const emitirAgenteId  = (nombre, texto, audio = null) => emitirEvento('agente_id', { nombre, texto, audio });
+export const emitirAgenteId  = (nombre, texto, audio = null, extra = {}) => emitirEvento('agente_id', { nombre, texto, audio, ...extra });
 
 // ---------- Segmento entrelazado ----------
 /**
@@ -42,8 +42,10 @@ export const emitirAgenteId  = (nombre, texto, audio = null) => emitirEvento('ag
 // bloque sale en silencio: la escena no se detiene por falta de voz.
 // `sonido` es el nombre de un mp3 de "sonidos externos" (los tuyos, sin pasar
 // por ElevenLabs). Si viene, el navegador lo reproduce en lugar de la voz.
-export const emitirSegmento = (tipo, texto, indice, audio = null, sonido = null) =>
-  emitirEvento('segmento', { tipo, texto, indice, audio, sonido });
+// `extra` (v16): { token, dur, cortarFondo }. La pantalla devuelve el token
+// cuando la voz termina de verdad; `dur` es la duración real del mp3 a 1×.
+export const emitirSegmento = (tipo, texto, indice, audio = null, sonido = null, extra = {}) =>
+  emitirEvento('segmento', { tipo, texto, indice, audio, sonido, ...extra });
 
 // ---------- Secuencia completa (respaldo del celular) ----------
 /**
@@ -66,8 +68,10 @@ export const emitirDeriva = (activa) => emitirEvento('deriva', { activa });
 
 // ---------- Preludio ----------
 // Va UNA sola vez, antes de todos los IDs. No lo genera la IA.
-export const emitirPreludio = (texto, audio = null) =>
-  emitirEvento('preludio', { texto, audio });
+export const emitirPreludio = (texto, audio = null, extra = {}) =>
+  emitirEvento('preludio', { texto, audio, ...extra });
+/** @FONDO: { accion: 'iniciar', archivo, volumen, bucle, id } o { accion: 'parar' }. */
+export const emitirFondo = (datos) => emitirEvento('fondo', datos);
 
 // ---------- Compatibilidad con la versión de bloques ----------
 export const emitirBloqueOrbital = (texto) => emitirSegmento('orbital', texto);
@@ -94,7 +98,10 @@ export function emitirSatelite(dato) {
 
 // ---------- Partitura del clon y reposos escritos ----------
 /** @CLON <figura>: le dice al clon transespecie qué rostro tomar. */
-export const emitirClon = (figura, segundos = 12) => emitirEvento('clon', { figura, segundos });
+// `extra` (opcional): { hasta, silencio } en segundos, para "@CLON … fin":
+// cuánto le falta al agente y cuánto de eso es silencio (clon v4, chat 6).
+export const emitirClon = (figura, segundos = 12, extra = {}) =>
+  emitirEvento('clon', { figura, segundos, ...extra });
 /** @SILENCIO <s>: un reposo escrito; el clon puede quedarse quieto. */
 export const emitirSilencio = (segundos) => emitirEvento('silencio', { segundos });
 

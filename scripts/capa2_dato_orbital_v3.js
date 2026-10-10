@@ -49,12 +49,49 @@ const LIMA = { lat: -12.0464, lon: -77.0428, altKm: 0.154 };
 // UNA llamada, así que 900 cuesta casi lo mismo que 200 en la GPU. Lo que sí
 // crece es el tamaño del mensaje (unos 70 bytes por satélite), pero eso viaja
 // dentro de la laptop, no por la red. Sube a 1500 si quieres el cielo lleno.
-const MAX_SATELITES = Number(process.env.MAX_SATELITES || 1200);
+// MAX_SATELITES: cuántos puntos van a la pantalla. "todos" = el catálogo
+// entero que haya en caché (16.471 activos en tu caché de agosto).
+const MAX_SATELITES = /^(todos|all|\*)$/i.test(String(process.env.MAX_SATELITES ?? '').trim())
+  ? Infinity : Number(process.env.MAX_SATELITES || 1200);
+// GRUPOS_EXTRA: lo que hay MÁS ALLÁ de los satélites activos. Tus 16.471 son
+// todos los que CelesTrak da por funcionando. Lo que queda en órbita además
+// son restos: los escombros de tres destrucciones en el espacio (un misil
+// chino contra el Fengyun-1C en 2007, el choque Iridium 33 – Cosmos 2251 en
+// 2009). Entran SOLO a la nube de puntos, nunca como protagonistas: la voz
+// no nombra basura. Necesitan internet UNA vez (luego quedan en tles/):
+//   $env:GRUPOS_EXTRA="fengyun-1c-debris,cosmos-2251-debris,iridium-33-debris"
+const GRUPOS_EXTRA = String(process.env.GRUPOS_EXTRA || '')
+  .split(',').map((g) => g.trim()).filter((g) => /^[a-z0-9-]+$/i.test(g));
+const avisadoExtra = new Set();
 
 // Memoria de proceso: evita releer/reparsear y reconstruir todo cada vuelta.
 const MEMO_GP = new Map();      // cachePath -> { t, modo, datos }
 const MEMO_SATREC = new Map();  // clave del satelite -> satrec
 const MEMO_GP_MS = 15 * 60 * 1000;  // 15 min: los TLE no cambian tan rapido
+
+/** Los objetos de GRUPOS_EXTRA, marcados como extra (solo nube). */
+async function cargarExtras() {
+  const salida = [];
+  for (const g of GRUPOS_EXTRA) {
+    const cachePath = `tles/gp_cache_${g}.json`;
+    let memo = MEMO_GP.get(cachePath);
+    if (!memo || Date.now() - memo.t >= MEMO_GP_MS) {
+      try {
+        const r = await obtenerGP({ url: `https://celestrak.org/NORAD/elements/gp.php?GROUP=${g}&FORMAT=json`, cachePath });
+        memo = { t: Date.now(), modo: r.modo, datos: (r.datos || []).map((x) => ({ ...x, __extra: true })) };
+      } catch { memo = { t: Date.now(), datos: [] }; }
+      MEMO_GP.set(cachePath, memo);
+      if (!avisadoExtra.has(g)) {
+        avisadoExtra.add(g);
+        console.log(memo.datos.length
+          ? `  + ${memo.datos.length} objetos del grupo extra "${g}" (solo nube)`
+          : `  ⚠ grupo extra "${g}": sin datos (¿sin internet la primera vez?)`);
+      }
+    }
+    salida.push(...memo.datos);
+  }
+  return salida;
+}
 
 function claveSat(omm) {
   return String(omm.NORAD_CAT_ID ?? omm.OBJECT_ID ?? omm.OBJECT_NAME);
@@ -286,8 +323,9 @@ export async function obtenerDatoOrbital({
     height: observador.altKm ?? 0.15,
   };
 
+  const extras = GRUPOS_EXTRA.length ? await cargarExtras() : [];
   const candidatos = [];
-  for (const omm of datos) {
+  for (const omm of (extras.length ? datos.concat(extras) : datos)) {
     try {
       // json2satrec es lo caro (parseo + inicializacion SGP4). Se hace UNA
       // vez por satelite en toda la sesion; propagate() si es barato.
@@ -310,6 +348,7 @@ export async function obtenerDatoOrbital({
 
       candidatos.push({
         nombre: omm.OBJECT_NAME,
+        extra: !!omm.__extra,    // escombro: solo nube, nunca protagonista
         k,                       // clave para repropagar rápido (ver repropagarNube)
         lat, lon, altKm: geo.height,
         elevacionDeg, rangeKm,
@@ -336,16 +375,18 @@ export async function obtenerDatoOrbital({
   // CON TERRITORIOS (durante la función): un satélite por territorio, el que
   // está encima de cada uno AHORA. El protagonista es el del primero.
   // SIN TERRITORIOS (la pantalla en espera, antes de empezar): la regla vieja.
+  // Los escombros (GRUPOS_EXTRA) se dibujan, pero nunca protagonizan.
+  const elegibles = candidatos.some((c) => c.extra) ? candidatos.filter((c) => !c.extra) : candidatos;
   const porTerritorio = [];
   const usados = new Set();
   for (const t of territorios.filter(Boolean)) {
-    const r = elegirSobreTerritorio(candidatos, t, usados);
+    const r = elegirSobreTerritorio(elegibles, t, usados);
     if (r) { porTerritorio.push(r); usados.add(r.k); }
   }
   const elegido = porTerritorio.length
     ? candidatos.find((c) => c.k === porTerritorio[0].k)
-    : (candidatos.find((c) => c.regionConflicto) ??
-       candidatos.reduce((mejor, c) => (!mejor || c.elevacionDeg > mejor.elevacionDeg ? c : mejor), null));
+    : (elegibles.find((c) => c.regionConflicto) ??
+       elegibles.reduce((mejor, c) => (!mejor || c.elevacionDeg > mejor.elevacionDeg ? c : mejor), null));
 
   const territorio = resolverTerritorio(elegido.lat, elegido.lon); // UNA sola consulta, sobre el elegido
 

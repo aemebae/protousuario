@@ -79,11 +79,16 @@ let agente = null;      // agente en construcción
 let modo = null;        // 'preludio' | 'cierre' | tipo de bloque mío
 let avisos = [];
 let nLinea = 0;
+// En @MEMORIA TAL CUAL y @NATGEO TAL CUAL, las líneas SEGUIDAS forman una
+// estrofa = un bloque = un audio (con sus saltos de línea). Una línea en
+// blanco (o cualquier marca) cierra la estrofa. Así una memoria escrita en
+// verso suena con su respiración, sin un silencio de 1,4 s en cada verso.
+let estrofa = null;
 
 for (const cruda of lineas) {
   nLinea++;
   const t = cruda.trim();
-  if (!t) continue;
+  if (!t) { estrofa = null; continue; }
 
   // Las viñetas de territorio se leen AUNQUE estén comentadas con #, porque así
   // las tienes escritas en tu archivo. Cualquier otro comentario se ignora.
@@ -109,11 +114,21 @@ for (const cruda of lineas) {
         continue;
       }
     }
+    // ── TU FRASE BASE (v16) ──
+    // Texto debajo de @NATGEO o @MEMORIA (sin "=" ni "#") es TU frase: la voz
+    // la dice siempre, tal cual, y Gemini agrega un párrafo que la continúa.
+    // Varias líneas seguidas forman una sola frase base (se respetan los
+    // saltos de línea). Tope total: NATGEO_PALABRAS / MEMORIA_PALABRAS (60).
+    if (!modo.esOrbital && !t.startsWith('#') && !t.startsWith('@') && modo.hueco.gemini) {
+      modo.hueco.base = modo.hueco.base ? modo.hueco.base + '\n' + t : t;
+      continue;
+    }
   }
   if (t.startsWith('#')) continue;
 
   // ── ¿es una marca? ──
   if (t.startsWith('@')) {
+    estrofa = null;
     const [marcaCruda, ...resto] = t.slice(1).split(/\s+/);
     const marca = marcaCruda.toUpperCase();
 
@@ -160,12 +175,21 @@ for (const cruda of lineas) {
     //     @CLON jvlix           ← vuelve tu rostro
     //     @CLON Yakuruna
     //     @CLON Señora K 10     ← un número al final = segundos que se sostiene (12 si no)
+    //     @CLON Yakuruna 30 fin ← "fin": la pérdida dura hasta que cierra el agente
+    //                             (del chat 6, clon v4: el orquestador calcula cuánto falta)
     if (marca === 'CLON') {
-      const ultimo = Number(resto.at(-1));
-      const conSeg = resto.length > 1 && Number.isFinite(ultimo);
-      const figura = (conSeg ? resto.slice(0, -1) : resto).join(' ').trim();
+      let partes = resto;
+      const hastaFin = partes.length > 1 && /^fin$/i.test(partes.at(-1));
+      if (hastaFin) partes = partes.slice(0, -1);
+      const ultimo = Number(partes.at(-1));
+      const conSeg = partes.length > 1 && Number.isFinite(ultimo);
+      const figura = (conSeg ? partes.slice(0, -1) : partes).join(' ').trim();
       if (!figura) { avisos.push(`línea ${nLinea}: @CLON sin figura`); continue; }
       const bloque = { tipo: 'clon', figura, segundos: conSeg ? ultimo : 12, texto: '' };
+      if (hastaFin) {
+        if (modo === 'preludio' || modo === 'cierre' || !agente) avisos.push(`línea ${nLinea}: "fin" solo vale dentro de un agente — se ignora`);
+        else bloque.hasta_fin = true;
+      }
       // En el preludio: se dispara justo antes del párrafo que le sigue.
       if (modo === 'preludio') {
         clonesPreludio.push({ antes: preludio.length, figura, segundos: bloque.segundos });
@@ -196,6 +220,45 @@ for (const cruda of lineas) {
       // líneas que siguen deben continuar siendo del mismo prompt. Si aquí se
       // reseteara, todo el texto de después se perdería como "texto suelto".
       continue;
+    }
+
+    // ── @NATGEO TAL CUAL / @MEMORIA TAL CUAL (v16) ──
+    // Texto TUYO que suena con la voz de la máquina, SIN que Gemini agregue
+    // nada. Una línea = un bloque, como @PROMPT. Es lo de María:
+    //     @MEMORIA TAL CUAL
+    //     Recuerdo cuando conocí a María Luisa, …
+    const resto_ = resto.join(' ').trim().toUpperCase();
+    if ((marca === 'NATGEO' || marca === 'MEMORIA') && /^(TAL CUAL|FIJA|FIJO|FIJAS|FIJOS)$/.test(resto_)) {
+      if (!agente) { avisos.push(`línea ${nLinea}: @${marca} fuera de un agente`); continue; }
+      modo = HUECOS[marca];          // 'narracion' | 'memoria', como texto tuyo
+      continue;
+    }
+
+    // ── @FONDO archivo [volumen%]   …   @FONDO FIN (v16) ──
+    // Música de tus "sonidos externos" que suena DEBAJO de la voz, baja, y
+    // sigue bloque tras bloque hasta @FONDO FIN. @FONDO FIN corta la canción
+    // EN LA ÚLTIMA PALABRA del bloque que tiene justo arriba.
+    //     @FONDO Patsy Cline (1961) Crazy 25%
+    //     …
+    //     Te voy a extrañar Lu.
+    //     @FONDO FIN
+    if (marca === 'FONDO') {
+      const destino = modo === 'cierre' ? cierre : agente?.bloques;
+      if (!destino) { avisos.push(`línea ${nLinea}: @FONDO fuera de un agente o del cierre`); continue; }
+      const arg = resto.join(' ').trim();
+      if (/^(fin|parar|stop|corte|cortar)$/i.test(arg)) {
+        const ultimo = [...destino].reverse().find((b) => !['fondo', 'clon', 'silencio'].includes(b.tipo));
+        if (ultimo) ultimo.cortarFondo = true;
+        destino.push({ tipo: 'fondo', accion: 'parar', texto: '' });
+        continue;
+      }
+      const partes = [...resto];
+      let volumen = null;
+      if (/^\d+(\.\d+)?%$/.test(partes.at(-1) ?? '')) volumen = parseFloat(partes.pop());
+      const archivo = partes.join(' ').trim();
+      if (!archivo) { avisos.push(`línea ${nLinea}: @FONDO sin archivo`); continue; }
+      destino.push({ tipo: 'fondo', accion: 'iniciar', archivo, volumen, texto: '' });
+      continue;   // como @SONIDO: no corta la sección en curso
     }
 
     if (HUECOS[marca]) {
@@ -244,6 +307,13 @@ for (const cruda of lineas) {
     continue;
   }
 
+  // @MEMORIA TAL CUAL / @NATGEO TAL CUAL: estrofas (ver arriba).
+  if (modo === 'memoria' || modo === 'narracion') {
+    if (estrofa) { estrofa.texto += '\n' + t; continue; }
+    estrofa = { tipo: modo, texto: t };
+    agente.bloques.push(estrofa);
+    continue;
+  }
   const bloque = { tipo: modo, texto: t };
   if (modo === 'pregunta' && !VOZ_EN_PREGUNTAS) bloque.sin_voz = true;
   agente.bloques.push(bloque);
@@ -255,7 +325,7 @@ for (const a of agentes) {
   // Un bloque @SONIDO no tiene texto y no es un hueco de Gemini, pero SÍ es
   // útil: es tu mp3. Sin esta excepción se descartaba en silencio.
   const utiles = a.bloques.filter((b) =>
-    b.gemini || ['sonido', 'silencio', 'clon'].includes(b.tipo) || (b.texto && b.texto.trim()));
+    b.gemini || ['sonido', 'silencio', 'clon', 'fondo'].includes(b.tipo) || (b.texto && b.texto.trim()));
   const soloId = utiles.length > 0 && utiles.every((b) => b.tipo === 'id_agente');
   if (!utiles.length || soloId) {
     avisos.push(`${a.nombre}: sin bloques — se salta (¿"lo voy a saltar esta vez"?)`);
@@ -286,6 +356,32 @@ if (preludio.length) {
   }, null, 2), 'utf8');
 }
 
+// ── ¿Cada @CLON encuentra su imagen? La misma búsqueda que hace el clon:
+//    nombre exacto, luego "empieza con", luego "contiene" (sin tildes ni
+//    mayúsculas). Un error de tipeo se ve AQUÍ y no en plena función. ──
+const normF = (x) => String(x || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  .replace(/\.png$/i, '').replace(/[^a-z0-9]+/g, ' ').trim();
+let imagenesClon = null;
+try {
+  imagenesClon = fs.readdirSync('CLON TRANSESPECIE')
+    .filter((n) => /\.png$/i.test(n) && !/^jvlix transespecie/.test(normF(n)));   // maquetas: modelo, no material
+} catch { /* sin carpeta: no se puede revisar */ }
+function imagenDe(figura) {
+  const q = normF(figura);
+  if (q === 'vaciar' || !imagenesClon) return true;
+  const busca = (k) => imagenesClon.find((f) => normF(f) === k) ?? imagenesClon.find((f) => normF(f).startsWith(k))
+                    ?? imagenesClon.find((f) => normF(f).includes(k));
+  return busca(q) ?? (q === 'jvlix' ? busca('julix') : q === 'julix' ? busca('jvlix') : null) ?? false;
+}
+const todosLosClon = [
+  ...clonesPreludio.map((c) => ({ ...c, donde: 'PRELUDIO' })),
+  ...agentes.flatMap((a) => a.bloques.filter((b) => b.tipo === 'clon').map((b) => ({ ...b, donde: a.nombre }))),
+  ...cierre.filter((b) => b.tipo === 'clon').map((b) => ({ ...b, donde: 'CIERRE' })),
+];
+for (const c of todosLosClon) {
+  if (imagenDe(c.figura) === false) avisos.push(`@CLON ${c.figura} (${c.donde}): no encuentro esa imagen en "CLON TRANSESPECIE/" — en la función el clon la ignoraría`);
+}
+
 // ── Informe ──
 console.log('');
 if (preludio.length) console.log(`  PRELUDIO${''.padEnd(16)} ${preludio.length} párrafos`
@@ -297,11 +393,15 @@ for (const a of vivos) {
   const ia = a.bloques.filter((b) => b.gemini).length;
   const fijados = a.bloques.filter((b) => b.fijado).length;
   const sonidos = a.bloques.filter((b) => b.tipo === 'sonido').length;
+  const conBase = a.bloques.filter((b) => b.gemini && b.base).length;
+  const fondos = a.bloques.filter((b) => b.tipo === 'fondo' && b.accion === 'iniciar').map((b) => b.archivo);
   total += a.bloques.length;
   console.log(`  ${a.nombre.padEnd(24)} ${String(a.bloques.length).padStart(3)} bloques  `
     + `(${mios} tuyos · ${ia} de Gemini`
+    + (conBase ? `, ${conBase} con tu frase base` : '')
     + (fijados ? ` · ${fijados} fijados` : '')
-    + (sonidos ? ` · ${sonidos} sonidos` : '') + `)   ${JSON.stringify(c)}`);
+    + (sonidos ? ` · ${sonidos} sonidos` : '')
+    + (fondos.length ? ` · fondo: ${fondos.join(', ')}` : '') + `)   ${JSON.stringify(c)}`);
 }
 if (cierre.length) {
   total += cierre.length;

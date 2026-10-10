@@ -20,7 +20,8 @@
       },
       "azimut_desde_observador": 94,
       "cardinal": "este",
-      "linea_rumbo": "PROTOUSUARIO desde el este"
+      "linea_rumbo": "PROTOUSUARIO desde el este",
+      "contexto_voz": "Ahí se saca el coltán y el cobalto de nuestros celulares y de la inteligencia artificial, en medio de una guerra que no se detiene en Kivu."
     },
     {
       "id": "peru_sur",
@@ -39,7 +40,8 @@
       },
       "azimut_desde_observador": 122,
       "cardinal": "sureste",
-      "linea_rumbo": "PROTOUSUARIO desde el sureste"
+      "linea_rumbo": "PROTOUSUARIO desde el sureste",
+      "contexto_voz": "Las matanzas de manifestantes de 2022 y 2023, bajo el gobierno de Dina Boluarte, siguen sin justicia: una memoria que el Estado archiva."
     },
     {
       "id": "amazonia_peruana",
@@ -77,7 +79,8 @@
       },
       "azimut_desde_observador": 61,
       "cardinal": "noreste",
-      "linea_rumbo": "PROTOUSUARIO desde el noreste"
+      "linea_rumbo": "PROTOUSUARIO desde el noreste",
+      "contexto_voz": "Destrucción masiva y crisis humanitaria, bajo asedio y bombardeo."
     },
     {
       "id": "sudan",
@@ -150,7 +153,8 @@
       },
       "azimut_desde_observador": 325,
       "cardinal": "noroeste",
-      "linea_rumbo": "PROTOUSUARIO desde el noroeste"
+      "linea_rumbo": "PROTOUSUARIO desde el noroeste",
+      "contexto_voz": "Muro, militarización y deportaciones masivas; campos de concentración para migrantes, mientras la supremacía blanca se expande hacia Latinoamérica."
     },
     {
       "id": "atacama",
@@ -169,7 +173,8 @@
       },
       "azimut_desde_observador": 145,
       "cardinal": "sureste",
-      "linea_rumbo": "PROTOUSUARIO desde el sureste"
+      "linea_rumbo": "PROTOUSUARIO desde el sureste",
+      "contexto_voz": "El desierto más seco del planeta entrega su agua para sacar el litio y el cobre de las baterías, y las comunidades atacameñas pelean por su acuífero."
     },
     {
       "id": "cabo_verde",
@@ -207,7 +212,8 @@
       "azimut_desde_observador": 10,
       "cardinal": "norte",
       "linea_rumbo": "PROTOUSUARIO desde el norte",
-      "agente": "eco-satelital"
+      "agente": "eco-satelital",
+      "contexto_voz": "Estados Unidos quiere controlar la isla: en septiembre firmó un acuerdo para abrir nuevas bases militares, y bajo el hielo que se derrite hay tierras raras y uranio."
     },
     {
       "id": "taiwan_formosa",
@@ -302,5 +308,6 @@
     }
   ],
   "_campos_derivados": "'centro', 'azimut_desde_observador', 'cardinal' y 'linea_rumbo' se calculan desde observador.json con ruta ortodrómica y rosa de 8 puntos. Están guardados aquí para consulta y para que el prompt pueda citarlos, pero rumbo_territorial.js los RECALCULA en vivo: si cambias un bbox o mueves el observador, la verdad está en el cálculo, no en estos campos.",
-  "_reparto": "El campo \"agente\" coincide con las viñetas de @ORBITAL de instrucciones_permanentes.txt. Las viñetas mandan; este campo es el respaldo si una viñeta no se encuentra. Sin \"agente\" = territorio en reserva."
+  "_reparto": "El campo \"agente\" coincide con las viñetas de @ORBITAL de instrucciones_permanentes.txt. Las viñetas mandan; este campo es el respaldo si una viñeta no se encuentra. Sin \"agente\" = territorio en reserva.",
+  "_contexto_voz": "contexto_voz: una o dos frases dichas en voz alta, en palabras sencillas. Es lo MÍNIMO que el @ORBITAL tiene que decir de cada territorio, y es el respaldo cuando Gemini falla. Edítalo cuando quieras."
 }

@@ -1,0 +1,64 @@
+CLON TRANSESPECIE v4 — cómo instalarlo (5 minutos)
+═══════════════════════════════════════════════════════════════
+
+QUÉ TRAE
+  public\clon.html               el clon: mosaico sin animal base, Señora K oculta
+                                 hasta su @CLON, "fin" para la Yakuruna
+  scripts\servidor_visual.js     imprime el link del CLON para el Celular 2 con tu IP real
+  scripts\compilar_guion.js      entiende "@CLON figura s fin" y avisa si una imagen no existe
+  scripts\correr_performance.js  calcula cuánto le falta al agente (para "fin")
+  scripts\emitir_evento.js       le manda ese dato al clon
+
+NO trae instrucciones_permanentes.txt, para no pisar nada de lo que hayas
+escrito. Le agregas UNA palabra tú (paso 3).
+
+
+PASOS
+1. Cierra el servidor si está corriendo (Ctrl+C en su ventana).
+
+2. Descomprime CLON_v4.zip DENTRO de C:\Users\julio\agente-espejo\
+   y acepta reemplazar los 5 archivos.
+   (Reemplazan a los del commit 5227a8f, el último que hay en GitHub. Si
+   cambiaste alguno de esos 5 archivos después, avísame antes de copiar.)
+
+3. Abre instrucciones_permanentes.txt, busca la línea
+       @CLON Yakuruna 30
+   y déjala así:
+       @CLON Yakuruna 30 fin
+   Guarda.
+
+4. En PowerShell, dentro de la carpeta del proyecto:
+       node scripts\compilar_guion.js
+   Debajo de cada agente ahora salen sus @CLON. Revisa que diga:
+       ◐ clon: Yakuruna 30s (bloque 25) → hasta que cierra el agente
+   Si alguna figura dice  ⚠ NO ENCUENTRO ESA IMAGEN , hay un error de
+   tipeo en esa línea @CLON.
+   No hay voz nueva que grabar: ningún texto cambió (no gasta créditos).
+
+5. Arranca el servidor como siempre:
+       node scripts\servidor_visual.js
+   El cartel ahora trae el link del Celular 2 con tu IP real, así:
+       CELULAR 2 · CLON TRANSESPECIE (con http:// y todo):
+          http://192.168.100.24:3000/clon.html     [Wi-Fi]
+   Escribe ESE link, tal cual, en el Celular 2. Es la misma IP que ya usas
+   para el control. (El "TU_IP" de la v3 era un ejemplo mío, no un link.)
+   Si cambias de red (el wifi del museo, un hotspot), la IP cambia: el
+   servidor vuelve a imprimir los links solo, con la IP nueva.
+
+
+CELULAR 2, ANTES DE LA FUNCIÓN
+  · Conectado al mismo wifi que la laptop.
+  · Toca la pantalla una vez: desaparece el aviso "toca la pantalla una vez"
+    y la boca escucha la voz real. (Sin el toque, la boca igual se mueve, por
+    sílabas.)
+  · Ajustes → Pantalla → Tiempo de espera de la pantalla: el máximo, para
+    que no se apague a mitad de la función. Y que quede cargando.
+  · En el ensayo:  …/clon.html?diag=1  muestra qué cabeza tiene más celdas,
+    la figura en curso y el retraso de la boca.
+    Si la boca va tarde:  …/clon.html?sincro=1
+
+
+PROBAR SIN LA OBRA (igual que antes)
+  http://localhost:3000/clon.html?demo=1
+  Teclas: 1-5 perfil · A autorizado · D desplazado · S silencio ·
+  J jvlix · E Elite · K Señora K · Y Yakuruna · V vaciar · P pausa · R re-habitar

@@ -17,6 +17,8 @@
   #diag{position:absolute;left:8px;bottom:8px;z-index:6;display:none;max-width:calc(100% - 16px);
     font:10px/1.5 monospace;color:var(--accent);background:rgba(13,10,16,.84);
     border:1px solid var(--accent-dim);padding:6px 8px;white-space:pre-wrap;pointer-events:none;}
+  #toque{position:absolute;left:0;right:0;bottom:14px;z-index:7;display:none;text-align:center;
+    font:10px monospace;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);pointer-events:none;}
   #rotulo{position:absolute;right:10px;top:10px;z-index:6;display:none;max-width:60%;
     font:9px/1.6 monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);
     text-align:right;pointer-events:none;}
@@ -28,11 +30,37 @@
 <div id="carga">encarnando…</div>
 <div id="diag"></div>
 <div id="rotulo"></div>
+<div id="toque">toca la pantalla una vez · así la boca escucha la voz</div>
 <script>
 'use strict';
 /* ═══════════════════════════════════════════════════════════════════════
-   CLON TRANSESPECIE — Capa de encarnación  ·  v3 (cierre de VIDEOAKT 5)
+   CLON TRANSESPECIE — Capa de encarnación  ·  v4 (cierre de VIDEOAKT 5)
    PROTOUSUARIO / [AGENTE-ESPEJO] · Museo de la Nación
+
+   QUÉ CAMBIÓ EN v4
+   · Ninguna cabeza manda. En la v3 la cabeza dominante ocupaba en promedio
+     el 36 % del rostro (hasta 69 %) en un bloque continuo: se leía como un
+     animal base con fragmentos encima. Ahora cada celda prefiere la cabeza
+     que MENOS celdas tiene en pantalla, con un tope duro por cabeza; el
+     elenco es más grande (8) y los parches casi siempre de una celda.
+     Además una cabeza evita caer junto a sí misma (SEPARA): los órganos
+     no se juntan en una región. Medido en Chromium, toda la obra: la
+     dominante promedia 15 % (máx. ~24 %), 10 cabezas a la vez, y el bloque
+     más grande de una misma cabeza ~5 celdas (en la v3: 21 a 34).
+   · La periferia se llena solo a veces: la silueta es irregular y respira.
+   · Señora K solo existe dentro de su @CLON (SOLO_EN_SU_CLON).
+   · Una cara de poder (Elite) no aparece como fragmento hasta que su @CLON
+     la presenta (PODER_TRAS_SU_CLON): no se arruina la revelación.
+   · @CLON figura s fin: la pérdida dura hasta que cierra el agente (el
+     orquestador manda cuánto falta). Si el agente se alarga (manual, más
+     lento), queda un RESTO de la figura (12 %, en fragmentos que cambian de
+     sitio) hasta que de verdad entra el siguiente. Y un agente nuevo nunca
+     hereda la figura del anterior: lo que quede se pierde en 2,5 s.
+   · Mientras una figura se pierde, el resto del mosaico sigue mutando
+     (antes quedaba quieto alrededor de ella).
+   · Al terminar el séquito de la Señora K, los Monstruos se van en 1,4 s
+     (antes tardaban y por un momento uno ocupaba el 45 % del rostro).
+   · Solo en el Celular 2: si el audio está bloqueado, pide un toque.
 
    QUÉ CAMBIÓ EN v3
    · Ya NO hay cabeza base. El rostro es SIEMPRE un mosaico de fragmentos:
@@ -82,14 +110,25 @@ const RASGO = 22;         // tiene algo: punta de antena, oreja, aleta
 const ENSAMBLE_S = 2.6;   // @CLON: lo que tarda la cabeza en armarse, corte a corte
 const SOSTEN_S = 12;      // @CLON sin número
 const PERDIDA_S = 24;     // lo que tarda la figura en perderse entre otras cabezas
+const PERDIDA_MIN_S = 6;  // con "fin": la pérdida nunca dura menos que esto
+const RESTO_FIN = 0.12;   // con "fin": lo que queda de la figura hasta que el agente cierra de verdad
+const RESTO_MUEVE_S = 1.5;// ese resto no se queda pegado: un fragmento cambia de sitio cada 1,5 s
+const CIERRE_RAPIDO_S = 2.5; // agente nuevo: lo que quede de la figura anterior se pierde en esto
 const RETRATO_S = 4;      // @CLON vaciar: tu retrato completo antes de vaciarse
 const VACIAR_S = 24;      // @CLON vaciar sin número: lo que dura el vaciado
-const ELENCO_BASE = 4;    // cabezas activas a la vez (el perfil y el rumbo suman o restan)
+const ELENCO_BASE = 8;    // cabezas activas a la vez (el perfil y el rumbo suman o restan)
 const PESO_JVLIX = 2;     // tu rostro entra al elenco el doble de seguido
 const PESO_GRANDE = 0.45; // las que llenan casi todo el cuadro (oso, cuy, capibara)
+const TOPE_CABEZA = 1.6;  // ninguna cabeza pasa de 1,6 × su parte justa de celdas
+const SEPARA = 1.5;       // cuánto evita una cabeza caer junto a sí misma (0 = nada)
 
 // Cabezas de poder: entran al mosaico según el perfil del agente.
 const PODER = ['elite', 'senora k', 'monstruo'];
+// true: una cara de poder no aparece como fragmento hasta que su propio
+// @CLON la presenta (Elite recién después de "@CLON Elite").
+const PODER_TRAS_SU_CLON = true;
+// Solo existen dentro de su propio @CLON. Nunca en el mosaico, nunca antes.
+const SOLO_EN_SU_CLON = ['senora k'];
 // Cabezas RESERVADAS: solo existen dentro de la figura dueña. Fuera de ella,
 // nunca. Nombres sin .png, sin tildes ni mayúsculas, como en @CLON.
 const SEQUITO = { 'senora k': ['monstruo 01', 'monstruo 02'] };
@@ -103,6 +142,7 @@ const SEQUITO_SOLO = true;
 // hasta donde ya va la voz real. También: ?sincro=1 o ?sincro=0 en la URL.
 const SINCRO_BOCA = false;
 const SINCRO_EXTRA_MS = 0;   // si aún va tarde, súmale aquí (o ?sincroms=80)
+const RITMO_SILENCIO = 0.25; // en @SILENCIO el tiempo del rostro corre a un cuarto
 
 /* Zona vocal: filas 6–7 × columnas 4–6. Ahí caen la boca de tu retrato, la
    de la Señora K, la de Elite, los labios de la Yakuruna, el pico del cóndor.
@@ -119,7 +159,7 @@ const PERFIL = {
   LIMINAL:    { acc: '#c9a6ff', dim: '#6b4f96', ms: 1700, elenco: -1, poder: 0.00, firma: 'suave'  },
   CORRIENTE:  { acc: '#5fe0e8', dim: '#256b74', ms: 1000, elenco: 0,  poder: 0.04, firma: 'onda'   },
   ORBITAL:    { acc: '#ffc65f', dim: '#8a6520', ms: 820,  elenco: 0,  poder: 0.08, firma: 'franja' },
-  POLIFONICO: { acc: '#ff7ad1', dim: '#8a3a6b', ms: 700,  elenco: 1,  poder: 0.14, firma: 'todo'   },
+  POLIFONICO: { acc: '#ff7ad1', dim: '#8a3a6b', ms: 700,  elenco: 2,  poder: 0.14, firma: 'todo'   },
 };
 /* Rumbo = integridad del rostro.
    ritmo multiplica el intervalo (más alto = más lento) · fuera = fracción de
@@ -180,6 +220,9 @@ function vecinos(c) {
 /* ═══ ESTADO ═══ */
 const CAB = new Map();                  // archivo → { im, oc, huella, tag }
 const NUCLEO = new Uint8Array(NN);      // 1 = la mitad o más de las cabezas tiene carne ahí
+const FRAC_RASGO = new Float32Array(NN);// fracción de cabezas con algo en esa celda (para la silueta)
+const cuenta = new Map();               // cuántas celdas tiene cada cabeza en pantalla
+const revelados = new Set();            // caras de poder ya presentadas por su @CLON
 const celdas = new Array(NN).fill(null);// qué cabeza ocupa cada celda (null = vacía)
 const desp = new Map();                 // celdas fuera de sitio: c → { dx, dy, src }
 const muda = new Set();                 // celdas vaciadas por @CLON vaciar
@@ -194,7 +237,9 @@ function avisar(t) { ultimoAviso = t; console.warn('[clon] ' + t); }
 const perfil = () => PERFIL[estado] ?? PERFIL.PANOPTICO;
 const integ = () => RUMBO[rumbo] ?? RUMBO.NEUTRO;
 const enSilencio = () => performance.now() < silencioFin;
-const libre = (c) => !muda.has(c);
+// Una celda está libre para el mosaico si no es parte de la muda ni de la
+// figura que se está perdiendo (esas solo las suelta la propia pérdida).
+const libre = (c) => !muda.has(c) && !(figura && celdas[c] === figura.f);
 
 /* ═══ CARGA + ANÁLISIS ═══ */
 const ANA = document.createElement('canvas'); ANA.width = COLS * 8; ANA.height = FILAS * 8;
@@ -219,6 +264,7 @@ function analizar(im) {
 function etiqueta(f) {
   const n = normF(f);
   if (n.startsWith('jvlix') || n.startsWith('julix')) return 'humano';
+  if (SOLO_EN_SU_CLON.some((p) => n.startsWith(p))) return 'reservada';
   if (Object.values(SEQUITO).flat().some((p) => n.startsWith(p))) return 'reservada';
   if (PODER.some((p) => n.startsWith(p))) return 'poder';
   return 'especie';
@@ -261,9 +307,12 @@ async function cargarTodo() {
     CAB.set(x.f, { im: x.im, oc: a.oc, huella: a.huella, tag: etiqueta(x.f) });
   }
   const n = CAB.size || 1;
+  const comunes = [...CAB.values()].filter((v) => v.tag === 'especie' || v.tag === 'humano');
   for (let c = 0; c < NN; c++) {
     let k = 0; for (const v of CAB.values()) if (v.oc[c] > CARNE) k++;
     NUCLEO[c] = k / n >= 0.5 ? 1 : 0;
+    let r = 0; for (const v of comunes) if (v.oc[c] > RASGO) r++;
+    FRAC_RASGO[c] = comunes.length ? r / comunes.length : 1;
   }
 }
 function buscar(q) {
@@ -276,10 +325,12 @@ function buscar(q) {
 function permitida(f) {
   const t = CAB.get(f)?.tag;
   if (!t) return false;
+  if (figura && f === figura.f) return false;   // la figura no se infiltra en su propia pérdida
+  if (figura?.sequito?.includes(f)) return figura.fase === 'pierde' || figura.fase === 'resto';
   if (elencoFijo) return elencoFijo.includes(f);
   if (vaciado) return t === 'especie';
   if (t === 'reservada') return false;
-  if (t === 'poder') return poderHabilitado && perfil().poder > 0;
+  if (t === 'poder') return poderHabilitado && perfil().poder > 0 && (!PODER_TRAS_SU_CLON || revelados.has(f));
   return true;
 }
 function poolGeneral() {
@@ -297,7 +348,7 @@ function pesoElenco(f) {
   return k.huella > 95 ? PESO_GRANDE : 1;
 }
 function tamElenco() {
-  return Math.max(2, Math.min(8, ELENCO_BASE + perfil().elenco + integ().elenco));
+  return Math.max(4, Math.min(12, ELENCO_BASE + perfil().elenco + integ().elenco));
 }
 function sumarAlElenco() {
   const pool = (elencoFijo ?? poolGeneral()).filter((f) => !elenco.includes(f));
@@ -319,20 +370,48 @@ function rotarElenco() {
 /* ═══ CELDAS ═══ */
 function poner(c, f) {
   if (f && muda.has(c)) return;
-  if (celdas[c] !== f) { celdas[c] = f; sucio = true; }
+  const antes = celdas[c];
+  if (antes !== f) {
+    if (antes) cuenta.set(antes, (cuenta.get(antes) || 1) - 1);
+    if (f) cuenta.set(f, (cuenta.get(f) || 0) + 1);
+    celdas[c] = f; sucio = true;
+  }
   if (!f && desp.delete(c)) sucio = true;
 }
-/* Quién puede ocupar la celda c. En el núcleo, cualquiera con carne. En la
-   periferia ganan los rasgos finos (antenas, orejas, aletas): peso inverso a
-   la huella, para que la silueta no la dicte el pelaje de las cabezas grandes. */
+let llenasAhora = 0;
+function contarLlenas() { let k = 0; for (let c = 0; c < NN; c++) if (celdas[c]) k++; return k; }
+/* Quién puede ocupar la celda c.
+   · Solo cabezas con algo ahí: carne en el núcleo; en la periferia basta un
+     rasgo (antena, oreja, aleta) y ganan los rasgos finos, para que la
+     silueta no la dicte el pelaje de las cabezas grandes.
+   · BALANCE: gana la cabeza que MENOS celdas tiene en pantalla (peso 1/(1+n)²),
+     y ninguna pasa del tope. Así no hay animal base: ninguna cabeza manda. */
 function candidato(c, lista = elenco, excluir = null) {
-  if (NUCLEO[c]) {
-    let cand = lista.filter((f) => f !== excluir && CAB.get(f).oc[c] > CARNE);
-    if (!cand.length) cand = lista.filter((f) => f !== excluir && CAB.get(f).oc[c] > RASGO);
-    return azar(cand);
+  const nucleo = NUCLEO[c] === 1;
+  let cand = lista.filter((f) => f !== excluir && CAB.get(f).oc[c] > (nucleo ? CARNE : RASGO));
+  if (!cand.length && nucleo) cand = lista.filter((f) => f !== excluir && CAB.get(f).oc[c] > RASGO);
+  if (!cand.length) return null;
+  const tope = Math.max(5, Math.ceil(TOPE_CABEZA * Math.max(llenasAhora, 60) / Math.max(1, lista.length)));
+  let bajoTope = cand.filter((f) => (cuenta.get(f) || 0) < tope);
+  if (!bajoTope.length) {
+    if (!nucleo) return null;            // en el núcleo nunca un hueco: la que menos tiene
+    let min = Infinity; for (const f of cand) min = Math.min(min, cuenta.get(f) || 0);
+    bajoTope = cand.filter((f) => (cuenta.get(f) || 0) === min);
   }
-  const cand = lista.filter((f) => f !== excluir && CAB.get(f).oc[c] > RASGO);
-  return cand.length ? sorteo(cand, cand.map((f) => 1 / Math.max(8, CAB.get(f).huella))) : null;
+  return sorteo(bajoTope, bajoTope.map((f) =>
+    (nucleo ? 1 : 1 / Math.max(8, CAB.get(f).huella)) / Math.pow(1 + (cuenta.get(f) || 0), 2)
+    / Math.pow(1 + iguales(c, f), SEPARA)));
+}
+// Cuántas vecinas de c ya son de f: una cabeza no se pega a sí misma, así
+// los órganos (un parche de 1 a 3 celdas) no se juntan en una región.
+function iguales(c, f) { let k = 0; for (const v of vecinos(c)) if (celdas[v] === f) k++; return k; }
+/* Llenar una celda como lo haría el mosaico: en la periferia, solo a veces
+   (más seguido donde más cabezas tienen algo): la silueta queda irregular. */
+function llenar(c, tam = tamParche()) {
+  if (!libre(c)) return;
+  if (!NUCLEO[c] && Math.random() > 0.2 + 0.8 * FRAC_RASGO[c]) { poner(c, null); return; }
+  const f = candidato(c);
+  if (f) parche(c, f, tam); else poner(c, null);
 }
 /* Un parche: la celda c y hasta tam-1 vecinas donde f tenga algo, en UN corte. */
 function parche(c, f, tam, puede = libre) {
@@ -349,8 +428,8 @@ function parche(c, f, tam, puede = libre) {
 function componerDeCero() {
   for (const c of barajar([...Array(NN).keys()])) {
     if (celdas[c] || !libre(c)) continue;
-    const f = candidato(c);
-    if (f) parche(c, f, 1 + rnd(4));
+    llenasAhora = contarLlenas();
+    llenar(c);
   }
 }
 
@@ -372,7 +451,8 @@ function semillas(firma) {
   }
   return out;
 }
-const tamParche = (firma) => (firma === 'suave' ? 1 + rnd(2) : firma === 'todo' ? 1 + rnd(4) : 1 + rnd(3));
+// Casi siempre una celda sola: fragmentos sueltos, no regiones de un animal.
+function tamParche() { const r = Math.random(); return r < 0.6 ? 1 : r < 0.9 ? 2 : 3; }
 function desarmarCelda(c) {
   const v = vecinos(c);
   desp.set(c, { dx: (Math.random() * 2 - 1) * 0.42, dy: (Math.random() * 2 - 1) * 0.42,
@@ -397,7 +477,7 @@ function integridad() {
 }
 /* @SILENCIO: nadie habla y el rostro se descompone muy despacio. */
 function descomponer() {
-  const llenas = []; for (let c = 0; c < NN; c++) if (celdas[c]) llenas.push(c);
+  const llenas = []; for (let c = 0; c < NN; c++) if (celdas[c] && libre(c)) llenas.push(c);
   const c = azar(llenas); if (c == null) return;
   if (Math.random() < 0.6) poner(c, null);
   else { const f = candidato(c); if (f) poner(c, f); }
@@ -405,26 +485,24 @@ function descomponer() {
 function tick() {
   if (enSilencio()) { descomponer(); return; }
   ajustarElenco();
+  llenasAhora = contarLlenas();
   ticks++;
-  if (barajadaHasta > reloj || ticks % 9 === 0) rotarElenco();
-  // primero lo pendiente: celdas de cabezas que salieron, huecos que ya tienen quién los llene
-  const pend = [];
+  if (barajadaHasta > reloj || ticks % 5 === 0) rotarElenco();
+  // Primero lo pendiente: celdas de cabezas que salieron del elenco (huérfanas)
+  // y huecos del NÚCLEO que ya tienen quién los llene. La periferia no se
+  // exige: respira. Las huérfanas son deuda de una cabeza que ya se fue y se
+  // pagan en unos 3 ticks, por muchas que sean: lo que deja una figura (los
+  // Monstruos de la Señora K) no se queda de base mientras el mosaico vuelve.
+  const huerfanas = [], huecos = [];
   for (let c = 0; c < NN; c++) {
     if (!libre(c)) continue;
     const f = celdas[c];
-    if (f ? !elenco.includes(f) : candidato(c)) pend.push(c);
+    if (f) { if (!elenco.includes(f)) huerfanas.push(c); }
+    else if (NUCLEO[c] && candidato(c)) huecos.push(c);
   }
-  barajar(pend);
-  for (let i = 0; i < Math.min(3, pend.length); i++) {
-    const c = pend[i], f = candidato(c);
-    if (f) parche(c, f, 1 + rnd(2)); else poner(c, null);
-  }
-  const p = perfil();
-  for (const c of semillas(p.firma)) {
-    if (!libre(c)) continue;
-    const f = candidato(c);
-    if (f) parche(c, f, tamParche(p.firma));
-  }
+  const cupo = Math.max(4, Math.ceil(huerfanas.length / 3));
+  for (const c of barajar(huerfanas).concat(barajar(huecos)).slice(0, cupo)) llenar(c);
+  for (const c of semillas(perfil().firma)) llenar(c);
   integridad();
 }
 function intervalo() {
@@ -433,22 +511,55 @@ function intervalo() {
 }
 
 /* ═══ @CLON: ensamble → sostén → pérdida ═══ */
-function forzarFigura(nombre, segundos) {
+function forzarFigura(nombre, segundos, extra = {}) {
   const q = normF(nombre);
   if (!q || !listo) return;
   if (q === 'vaciar') return iniciarVaciado(segundos);
-  const f = buscar(q);
+  const f = buscar(q) ?? (q === 'jvlix' ? buscar('julix') : q === 'julix' ? buscar('jvlix') : null);
   if (!f) { avisar(`@CLON ${nombre}: no encuentro esa imagen`); return; }
   restaurar();
+  revelados.add(f);                      // desde ahora, si es de poder, puede infiltrarse
   const clave = normF(f);
   const dueno = Object.keys(SEQUITO).find((k) => clave.startsWith(k));
   const sequito = dueno ? [...CAB.keys()].filter((g) => SEQUITO[dueno].some((p) => normF(g).startsWith(p))) : null;
   const objetivo = [];
   for (let c = 0; c < NN; c++) objetivo[c] = CAB.get(f).oc[c] > RASGO ? f : null;
   const orden = barajar([...Array(NN).keys()].filter((c) => celdas[c] !== objetivo[c] || desp.has(c)));
-  figura = { f, sequito, fase: 'ensambla', t: 0, objetivo, orden, hechas: 0,
-             sostenMs: (Number(segundos) > 0 ? Number(segundos) : SOSTEN_S) * 1000 };
+  const sostenMs = (Number(segundos) > 0 ? Number(segundos) : SOSTEN_S) * 1000;
+  // "@CLON figura s fin": el orquestador manda cuánto le falta al agente
+  // (hasta) y cuánto de eso es silencio. La pérdida se estira para terminar
+  // justo cuando el agente cierra. El silencio cuenta a un cuarto, porque en
+  // silencio el tiempo del rostro corre a un cuarto.
+  let perdidaMs = PERDIDA_S * 1000, hastaFin = false;
+  const hasta = Number(extra?.hasta);
+  if (hasta > 0) {
+    const sil = Math.max(0, Math.min(hasta, Number(extra?.silencio) || 0));
+    const presupuesto = ((hasta - sil) + sil * RITMO_SILENCIO) * 1000;
+    perdidaMs = Math.max(PERDIDA_MIN_S * 1000, presupuesto - ENSAMBLE_S * 1000 - sostenMs);
+    hastaFin = true;
+  }
+  figura = { f, sequito, fase: 'ensambla', t: 0, objetivo, orden, hechas: 0, sostenMs, perdidaMs, hastaFin };
   sucio = true;
+}
+function empezarPerdida(F) {
+  F.fase = 'pierde'; F.t = 0; F.relleno = 0;
+  F.restan = barajar([...Array(NN).keys()].filter((c) => celdas[c] === F.f));
+  F.total = F.restan.length;
+  elencoFijo = F.sequito && F.sequito.length && SEQUITO_SOLO ? F.sequito : null;
+  elenco = elenco.filter((g) => g !== F.f);
+  ajustarElenco();
+  if (!elencoFijo && F.sequito) for (const g of F.sequito) if (!elenco.includes(g)) elenco.push(g);
+}
+/* Un agente nuevo nunca hereda la figura del anterior: lo que quede se
+   pierde en CIERRE_RAPIDO_S y después el mosaico se baraja. */
+function cierreRapido() {
+  const F = figura; if (!F) return;
+  if (F.fase !== 'pierde') empezarPerdida(F);
+  else {
+    F.restan = barajar([...Array(NN).keys()].filter((c) => celdas[c] === F.f));
+    F.total = F.restan.length; F.t = 0;
+  }
+  F.perdidaMs = CIERRE_RAPIDO_S * 1000; F.rapido = true;
 }
 function avanzarFigura(dt) {
   const F = figura; F.t += dt;
@@ -464,24 +575,28 @@ function avanzarFigura(dt) {
   }
   if (F.fase === 'sostiene') {           // la cabeza sola, el tiempo escrito
     if (F.t < F.sostenMs) return;
-    F.fase = 'pierde'; F.t = 0; F.relleno = 0;
-    F.restan = barajar([...Array(NN).keys()].filter((c) => celdas[c] === F.f));
-    F.total = F.restan.length;
-    elencoFijo = F.sequito && F.sequito.length && SEQUITO_SOLO ? F.sequito : null;
-    elenco = elenco.filter((g) => g !== F.f);
-    ajustarElenco();
-    if (!elencoFijo && F.sequito) for (const g of F.sequito) if (!elenco.includes(g)) elenco.push(g);
+    empezarPerdida(F);
     return;
   }
+  if (F.fase === 'resto') {              // "fin": unos fragmentos sueltos, vivos, hasta que cierra el agente
+    F.mueve = (F.mueve || 0) + dt;
+    if (F.mueve >= RESTO_MUEVE_S * 1000) { F.mueve = 0; moverResto(F); }
+    return;                              // lo termina el cierre rápido, cuando llega el agente siguiente
+  }
   // pierde: otras cabezas se le superponen al azar, continuamente
-  const prog = Math.min(1, F.t / (PERDIDA_S * 1000));
-  const quedan = Math.ceil(F.total * (1 - prog));
+  llenasAhora = contarLlenas();
+  const prog = Math.min(1, F.t / F.perdidaMs);
+  // Con "fin" la pérdida no baja de un resto: si el agente se alarga (modo
+  // manual, velocidad más lenta) la figura sigue ahí, en fragmentos, hasta
+  // que de verdad entra el siguiente. Si se acorta, el cierre rápido la corta.
+  const piso = F.hastaFin && !F.rapido ? Math.ceil(F.total * RESTO_FIN) : 0;
+  const quedan = Math.max(piso, Math.ceil(F.total * (1 - prog)));
   // Con séquito (Señora K → Monstruos) la silueta de la figura se conserva y
   // se rellena de otras caras: los Monstruos son collages a sangre y, si
   // pudieran crecer al vacío, terminarían en un cuadrado. Sin séquito, la
   // pérdida también se come el vacío de alrededor (vuelven orejas, antenas).
   const comer = elencoFijo ? (v) => celdas[v] === F.f : (v) => celdas[v] === F.f || !celdas[v];
-  while (F.restan.length > quedan) {
+  while ((cuenta.get(F.f) || 0) > quedan && F.restan.length) {   // cuenta lo que de verdad queda en pantalla
     const c = F.restan.pop();
     if (celdas[c] !== F.f) continue;
     const g = candidato(c, elenco, F.f);
@@ -495,10 +610,30 @@ function avanzarFigura(dt) {
     if (c != null) { const g = candidato(c, elenco, F.f); if (g) parche(c, g, 1 + rnd(2), (v) => !celdas[v]); }
   }
   if (prog >= 1) {
+    if (piso > 0) { F.fase = 'resto'; F.t = 0; F.mueve = 0; return; }
     for (const c of F.restan) if (celdas[c] === F.f) poner(c, candidato(c, elenco, F.f));
+    const conSequito = !!elencoFijo;
     figura = null; elencoFijo = null;    // las reservadas se van: quedan huérfanas y se reemplazan primero
     proximo = reloj;
+    // Cambio de agente, o fin de un séquito (los Monstruos): el mosaico se
+    // baraja en 1,4 s y las reservadas se van por cortes, sin quedarse de base.
+    if (F.rapido || conSequito) barajadaHasta = reloj + 1400;
   }
+}
+
+/* El resto de una figura "fin" no se queda pegado: un fragmento suyo se
+   va (lo reemplaza otra cabeza) y aparece otro donde ella tiene carne. */
+function moverResto(F) {
+  const suyas = [], sitios = [];
+  for (let c = 0; c < NN; c++) {
+    if (celdas[c] === F.f) suyas.push(c);
+    else if (!muda.has(c) && CAB.get(F.f).oc[c] > CARNE) sitios.push(c);
+  }
+  const sale = azar(suyas), entra = azar(sitios);
+  if (sale == null || entra == null) return;
+  poner(sale, candidato(sale, elenco, F.f));
+  if (desp.delete(entra)) sucio = true;
+  poner(entra, F.f);
 }
 
 /* ═══ @CLON vaciar: la muda ═══ */
@@ -519,6 +654,7 @@ function iniciarVaciado(segundos) {
 }
 function avanzarVaciado(dt) {
   const V = vaciado; V.t += dt;
+  llenasAhora = contarLlenas();
   if (V.fase === 'retrato') {            // tu cara, entre especies
     const meta = Math.ceil(Math.min(1, V.t / (ENSAMBLE_S * 1000)) * V.plan.length);
     while (V.hechas < meta) {
@@ -593,9 +729,10 @@ function abrirAudio() {
 // analizador arranca solo, sin que nadie toque el iframe.
 abrirAudio();
 setTimeout(() => { try { if (actx && actx.state === 'suspended') actx.resume(); } catch (_) {} }, 600);
-addEventListener('click', abrirAudio, { once: true });
-addEventListener('touchstart', () => { abrirAudio(); try { actx?.resume(); } catch (_) {} }, { once: true });
-addEventListener('keydown', abrirAudio, { once: true });
+// Cualquier toque, clic o tecla despierta el audio (no solo el primero: si
+// Android lo vuelve a suspender, el siguiente toque lo reanuda).
+const despertarAudio = () => { abrirAudio(); try { if (actx && actx.state !== 'running') actx.resume(); } catch (_) {} };
+for (const tipo of ['pointerdown', 'touchstart', 'click', 'keydown']) addEventListener(tipo, despertarAudio, { passive: true });
 
 /* hablar: SOLO si el bloque trae audio. Un bloque sin voz no mueve la boca. */
 function hablar(texto, archivo, sonido) {
@@ -682,12 +819,16 @@ function cuadro(ahora) {
   const dt = Math.min(60000, Math.max(0, ahora - ultimoCuadro)); ultimoCuadro = ahora;
   if (!listo) return;
   // Pausa: todo quieto. Silencio: el tiempo del rostro corre a un cuarto.
-  const velo = pausa ? 0 : enSilencio() ? 0.25 : 1;
+  const velo = pausa ? 0 : enSilencio() ? RITMO_SILENCIO : 1;
   const dtE = dt * velo;
   reloj += dtE;
   if (figura) avanzarFigura(dtE);
   else if (vaciado && vaciado.fase !== 'hecho') avanzarVaciado(dtE);
-  else if (!pausa && reloj >= proximo) { tick(); proximo = reloj + intervalo(); }
+  // El mosaico sigue vivo alrededor de una figura que se pierde (no en su
+  // ensamble ni en su sostén, ni con séquito: ahí manda la figura).
+  const vivo = figura ? (figura.fase === 'pierde' || figura.fase === 'resto') && !elencoFijo
+                      : !(vaciado && vaciado.fase !== 'hecho');
+  if (vivo && !pausa && reloj >= proximo) { tick(); proximo = reloj + intervalo(); }
 
   // Análisis real solo si el contexto de audio corre: suspendido (un celular
   // que nadie tocó), el analizador lee ceros y la boca quedaría muerta.
@@ -718,14 +859,17 @@ function alEvento(m) {
   const d = m.datos ?? {};
   if (ACTIVIDAD.has(m.tipo)) poderHabilitado = true;
   switch (m.tipo) {
-    case 'afecto':    aplicarEstado(d.estado); break;
+    // afecto = entra un agente (o el preludio, o el cierre): la figura del
+    // agente anterior no se hereda.
+    case 'afecto':    if (figura) cierreRapido(); aplicarEstado(d.estado); break;
     case 'rumbo':     fijarRumbo(d.estado); break;
     case 'segmento':  hablar(d.texto, d.audio, d.sonido); break;
     // El preludio va antes de todo agente: rostro neutro, aunque el servidor
     // recuerde el rumbo del ensayo anterior.
-    case 'preludio':  restaurar(); fijarRumbo(null); hablar(d.texto, d.audio); break;
+    // Una función nueva: las caras de poder vuelven a estar sin presentar.
+    case 'preludio':  revelados.clear(); restaurar(); fijarRumbo(null); hablar(d.texto, d.audio); break;
     case 'agente_id': hablar(d.texto, d.audio); break;   // ya no cambia el rostro: eso lo dice @CLON
-    case 'clon':      forzarFigura(d.figura, d.segundos); break;
+    case 'clon':      forzarFigura(d.figura, d.segundos, d); break;
     case 'silencio':  callar(d.segundos); break;
     case 'pausa':     fijarPausa(!!d.activa); break;
     case 'velocidad':
@@ -751,7 +895,13 @@ function diagnostico() {
   const lineas = [
     `perfil ${estado} · rumbo ${rumbo ?? '—'} · fuera de sitio ${desp.size}`,
     `elenco (${elenco.length}): ${elenco.map(nombre).join(', ')}${elencoFijo ? '  [séquito]' : ''}`,
-    F ? `figura ${nombre(F.f)} · ${F.fase} ${(F.t / 1000).toFixed(1)} s` + (F.fase === 'sostiene' ? ` / ${F.sostenMs / 1000}` : '') +
+    (() => { const ll = contarLlenas() || 1; let mx = 0, quien = '';
+             for (const [f, n] of cuenta) if (n > mx) { mx = n; quien = f; }
+             return `cabeza con más celdas: ${quien ? nombre(quien) : '—'} ${Math.round(100 * mx / ll)} % · ${ll} celdas llenas`; })(),
+    F ? `figura ${nombre(F.f)} · ${F.fase} ${(F.t / 1000).toFixed(1)} s` +
+        (F.fase === 'sostiene' ? ` / ${F.sostenMs / 1000}` : F.fase === 'pierde' ? ` / ${(F.perdidaMs / 1000).toFixed(1)}` : '') +
+        (F.fase === 'resto' ? ` · quedan ${cuenta.get(F.f) || 0} fragmentos hasta que cierre el agente`
+          : F.hastaFin ? ' · hasta el cierre del agente' : '') + (F.rapido ? ' · cierre rápido' : '') +
         (F.sequito ? ` · séquito ${F.sequito.map(nombre).join(', ')}` : '')
       : V ? `vaciar · ${V.fase} ${(V.t / 1000).toFixed(1)} s · vaciadas ${muda.size}` : 'figura —',
     `silencio ${enSilencio() ? ((silencioFin - performance.now()) / 1000).toFixed(1) + ' s' : 'no'} · pausa ${pausa ? 'SÍ' : 'no'}`,
@@ -810,6 +960,13 @@ if (DEMO) addEventListener('keydown', (e) => {
   listo = true;
   document.getElementById('carga').classList.add('oculto');
   if (DIAG) { document.getElementById('diag').style.display = 'block'; setInterval(diagnostico, 250); }
+  // Celular 2 (solo, sin el permiso de autoplay de la TV): Android no deja
+  // analizar el audio hasta el primer toque. Mientras tanto, lo pide en
+  // pantalla. En la escena compuesta nunca aparece.
+  if (!EMBEBIDO && !DEMO) setInterval(() => {
+    const bloqueado = !actx || actx.state !== 'running';
+    document.getElementById('toque').style.display = bloqueado ? 'block' : 'none';
+  }, 1000);
   // El demo es una vista previa autónoma: no escucha al servidor (si no, el
   // último estado de la escena le pisa los pasos).
   if (!DEMO) conectar();

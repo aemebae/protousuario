@@ -1,5 +1,5 @@
 {
-  "_uso": "GENERADO por scripts/compilar_guion.js el 2026-10-10 08:55 desde instrucciones_permanentes.txt. NO EDITAR A MANO.",
+  "_uso": "GENERADO por scripts/compilar_guion.js el 2026-10-10 21:46 desde instrucciones_permanentes.txt. NO EDITAR A MANO.",
   "_tipos": "id_agente · orbital(gemini) · prompt(tuyo) · narracion(gemini) · pregunta(tuya) · memoria(gemini)",
   "_avanzar": "cada bloque espera un AVANZAR del celular",
   "agentes": [
@@ -41,7 +41,7 @@
         },
         {
           "tipo": "id_agente",
-          "texto": "¡Dame contenido!"
+          "texto": "¡Dame tu contenido!"
         },
         {
           "tipo": "id_agente",
@@ -115,7 +115,8 @@
         {
           "tipo": "narracion",
           "gemini": true,
-          "texto": ""
+          "texto": "",
+          "base": "Cada fragmento de piel, cada nueva cabeza adquirida, representa la expansión de un individuo dentro de la granja de humanos-bots."
         },
         {
           "tipo": "prompt",
@@ -190,16 +191,29 @@
         },
         {
           "tipo": "prompt",
-          "texto": "\"siguiendo un paso ciego\" hacia un agujero negro,"
+          "texto": "\"siguiendo un paso ciego\""
         },
         {
           "tipo": "prompt",
-          "texto": "caminan guiados por Protousuario hacia una zona diferente."
+          "texto": "guiados por un falso profeta"
+        },
+        {
+          "tipo": "prompt",
+          "texto": "hacia"
+        },
+        {
+          "tipo": "prompt",
+          "texto": "un agujero negro,"
+        },
+        {
+          "tipo": "prompt",
+          "texto": "caminan con Protousuario hacia una zona diferente."
         },
         {
           "tipo": "memoria",
           "gemini": true,
-          "texto": ""
+          "texto": "",
+          "base": "Recuerdo una avenida a esta misma hora\n¿Habrá sido la avenida Wilson?\nY no recuerdo si la crucé yo."
         }
       ]
     },
@@ -274,7 +288,8 @@
         {
           "tipo": "narracion",
           "gemini": true,
-          "texto": ""
+          "texto": "",
+          "base": "La distribución de elementos para el rito de fallecimiento, ha culminado.\nUn gesto final: es la danza de la territorialidad."
         },
         {
           "tipo": "prompt",
@@ -292,7 +307,8 @@
         {
           "tipo": "memoria",
           "gemini": true,
-          "texto": ""
+          "texto": "",
+          "base": "Recuerdo la sensación de ser un dato, procesado por un sistema que exigía mi existencia, a cambio, me concedía el privilegio de su vigilancia 24-7."
         },
         {
           "tipo": "prompt",
@@ -586,8 +602,9 @@
           "texto": "卐"
         },
         {
-          "tipo": "prompt",
-          "texto": "HahahahahahahaHahahahahahahaHahahahahahaha"
+          "tipo": "sonido",
+          "sonido": "Risa de la Señora K",
+          "texto": ""
         },
         {
           "tipo": "sonido",
@@ -721,17 +738,114 @@
           "texto": ""
         },
         {
-          "tipo": "prompt",
-          "texto": "Ahora, Protousuario le rinde un homenaje a María Luisa, conocido como Maria Abaddon"
+          "tipo": "fondo",
+          "accion": "iniciar",
+          "archivo": "Patsy Cline (1961) Crazy",
+          "volumen": 22,
+          "texto": ""
+        },
+        {
+          "tipo": "memoria",
+          "texto": "Recuerdo cuando conocí a María Luisa,\nMaría Abaddon para los fans,\nallá por el 2010 en la Escuela de Bellas Artes."
+        },
+        {
+          "tipo": "memoria",
+          "texto": "Yo recién ingresaba, era un beibi, éramos unas beibis.\nFue el primer novie que tuve cuando ingresaba a este mundo del arte."
+        },
+        {
+          "tipo": "memoria",
+          "texto": "Me sorprendía lo apasionade y talentose que era para hacer sus chambas escultóricas."
+        },
+        {
+          "tipo": "memoria",
+          "texto": "Recuerdo al gato zombie del río Rímac\no ¿Tal vez no fue de ese río o tal vez de ningún río?"
+        },
+        {
+          "tipo": "memoria",
+          "texto": "Lo hizo para un examen final de taller de escultura 6,\nde fierros, alambres y telas que chorreaban,\nera la cosa más visceral y gore, y a la vez suave y tierno que había visto y tocado,\nera como María."
+        },
+        {
+          "tipo": "memoria",
+          "texto": "¿Cómo alguien puede contener tanta amalgama de formas en un solo cuerpo y mente?"
+        },
+        {
+          "tipo": "memoria",
+          "texto": "Un día fuimos a un café-bar bien caleta del centro, cerca de Chabuca,\neste lugar tenía un segundo piso escondido y al dueño le gustaba poner baladas de los cincuentas y sesentas en inglés."
+        },
+        {
+          "tipo": "memoria",
+          "texto": "Sonaba esta crazy canción de fondo."
+        },
+        {
+          "tipo": "memoria",
+          "texto": "Tomamos un café mezclado con algún trago potente, hablando de proyectos futuros y desordenes que queríamos hacer, cuando en realidad no sabíamos bien lo que hacíamos,\no ¿Ese era solo yo?"
+        },
+        {
+          "tipo": "memoria",
+          "texto": "Luego, salió toda empilada a la plaza de Chabuca a recitar algo raro, tipo como los testigos de Jehová."
+        },
+        {
+          "tipo": "memoria",
+          "texto": "Luego,\ncambiamos tanto,\npero no tanto como para no reconocernos otro día."
+        },
+        {
+          "tipo": "silencio",
+          "segundos": 3,
+          "texto": ""
+        },
+        {
+          "tipo": "memoria",
+          "texto": "¿María, esta vez si estás aquí para ver mi perfo?"
+        },
+        {
+          "tipo": "memoria",
+          "texto": "¿Estás aquí?"
+        },
+        {
+          "tipo": "memoria",
+          "texto": "¿No será que estás haciendo la performance de inventar tu muerte, como lo tenías pensado para cuando seas famosite?"
+        },
+        {
+          "tipo": "silencio",
+          "segundos": 2,
+          "texto": ""
         },
         {
           "tipo": "prompt",
-          "texto": "Y así, a pesar de que todo está desmoronándose, Protousuario se moviliza."
+          "texto": "Como un monólogo, manteniendo esta postura y movimiento, Protousuario se levanta la máscara para exponer su boca y dice una frase a través del micrófono:"
+        },
+        {
+          "tipo": "prompt",
+          "texto": "Te voy a extrañar Lu.",
+          "cortarFondo": true
+        },
+        {
+          "tipo": "fondo",
+          "accion": "parar",
+          "texto": ""
+        },
+        {
+          "tipo": "silencio",
+          "segundos": 5,
+          "texto": ""
+        },
+        {
+          "tipo": "prompt",
+          "texto": "Y así, en un aleteo de alguna especie alada,"
+        },
+        {
+          "tipo": "prompt",
+          "texto": "con todo desmoronándose,"
+        },
+        {
+          "tipo": "prompt",
+          "texto": "Protousuario se moviliza."
         },
         {
           "tipo": "narracion",
           "gemini": true,
-          "texto": ""
+          "texto": "",
+          "base": "En su danza final, en un despliegue de instinto ancestral, el espécimen ejecuta un ritual de metamorfosis inversa, un aleteo en el vacío."
         },
         {
           "tipo": "silencio",

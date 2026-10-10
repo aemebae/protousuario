@@ -49,6 +49,18 @@ const SILENCIO_MS = 120000;  // si el orquestador calla 2 min, vuelve el ciclo d
 // que los satélites se vean moverse de forma continua. Cuesta <2 ms porque los
 // satrec están memorizados. Súbelo a 2000 si tu laptop sufre; 0 lo desactiva.
 const TICK_MS = Number(process.env.TICK_MS || 900);
+// DENSIDAD DE LA NUBE en la pantalla (v16). Se ajusta en la misma línea con
+// la que arrancas el servidor, sin tocar ningún archivo:
+//   $env:MAX_SATELITES="todos" ; $env:TAM_SATELITE=2.6 ; $env:ABRAZO=0.5 ; node scripts\servidor_visual.js
+const CONFIG_ESCENA = {
+  tamSatelite: Number(process.env.TAM_SATELITE || 0) || null,   // px del punto (3.4 por defecto)
+  abrazo: Number(process.env.ABRAZO || 0) || null,              // 1 = altura real; 0.4 = pegados al suelo
+  alturaMax: Number(process.env.ALTURA_MAX || 0) || null,       // techo de la nube (0.45 por defecto)
+};
+// Con muchos satélites, el tic de movimiento se espacia solo para no cargar
+// la laptop: hasta 2.500 cada 0,9 s; más que eso, cada 2 s (a esa escala el
+// salto de un punto entre tic y tic no se ve).
+const tickNube = (n) => Number(process.env.TICK_MS) || (n > 2500 ? 2000 : 900);
 
 // ---------- Índice país -> posición en el GeoJSON (para resaltar en el cliente) ----------
 const paisesGeoJSON = JSON.parse(
@@ -99,7 +111,8 @@ wss.on('connection', (ws) => {
   // reenviar el estado actual al recién llegado
   enviarA(ws, 'afecto', { estado: ultimoEstado.afecto });
   enviarA(ws, 'salud', { modo: ultimoEstado.salud });
-  if (ultimoEstado.posiciones) enviarA(ws, 'posiciones', ultimoEstado.posiciones);
+  if (ultimoEstado.posiciones) enviarA(ws, 'posiciones', compactar(ultimoEstado.posiciones));
+  enviarA(ws, 'config_escena', CONFIG_ESCENA);
   if (ultimoEstado.territorio) enviarA(ws, 'territorio', ultimoEstado.territorio);
   // El rumbo también: una pantalla que se recarga a media función recupera la
   // rosa de los vientos y el clon recupera su integridad (AUTORIZADO / DESPLAZADO).
@@ -108,7 +121,50 @@ wss.on('connection', (ws) => {
   if (ultimoEstado.deriva) enviarA(ws, 'deriva', { activa: true });
   if (ultimoEstado.control) enviarA(ws, 'control_estado', ultimoEstado.control);
   ws.on('close', () => clientes.delete(ws));
+  // ── LO QUE LOS NAVEGADORES LE DICEN AL SERVIDOR (v16) ──
+  // Faltaba del todo: el celular decía "soy el control" para que no le
+  // mandaran la nube de satélites, pero nadie escuchaba. Tu celular recibía
+  // ~145 KB cada 0,9 s por el hotspot. Con 16.000 satélites habrían sido
+  // más de 2 MB por segundo: el control se habría ahogado.
+  ws.on('message', (raw) => {
+    let m; try { m = JSON.parse(String(raw)); } catch { return; }
+    if (m?.soy === 'control' || m?.soy === 'clon') ES_CONTROL.add(ws);
+    // La escena avisa que la VOZ de un bloque terminó de verdad. Con eso el
+    // orquestador pasa al siguiente, en vez de adivinar con un reloj.
+    if (m?.tipo === 'fin_bloque' && m.token != null) entregarComando('fin:' + m.token);
+  });
 });
+
+// La nube viaja COMPACTA: [lat, lon, alt, lat, lon, alt, …] redondeada.
+// Con nombre y clave de cada satélite pesaba ~6 veces más. El servidor se
+// queda con la versión completa (la necesita para seguir moviéndolos).
+function compactar(pos, tick = false) {
+  if (!pos) return pos;
+  const n = pos.todos || [];
+  const nube = new Array(n.length * 3);
+  for (let i = 0; i < n.length; i++) {
+    nube[i * 3] = Math.round(n[i].lat * 100) / 100;
+    nube[i * 3 + 1] = Math.round(n[i].lon * 100) / 100;
+    nube[i * 3 + 2] = Math.round(n[i].altKm ?? 500);
+  }
+  return { nube, protagonista: pos.protagonista ?? null, protagonistaB: pos.protagonistaB ?? null,
+           ...(tick ? { tick: true } : {}) };
+}
+function emitirPosiciones(pos, tick = false) { emitir('posiciones', compactar(pos, tick)); }
+
+// ── PALESTINA, NUNCA ISRAEL ──
+// Mientras el territorio sea la Franja de Gaza, el país que se resalta y se
+// nombra en pantalla es Palestina, tenga el satélite debajo Israel, Egipto o
+// el mar. Y en cualquier otro momento, si debajo queda Israel, se muestra
+// Palestina. Es una decisión de la obra.
+function palestinaSiempre(ter) {
+  if (!ter) return ter;
+  const enGaza = /gaza/i.test(ter.region ?? '');
+  if (enGaza || /^israel$/i.test(String(ter.nombre ?? '').trim())) {
+    return { ...ter, nombre: 'Palestina', tipo: 'pais', paisIdx: undefined };
+  }
+  return ter;
+}
 
 function enviarA(ws, tipo, datos) {
   if (ws.readyState === 1) ws.send(JSON.stringify({ tipo, datos, t: Date.now() }));
@@ -168,16 +224,16 @@ app.post('/evento', (req, res) => {
         lat: d.protagonista_b.lat, lon: d.protagonista_b.lon, altKm: d.protagonista_b.altKm,
       } : null;
       ultimoEstado.posiciones = { todos: d.todos || [], protagonista, protagonistaB };
-      emitir('posiciones', ultimoEstado.posiciones);
+      emitirPosiciones(ultimoEstado.posiciones);
 
       const lug = resolverLugar(d.lat, d.lon);
-      ultimoEstado.territorio = {
+      ultimoEstado.territorio = palestinaSiempre({
         tipo: d.pais_tipo, nombre: d.pais,
         paisIdx: indiceDePais(d.pais, d.pais_tipo),
         region: d.region, region_real: d.region_real,
         distrito: lug?.tipo === 'distrito' || lug?.tipo === 'sitio' ? lug.nombre : null,
         ciudad: lug?.tipo === 'ciudad' ? lug.nombre : null,
-      };
+      });
       emitir('territorio', ultimoEstado.territorio);
     }
     return res.json({ ok: true });
@@ -224,8 +280,10 @@ function entregarComando(cmd) {
     resolver(cmd);
   } else {
     colaComandos.push(cmd);   // llegó antes de que el orquestador preguntara
+    // Un "fin" que nadie recogió no debe acumularse.
+    while (colaComandos.length > 40) colaComandos.shift();
   }
-  emitir('control', { comando: cmd, t: Date.now() });
+  if (!String(cmd).startsWith('fin:')) emitir('control', { comando: cmd, t: Date.now() });
 }
 
 // ───────── AUDIO ─────────
@@ -431,16 +489,16 @@ async function cicloEspera() {
         elevacionDeg: dato.elevacionDeg, rangeKm: dato.rangeKm,
       };
       ultimoEstado.posiciones = { todos: dato.todos, protagonista };
-      emitir('posiciones', ultimoEstado.posiciones);
+      emitirPosiciones(ultimoEstado.posiciones);
 
       const lug = resolverLugar(dato.lat, dato.lon);
-      ultimoEstado.territorio = {
+      ultimoEstado.territorio = palestinaSiempre({
         tipo: dato.pais_tipo, nombre: dato.pais,
         paisIdx: indiceDePais(dato.pais, dato.pais_tipo),
         region: dato.region, region_real: dato.region_real,
         distrito: lug?.tipo === 'distrito' || lug?.tipo === 'sitio' ? lug.nombre : null,
         ciudad: lug?.tipo === 'ciudad' ? lug.nombre : null,
-      };
+      });
       emitir('territorio', ultimoEstado.territorio);
     }
   } catch (e) {
@@ -482,7 +540,16 @@ function tickRapido() {
   };
   const protagonista = mover(pos.protagonista);
   const protagonistaB = mover(pos.protagonistaB);
-  emitir('posiciones', { todos, protagonista, protagonistaB, tick: true });
+  emitirPosiciones({ todos, protagonista, protagonistaB }, true);
+}
+// El tic se reprograma solo, más espaciado cuanto más grande es la nube.
+function cicloTick() {
+  const t0 = Date.now();
+  try { tickRapido(); } catch (e) { console.warn('[visual] tic:', e.message); }
+  const n = ultimoEstado.posiciones?.todos?.length ?? 0;
+  const costo = Date.now() - t0;
+  if (n > 2500 && costo > 400) console.warn(`[visual] mover ${n} satélites tomó ${costo} ms: baja MAX_SATELITES si notas lentitud.`);
+  setTimeout(cicloTick, Math.max(tickNube(n), costo * 2));
 }
 
 server.listen(PUERTO, '0.0.0.0', () => {
@@ -506,5 +573,5 @@ server.listen(PUERTO, '0.0.0.0', () => {
   console.log('     node --env-file=.env scripts\\correr_performance.js\n');
   cicloEspera();
   setInterval(cicloEspera, POLL_MS);
-  if (TICK_MS > 0) setInterval(tickRapido, TICK_MS);
+  if (TICK_MS !== 0 || !process.env.TICK_MS) setTimeout(cicloTick, 900);
 });

@@ -13,8 +13,16 @@
 #        @AGENTE id | Nombre visible | ESTADO
 #        @ID            su presentación (texto tuyo)
 #        @ORBITAL       hueco: lo escribe Gemini en vivo
-#        @NATGEO        hueco: lo escribe Gemini en vivo
-#        @MEMORIA       hueco: lo escribe Gemini en vivo
+#        @NATGEO        si le escribes una FRASE BASE debajo, la voz la dice
+#        @MEMORIA       siempre y Gemini agrega un párrafo (total ≤ 60 palabras).
+#                       Sin frase debajo, lo escribe todo Gemini.
+#        @MEMORIA TAL CUAL   tu texto, con la voz de la máquina, sin Gemini.
+#        @NATGEO TAL CUAL    (líneas seguidas = una estrofa = un audio)
+#        @FONDO archivo 22%  música de "sonidos externos" DEBAJO de la voz
+#        @FONDO FIN          la corta en la última palabra de la línea de arriba
+#        @SILENCIO [s]       reposo escrito (5 s si no pones número)
+#        @SONIDO archivo     un mp3 tuyo, en su propio turno
+#        @CLON figura [s]    el clon toma ese rostro
 #        @PROMPT        texto tuyo (lo que sigue, hasta la próxima marca)
 #        @PREGUNTA      pregunta que TÚ dices al micrófono
 #        @CIERRE   
@@ -24,8 +32,7 @@
 # Si quieres que alguna vuelva a la escena de un agente, quítale el # y
 # muévela ARRIBA del @DERIVA, con su propia línea @PREGUNTA encima.
 
-
-@CIERRE        el último texto de la obra
+#        @CIERRE        el último texto de la obra
 #   · El orden de este archivo ES el orden de la escena. Literal.
 # ═══════════════════════════════════════════════════════════════
 
@@ -50,7 +57,7 @@ Ha ingresado a la Sala de exhibición del MINCUL.
 
 Lleva añadida una piel anfibia-batracia, exótica, de alta costura ''Made in Gamarra'', de tonalidades azuladas con patrones naranjas y brillo. Ese contraste de colores nos alerta de su alto nivel de veneno en la sangre.
 
-Unas garras escamadas, hacen juego con sus botas, travestidas de obrero-gótico de plataforma, con alta probabilidad de haber sido comprado con cupones de descuento en Temu.
+Unas garras escamadas, hacen juego con sus botas, travestidas de obrero-punk de plataforma, con alta probabilidad de haber sido comprado con cupones de descuento en Temu.
 
 Estas son la base que sostiene una especie de exoesqueleto protésico, una de tipo pulpo 🐙 tentacular en su torso y espalda, llena de elementos utilitarios y también,
 
@@ -99,7 +106,7 @@ Aparezco cuando los satélites Starlink pasan sobre vuestras cabezas.
 
 Esta performance no es gratuita. Se les cobrará aranceles con lo más valioso del momento: 
 
-¡Dame contenido!
+¡Dame tu contenido!
 
 Ahora, Protousuario se pone en cuatro, apoyando sus extremidades superiores sobre el taburete... a la espera.
 
@@ -140,6 +147,8 @@ Alguien lo agarra.
 
 
 @NATGEO
+# Tu frase base (la voz la dice siempre); Gemini agrega un párrafo. Total ≤ 60 palabras.
+Cada fragmento de piel, cada nueva cabeza adquirida, representa la expansión de un individuo dentro de la granja de humanos-bots.
 
 
 @PROMPT
@@ -182,14 +191,22 @@ en una fila de serpiente,
 
 como una alineación de planetas
 
-"siguiendo un paso ciego" hacia un agujero negro,
+"siguiendo un paso ciego" 
 
-caminan guiados por Protousuario hacia una zona diferente.
+guiados por un falso profeta
+
+hacia
+
+un agujero negro,
+
+caminan con Protousuario hacia una zona diferente.
 
 
 @MEMORIA
-
-# Generado por Gemini.
+# Tu frase base (la voz la dice siempre); Gemini agrega un párrafo. Total ≤ 60 palabras.
+Recuerdo una avenida a esta misma hora
+¿Habrá sido la avenida Wilson?
+Y no recuerdo si la crucé yo.
 
 
 # ──────────────────────────────────────────────────────────
@@ -264,6 +281,9 @@ Sigue con movimientos lentos que asemejan al de las piernas de los humanos al pe
 
 
 @NATGEO
+# Tu frase base (la voz la dice siempre); Gemini agrega un párrafo. Total ≤ 60 palabras.
+La distribución de elementos para el rito de fallecimiento, ha culminado.
+Un gesto final: es la danza de la territorialidad.
 
 
 @PROMPT
@@ -275,8 +295,8 @@ Como un monólogo, manteniendo esta postura y movimiento, hace una pregunta a tr
 @SILENCIO 5
 
 @MEMORIA
-
-# Generado por Gemini.
+# Tu frase base (la voz la dice siempre); Gemini agrega un párrafo. Total ≤ 60 palabras.
+Recuerdo la sensación de ser un dato, procesado por un sistema que exigía mi existencia, a cambio, me concedía el privilegio de su vigilancia 24-7.
 
 
 @PROMPT
@@ -446,11 +466,9 @@ Abasho
 @SILENCIO 3
 
 
-卐
+# 卐
 
-# Risa de la Señora K
-HahahahahahahaHahahahahahahaHahahahahahaha
-# (por 10 segundos)
+@SONIDO Risa de la Señora K
 
 
 @SONIDO Sigan haciendo su tap tap tap
@@ -542,17 +560,91 @@ Protousuario se detiene.
 @SILENCIO 3
 
 
-# @MEMORIA Memoria episódica sobre María Abaddon
+# ─── Memoria episódica sobre María Abaddon ────────────────────────
+# @MEMORIA TAL CUAL: tu texto, con la voz de la máquina, sin que Gemini
+# agregue nada. Las líneas seguidas forman una estrofa (un solo audio);
+# una línea en blanco separa estrofas.
+# "Crazy" suena debajo, bajito, desde la primera estrofa hasta la última
+# palabra de "Te voy a extrañar Lu." — ahí la corta @FONDO FIN, en seco.
+# El 22% es el volumen: súbelo o bájalo aquí mismo.
+
+
+@FONDO Patsy Cline (1961) Crazy 22%
+
+
+@MEMORIA TAL CUAL
+
+Recuerdo cuando conocí a María Luisa,
+María Abaddon para los fans,
+allá por el 2010 en la Escuela de Bellas Artes.
+
+Yo recién ingresaba, era un beibi, éramos unas beibis.
+Fue el primer novie que tuve cuando ingresaba a este mundo del arte.
+
+Me sorprendía lo apasionade y talentose que era para hacer sus chambas escultóricas.
+
+Recuerdo al gato zombie del río Rímac
+o ¿Tal vez no fue de ese río o tal vez de ningún río?
+
+Lo hizo para un examen final de taller de escultura 6,
+de fierros, alambres y telas que chorreaban, 
+era la cosa más visceral y gore, y a la vez suave y tierno que había visto y tocado,
+era como María.
+
+¿Cómo alguien puede contener tanta amalgama de formas en un solo cuerpo y mente?
+
+Un día fuimos a un café-bar bien caleta del centro, cerca de Chabuca,
+este lugar tenía un segundo piso escondido y al dueño le gustaba poner baladas de los cincuentas y sesentas en inglés.
+
+Sonaba esta crazy canción de fondo.
+
+Tomamos un café mezclado con algún trago potente, hablando de proyectos futuros y desordenes que queríamos hacer, cuando en realidad no sabíamos bien lo que hacíamos,
+o ¿Ese era solo yo?
+
+Luego, salió toda empilada a la plaza de Chabuca a recitar algo raro, tipo como los testigos de Jehová.
+
+Luego,
+cambiamos tanto,
+pero no tanto como para no reconocernos otro día.
+
+
+@SILENCIO 3
+
+
+¿María, esta vez si estás aquí para ver mi perfo?
+
+¿Estás aquí?
+
+¿No será que estás haciendo la performance de inventar tu muerte, como lo tenías pensado para cuando seas famosite?
+
+
+@SILENCIO 2
 
 
 @PROMPT
 
-Y así, a pesar de que todo está desmoronándose, Protousuario se moviliza.
+Como un monólogo, manteniendo esta postura y movimiento, Protousuario se levanta la máscara para exponer su boca y dice una frase a través del micrófono:
+
+Te voy a extrañar Lu.
+
+@FONDO FIN
+
+
+@SILENCIO 5
+
+
+@PROMPT
+
+Y así, en un aleteo de alguna especie alada, 
+
+con todo desmoronándose, 
+
+Protousuario se moviliza.
 
 
 @NATGEO
-
-# Generado por Gemini.
+# Tu frase base (la voz la dice siempre); Gemini agrega un párrafo. Total ≤ 60 palabras.
+En su danza final, en un despliegue de instinto ancestral, el espécimen ejecuta un ritual de metamorfosis inversa, un aleteo en el vacío.
 
 
 @SILENCIO
