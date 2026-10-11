@@ -105,13 +105,20 @@ const clientes = new Set();
 // (o que recargas a media performance) no aparezca vacío.
 const ultimoEstado = { afecto: 'AUTORITARIO', salud: 'ONLINE_COMPLETO', posiciones: null, territorio: null };
 
-wss.on('connection', (ws) => {
+wss.on('connection', (ws, req) => {
   clientes.add(ws);
-  console.log(`[visual] navegador conectado (${clientes.size} activo/s)`);
+  // ── LA NUBE DE SATÉLITES, SOLO A LA ESCENA (v17) ──
+  // La escena corre en ESTA laptop: recibe la nube desde el primer instante.
+  // Un celular (control o clon) NO la recibe nunca: por el hotspot eran
+  // hasta 270 KB cada 2 s que ninguno de los dos usa. Una escena abierta en
+  // otro aparato la recibe en cuanto dice "soy la escena".
+  const local = esDeEstaLaptop(req);
+  if (local) ES_ESCENA.add(ws);
+  console.log(`[visual] navegador conectado (${clientes.size} activo/s)${local ? '' : ' · desde la red: ' + ipDe(req)}`);
   // reenviar el estado actual al recién llegado
   enviarA(ws, 'afecto', { estado: ultimoEstado.afecto });
   enviarA(ws, 'salud', { modo: ultimoEstado.salud });
-  if (ultimoEstado.posiciones) enviarA(ws, 'posiciones', compactar(ultimoEstado.posiciones));
+  if (ultimoEstado.posiciones && local) enviarA(ws, 'posiciones', compactar(ultimoEstado.posiciones));
   enviarA(ws, 'config_escena', CONFIG_ESCENA);
   if (ultimoEstado.territorio) enviarA(ws, 'territorio', ultimoEstado.territorio);
   // El rumbo también: una pantalla que se recarga a media función recupera la
@@ -128,7 +135,11 @@ wss.on('connection', (ws) => {
   // más de 2 MB por segundo: el control se habría ahogado.
   ws.on('message', (raw) => {
     let m; try { m = JSON.parse(String(raw)); } catch { return; }
-    if (m?.soy === 'control' || m?.soy === 'clon') ES_CONTROL.add(ws);
+    if (m?.soy === 'control' || m?.soy === 'clon') { ES_CONTROL.add(ws); ES_ESCENA.delete(ws); }
+    if (m?.soy === 'escena' && !ES_ESCENA.has(ws)) {
+      ES_ESCENA.add(ws);
+      if (ultimoEstado.posiciones) enviarA(ws, 'posiciones', compactar(ultimoEstado.posiciones));
+    }
     // La escena avisa que la VOZ de un bloque terminó de verdad. Con eso el
     // orquestador pasa al siguiente, en vez de adivinar con un reloj.
     if (m?.tipo === 'fin_bloque' && m.token != null) entregarComando('fin:' + m.token);
@@ -171,6 +182,22 @@ function enviarA(ws, tipo, datos) {
 }
 
 const ES_CONTROL = new WeakSet();
+const ES_ESCENA = new WeakSet();
+/** IP del navegador que se conecta, sin el prefijo IPv6 ("::ffff:"). */
+function ipDe(req) {
+  let a = req?.socket?.remoteAddress || '';
+  if (a.startsWith('::ffff:')) a = a.slice(7);
+  return a;
+}
+/** ¿El navegador corre en esta misma laptop (localhost o su propia IP)? */
+function esDeEstaLaptop(req) {
+  const a = ipDe(req);
+  if (a === '127.0.0.1' || a === '::1' || a.startsWith('127.')) return true;
+  for (const lista of Object.values(networkInterfaces())) {
+    for (const i of lista || []) if (i.address === a) return true;
+  }
+  return false;
+}
 // Eventos pesados que solo tienen sentido en la pantalla grande.
 const SOLO_ESCENA = new Set(['posiciones']);
 
@@ -181,7 +208,7 @@ function emitir(tipo, datos) {
     if (ws.readyState !== 1) continue;
     // Al celular no le mandamos la nube de satélites: con 1000 satélites eso
     // son ~120 KB cada 900 ms viajando por el hotspot para nada.
-    if (pesado && ES_CONTROL.has(ws)) continue;
+    if (pesado && !ES_ESCENA.has(ws)) continue;
     ws.send(msg);
   }
 }
@@ -511,14 +538,54 @@ async function cicloEspera() {
 // En el celular, `localhost` ES EL CELULAR. Hay que escribir la IP de la
 // LAPTOP. Este bloque la imprime en grande al arrancar para que no haya
 // que adivinarla nunca más, y la reimprime si cambias de red (hotspot).
+const ADAPTADOR_VIRTUAL = /vethernet|virtualbox|vmware|hyper-v|wsl|docker|bluetooth|tailscale|zerotier|hamachi|radmin|npcap|vpn/i;
 function direccionesLan() {
   const salida = [];
   for (const [nombre, lista] of Object.entries(networkInterfaces())) {
     for (const i of lista || []) {
-      if (i.family === 'IPv4' && !i.internal) salida.push({ nombre, ip: i.address });
+      if ((i.family !== 'IPv4' && i.family !== 4) || i.internal) continue;
+      // 169.254.x.x = Windows no consiguió IP en esa red: no sirve para nada.
+      if (i.address.startsWith('169.254.')) continue;
+      salida.push({ nombre, ip: i.address, virtual: ADAPTADOR_VIRTUAL.test(nombre) });
     }
   }
-  return salida;
+  // Las del Wi-Fi primero (ahí llega el hotspot); las virtuales (WSL,
+  // VirtualBox…) no las alcanza ningún celular: solo si no hay otra.
+  const peso = (x) => (x.virtual ? 2 : /wi-?fi|wlan|inal[aá]mbric|wireless/i.test(x.nombre) ? 0 : 1);
+  const reales = salida.filter((x) => !x.virtual);
+  return (reales.length ? reales : salida).sort((a, b) => peso(a) - peso(b));
+}
+
+// ── LOS LINKS, CON LA IP REAL DE LA LAPTOP (control Y clon) ──
+// Volvió el link del Celular 2: lo había puesto el chat del clon (v4) y se
+// perdió al copiar el servidor de la v16. Si la red cambia con el servidor
+// prendido (casa → hotspot), la IP cambia y los links se reimprimen solos.
+let firmaRed = '';
+function imprimirLinks(aviso = '') {
+  const ips = direccionesLan();
+  firmaRed = ips.map((x) => x.ip).join(',');
+  console.log('\n════════════════════════════════════════════════════');
+  if (aviso) console.log('  ' + aviso + '\n');
+  console.log('  ESCENA COMPUESTA (proyector)  http://localhost:' + PUERTO);
+  console.log('  CONTROL (esta laptop)         http://localhost:' + PUERTO + '/control.html');
+  console.log('  CLON (esta laptop)            http://localhost:' + PUERTO + '/clon.html');
+  console.log('  ──────────────────────────────────────────────────');
+  if (ips.length) {
+    console.log('  CELULAR 1 · CONTROL (con http:// y todo):');
+    for (const { nombre, ip } of ips) console.log(`     http://${ip}:${PUERTO}/control.html      [${nombre}]`);
+    console.log('  CELULAR 2 · CLON TRANSESPECIE (con http:// y todo):');
+    for (const { nombre, ip } of ips) console.log(`     http://${ip}:${PUERTO}/clon.html         [${nombre}]`);
+    console.log('  ENSAYO del Celular 2 (retraso de la boca):');
+    console.log(`     http://${ips[0].ip}:${PUERTO}/clon.html?diag=1`);
+  } else {
+    console.log('  ⚠ Sin red: no hay IP de LAN. Conecta el Wi-Fi / hotspot.');
+    console.log('    (Apenas haya red, los links salen solos aquí.)');
+  }
+  console.log('════════════════════════════════════════════════════');
+}
+function vigilarRed() {
+  const firma = direccionesLan().map((x) => x.ip).join(',');
+  if (firma !== firmaRed) imprimirLinks('⚠ LA RED CAMBIÓ. Links NUEVOS (los de arriba ya no sirven):');
 }
 
 // 0.0.0.0 explícito: escucha en TODAS las interfaces (Wi-Fi, hotspot,
@@ -553,20 +620,8 @@ function cicloTick() {
 }
 
 server.listen(PUERTO, '0.0.0.0', () => {
-  const ips = direccionesLan();
-  console.log('\n════════════════════════════════════════════════════');
-  console.log('  ESCENA COMPUESTA (proyector)  http://localhost:' + PUERTO);
-  console.log('  CONTROL (esta laptop)         http://localhost:' + PUERTO + '/control.html');
-  console.log('  ──────────────────────────────────────────────────');
-  if (ips.length) {
-    console.log('  DESDE EL CELULAR, escribe UNA de estas (con http:// y todo):');
-    for (const { nombre, ip } of ips) {
-      console.log(`     http://${ip}:${PUERTO}/control.html      [${nombre}]`);
-    }
-  } else {
-    console.log('  ⚠ Sin red: no hay IP de LAN. Conecta el Wi-Fi / hotspot.');
-  }
-  console.log('════════════════════════════════════════════════════');
+  imprimirLinks();
+  setInterval(vigilarRed, 4000);
   console.log(`  Grupo satelital: ${GRUPO_SATELITAL} | ciclo de espera: ${POLL_MS / 1000}s`);
   console.log('  Arranca la performance DESDE EL CELULAR con ▶ EMPEZAR,');
   console.log('  o a mano en otra terminal:');

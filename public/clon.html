@@ -34,8 +34,17 @@
 <script>
 'use strict';
 /* ═══════════════════════════════════════════════════════════════════════
-   CLON TRANSESPECIE — Capa de encarnación  ·  v4 (cierre de VIDEOAKT 5)
+   CLON TRANSESPECIE — Capa de encarnación  ·  v4.1 (cierre de VIDEOAKT 5)
    PROTOUSUARIO / [AGENTE-ESPEJO] · Museo de la Nación
+
+   QUÉ CAMBIÓ EN v4.1 (sábado 10, día de la función; para el servidor v16)
+   · Se identifica al conectarse ({ soy: 'clon' }): el servidor ya no le manda
+     la nube de satélites.
+   · La boca usa `dur` (la duración real del mp3) para saber cuándo termina,
+     sin esperar a que cargue el audio. Tus sonidos van a 1×, como en la escena.
+   · @FONDO: mientras suena la canción (la memoria de María Abaddon) el
+     rostro se aquieta; con el corte en seco se baraja (CALMA_CON_FONDO).
+     La boca nunca se mueve con el fondo: el clon no lo oye.
 
    QUÉ CAMBIÓ EN v4
    · Ninguna cabeza manda. En la v3 la cabeza dominante ocupaba en promedio
@@ -140,6 +149,11 @@ const SEQUITO_SOLO = true;
 // La copia silenciosa que mueve la boca se descarga aparte de la voz que suena.
 // false = como siempre.  true = cuando la copia termina de descargarse, salta
 // hasta donde ya va la voz real. También: ?sincro=1 o ?sincro=0 en la URL.
+// Mientras suena un @FONDO (hoy: "Crazy", la memoria de María Abaddon) el
+// rostro se aquieta: ritmo y elenco de LIMINAL, sin caras de poder, todo en
+// su sitio. Cuando el fondo se corta, vuelve el estado del agente con un
+// barajado de 1,4 s. false = el fondo no cambia nada.
+const CALMA_CON_FONDO = true;
 const SINCRO_BOCA = false;
 const SINCRO_EXTRA_MS = 0;   // si aún va tarde, súmale aquí (o ?sincroms=80)
 const RITMO_SILENCIO = 0.25; // en @SILENCIO el tiempo del rostro corre a un cuarto
@@ -234,8 +248,10 @@ let reloj = 0, proximo = 0, barajadaHasta = 0, ticks = 0, ultimaSemilla = -1, fr
 let listo = false, sucio = true, ultimoAviso = '';
 function avisar(t) { ultimoAviso = t; console.warn('[clon] ' + t); }
 
-const perfil = () => PERFIL[estado] ?? PERFIL.PANOPTICO;
-const integ = () => RUMBO[rumbo] ?? RUMBO.NEUTRO;
+let fondoActivo = false;                // suena un @FONDO (la escena lo reproduce; el clon no)
+const calma = () => CALMA_CON_FONDO && fondoActivo;
+const perfil = () => calma() ? PERFIL.LIMINAL : (PERFIL[estado] ?? PERFIL.PANOPTICO);
+const integ = () => calma() ? RUMBO.NEUTRO : (RUMBO[rumbo] ?? RUMBO.NEUTRO);
 const enSilencio = () => performance.now() < silencioFin;
 // Una celda está libre para el mosaico si no es parte de la muda ni de la
 // figura que se está perdiendo (esas solo las suelta la propia pérdida).
@@ -715,7 +731,7 @@ function dibujar() {
 
 /* ═══ VOZ: se analiza en silencio; el sonido sale por la página principal ═══ */
 let actx = null, analiz = null, datos = null, voz = null, nodoVoz = null;
-let hablando = false, fuenteReal = false, finHabla = 0, amp = 0, velocidadVoz = 1;
+let hablando = false, fuenteReal = false, finHabla = 0, amp = 0, velocidadVoz = 1, vozEsSonido = false;
 const retrasos = [];                     // llegada del evento → la copia suena (ms)
 function abrirAudio() {
   if (actx) return;
@@ -735,14 +751,21 @@ const despertarAudio = () => { abrirAudio(); try { if (actx && actx.state !== 'r
 for (const tipo of ['pointerdown', 'touchstart', 'click', 'keydown']) addEventListener(tipo, despertarAudio, { passive: true });
 
 /* hablar: SOLO si el bloque trae audio. Un bloque sin voz no mueve la boca. */
-function hablar(texto, archivo, sonido) {
+function hablar(texto, archivo, sonido, dur) {
   // @SONIDO (la rana, el Kuak) pasa por el mismo analizador: el clon croa.
   const url = sonido ? '/sonido/' + encodeURIComponent(sonido) : archivo ? '/audio/' + archivo : null;
   if (!url) return;
   silencioFin = 0;
   hablando = true; fuenteReal = false;
   const llegada = performance.now();
-  finHabla = llegada + Math.max(2500, (texto?.length ?? 40) * 72) / velocidadVoz;
+  // Tus sonidos suenan a 1× en la escena; la voz, a la velocidad del celular.
+  vozEsSonido = !!sonido;
+  const ritmo = sonido ? 1 : velocidadVoz;
+  // `dur` (v16): la duración real del mp3 a 1×, que manda el orquestador. Con
+  // ella la boca sabe cuándo termina sin esperar a que cargue el audio (si el
+  // Celular 2 va lento por el hotspot, o nadie tocó la pantalla).
+  const d = Number(dur);
+  finHabla = llegada + (d > 0 ? d / ritmo + 250 : Math.max(2500, (texto?.length ?? 40) * 72) / ritmo);
   if (!actx) return;                     // sin WebAudio: sílabas por duración
   try {
     if (voz) { try { voz.pause(); } catch (_) {} }
@@ -753,7 +776,7 @@ function hablar(texto, archivo, sonido) {
     voz = a;
     nodoVoz = actx.createMediaElementSource(a);
     nodoVoz.connect(analiz);             // NO a destination: es mudo
-    a.playbackRate = velocidadVoz;
+    a.playbackRate = ritmo;
     a.addEventListener('loadedmetadata', () => {
       if (voz === a && isFinite(a.duration)) finHabla = performance.now() + a.duration * 1000 / a.playbackRate + 300;
     });
@@ -861,25 +884,42 @@ function alEvento(m) {
   switch (m.tipo) {
     // afecto = entra un agente (o el preludio, o el cierre): la figura del
     // agente anterior no se hereda.
-    case 'afecto':    if (figura) cierreRapido(); aplicarEstado(d.estado); break;
+    case 'afecto':    fondoActivo = false; if (figura) cierreRapido(); aplicarEstado(d.estado); break;
     case 'rumbo':     fijarRumbo(d.estado); break;
-    case 'segmento':  hablar(d.texto, d.audio, d.sonido); break;
+    case 'segmento':  hablar(d.texto, d.audio, d.sonido, d.dur); break;
     // El preludio va antes de todo agente: rostro neutro, aunque el servidor
     // recuerde el rumbo del ensayo anterior.
     // Una función nueva: las caras de poder vuelven a estar sin presentar.
-    case 'preludio':  revelados.clear(); restaurar(); fijarRumbo(null); hablar(d.texto, d.audio); break;
-    case 'agente_id': hablar(d.texto, d.audio); break;   // ya no cambia el rostro: eso lo dice @CLON
+    case 'preludio':  fondoActivo = false; revelados.clear(); restaurar(); fijarRumbo(null); hablar(d.texto, d.audio, null, d.dur); break;
+    case 'agente_id': hablar(d.texto, d.audio, null, d.dur); break;   // ya no cambia el rostro: eso lo dice @CLON
     case 'clon':      forzarFigura(d.figura, d.segundos, d); break;
     case 'silencio':  callar(d.segundos); break;
     case 'pausa':     fijarPausa(!!d.activa); break;
     case 'velocidad':
       velocidadVoz = Math.min(2, Math.max(0.5, Number(d.valor) || 1));
-      if (voz) voz.playbackRate = velocidadVoz;
+      if (voz && !vozEsSonido) voz.playbackRate = velocidadVoz;   // tus sonidos siguen a 1×
       break;
+    // @FONDO: la canción suena en la escena; el clon no la oye, así que la
+    // boca no se mueve con ella. Mientras suena, el rostro se aquieta.
+    case 'fondo': {
+      const antes = fondoActivo;
+      fondoActivo = d.accion === 'iniciar';
+      if (antes !== fondoActivo) {
+        proximo = reloj;
+        // el corte en seco de la canción también se ve: el mosaico se baraja
+        if (antes && CALMA_CON_FONDO && !figura && !vaciado) barajadaHasta = reloj + 1400;
+      }
+      break;
+    }
+    // config_escena y lo demás: solo para la escena; el clon lo ignora.
   }
 }
 function conectar() {
   let ws; try { ws = new WebSocket(`ws://${location.host}`); } catch (e) { return; }
+  // El servidor (v16) deja de mandarle la nube de satélites a quien se
+  // identifica: ~19 KB cada 0,9 s que el clon no usa (más, con todos los
+  // satélites), menos peso por el hotspot del Celular 2.
+  ws.onopen = () => { try { ws.send(JSON.stringify({ soy: 'clon' })); } catch (_) {} };
   ws.onmessage = (e) => {
     let m; try { m = JSON.parse(e.data); } catch (_) { return; }
     if (actx && actx.state === 'suspended') { try { actx.resume(); } catch (_) {} }
@@ -904,7 +944,8 @@ function diagnostico() {
           : F.hastaFin ? ' · hasta el cierre del agente' : '') + (F.rapido ? ' · cierre rápido' : '') +
         (F.sequito ? ` · séquito ${F.sequito.map(nombre).join(', ')}` : '')
       : V ? `vaciar · ${V.fase} ${(V.t / 1000).toFixed(1)} s · vaciadas ${muda.size}` : 'figura —',
-    `silencio ${enSilencio() ? ((silencioFin - performance.now()) / 1000).toFixed(1) + ' s' : 'no'} · pausa ${pausa ? 'SÍ' : 'no'}`,
+    `silencio ${enSilencio() ? ((silencioFin - performance.now()) / 1000).toFixed(1) + ' s' : 'no'} · pausa ${pausa ? 'SÍ' : 'no'}` +
+      ` · fondo ${fondoActivo ? (calma() ? 'sonando: calma' : 'sonando') : 'no'}`,
     `voz ${hablando ? 'hablando' : 'callada'} · ${fuenteReal ? 'análisis real' : 'sílabas por duración'} · audio ${actx ? actx.state : 'sin WebAudio'}`,
     `retraso de la copia (llegada → suena): ${retrasos.length ? retrasos.join(' · ') + ' ms' : '—'}`,
     `sincro ${SINCRO ? 'ON' + (SINCRO_MS ? ' +' + SINCRO_MS + ' ms' : '') : 'OFF'} · ${CAB.size} cabezas · ${EMBEBIDO ? 'en escena' : 'solo'}`,

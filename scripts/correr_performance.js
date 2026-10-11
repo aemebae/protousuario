@@ -450,7 +450,21 @@ function promptDeAgente({ ficha, bloques, territorio, rumbo, territorioB, rumboB
   // Gemini ve TODA la partitura del agente para saber qué está narrando y en
   // qué momento entra cada pieza. Pero los actos son intocables.
   let kN = 0, kM = 0;
+  // ── LO ÍNTIMO NO VIAJA A GEMINI (v17) ──
+  // El texto TAL CUAL del autor (@NATGEO / @MEMORIA TAL CUAL) y TODO lo que
+  // suena bajo un @FONDO (hoy: el pasaje de María, de "Recuerdo cuando conocí
+  // a María Luisa" a "Te voy a extrañar Lu.") no se le muestra a Gemini: no lo
+  // lee, no lo cita, no puede bromear con él. Los huecos que Gemini SÍ tiene
+  // que llenar se siguen marcando (sin texto).
+  const privado = new Set();
+  let bajoFondo = false;
+  bloques.forEach((b, i) => {
+    if (b.tipo === 'fondo') { bajoFondo = b.accion === 'iniciar'; return; }
+    if (bajoFondo || ((b.tipo === 'narracion' || b.tipo === 'memoria') && !b.gemini)) privado.add(i);
+    if (b.cortarFondo) bajoFondo = false;
+  });
   const partitura = bloques.map((b, i) => {
+    if (privado.has(i) && !b.gemini) return '';
     if (b.tipo === 'prompt') return `${i + 1}. [ACCIÓN DEL CUERPO] ${b.texto}`;
     if (b.tipo === 'pregunta') return `${i + 1}. [PREGUNTA AL MICRÓFONO] ${b.texto}`;
     if (b.tipo === 'id_agente') return `${i + 1}. [TU PRESENTACIÓN, ya escrita]`;
@@ -849,7 +863,64 @@ function adelantarOrbital(idxAgente) {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+//  ENSAYO DESDE CUALQUIER PUNTO (v17)
+//    node --env-file=.env scripts\correr_performance.js --desde "conocí a María"
+//    node --env-file=.env scripts\correr_performance.js --desde Quimera
+//    node --env-file=.env scripts\correr_performance.js --desde cierre
+//  Busca ese pedazo de texto (sin importar tildes ni mayúsculas) en el
+//  preludio, los agentes y el cierre, y empieza AHÍ: no suena el preludio ni
+//  los agentes anteriores, y Gemini no gasta tiempo en ellos. Si cae dentro
+//  de un @FONDO, la canción entra igual. Vale SOLO para esa vez: no queda
+//  guardado en la ventana. Con ▶ EMPEZAR del celular siempre es la obra entera.
+// ═══════════════════════════════════════════════════════════════════════════
+const DESDE_TXT = (() => {
+  const a = process.argv.slice(2);
+  const k = a.findIndex((x) => x === '--desde' || x.startsWith('--desde='));
+  if (k < 0) return null;
+  const v = a[k].includes('=') ? a[k].slice(a[k].indexOf('=') + 1) : a.slice(k + 1).join(' ');
+  return v.replace(/^["']|["']$/g, '').trim() || null;
+})();
+const normalDesde = (x) => String(x ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase().replace(/[¿?¡!.,;:"«»()]/g, ' ').replace(/\s+/g, ' ').trim();
+function resolverDesde(q) {
+  const n = normalDesde(q);
+  if (!n) return null;
+  if (n === 'preludio' || n === 'inicio') return { zona: 'preludio', i: 0, donde: 'PRELUDIO' };
+  if (n === 'cierre') return { zona: 'cierre', i: 0, donde: 'CIERRE' };
+  for (let a = 0; a < GUION.agentes.length; a++) {
+    const ag = GUION.agentes[a];
+    const nombres = [ag.id, ag.nombre].map(normalDesde);
+    if (nombres.some((x) => x === n || x.split(/[\s-]+/).includes(n))) return { zona: 'agente', idx: a, i: 0, donde: ag.nombre };
+  }
+  const pars = PRELUDIO?.parrafos ?? [];
+  for (let i = 0; i < pars.length; i++) if (normalDesde(pars[i]).includes(n)) return { zona: 'preludio', i, donde: 'PRELUDIO' };
+  for (let a = 0; a < GUION.agentes.length; a++) {
+    const bl = GUION.agentes[a].bloques;
+    for (let i = 0; i < bl.length; i++) {
+      if (normalDesde(bl[i].texto).includes(n) || normalDesde(bl[i].base).includes(n)) {
+        return { zona: 'agente', idx: a, i, donde: GUION.agentes[a].nombre };
+      }
+    }
+  }
+  const ci = Array.isArray(GUION.cierre) ? GUION.cierre : [];
+  for (let i = 0; i < ci.length; i++) if (normalDesde(ci[i].texto).includes(n)) return { zona: 'cierre', i, donde: 'CIERRE' };
+  return undefined;
+}
+const DESDE = DESDE_TXT ? resolverDesde(DESDE_TXT) : null;
+if (DESDE_TXT && !DESDE) {
+  console.error(`\n✖ --desde: no encuentro «${DESDE_TXT}» en la partitura.`);
+  console.error('  Prueba con un pedazo más corto de la frase, o con: Donald, Eco, Quimera, cierre.\n');
+  process.exit(1);
+}
+
 async function funcion() {
+  if (DESDE) {
+    console.log('\n' + '▷'.repeat(72));
+    console.log(`  ENSAYO · empieza en ${DESDE.donde}, bloque ${DESDE.i + 1}  («${DESDE_TXT}»)`);
+    console.log('  Para la función de verdad: sin --desde, o ▶ EMPEZAR en el celular.');
+    console.log('▷'.repeat(72));
+  }
   console.log('\n' + '='.repeat(72));
   console.log('  PROTOUSUARIO · Patio de las Artes · MINCUL, Lima');
   console.log(`  ${GUION.agentes.length} agentes · ${GUION.agentes.reduce((s, a) => s + a.bloques.length, 0)} bloques`);
@@ -858,7 +929,11 @@ async function funcion() {
   // El agente 1 empieza a prepararse AHORA, antes de que suene una sola
   // palabra. Para cuando termine el preludio, ya estará listo.
   const preparado = [];
-  if (GUION.agentes[0]) preparado[0] = lanzar(GUION.agentes[0]);
+  // Con --desde se prepara el agente donde empieza el ensayo (no el 1).
+  const primero = DESDE?.zona === 'agente' ? DESDE.idx
+    : DESDE?.zona === 'cierre' ? GUION.agentes.length : 0;
+  let arranqueI = DESDE?.zona === 'agente' ? DESDE.i : 0;
+  if (GUION.agentes[primero]) preparado[0] = lanzar(GUION.agentes[primero]);
 
   await esperar('[ENTER o AVANZAR para empezar]');
 
@@ -873,7 +948,7 @@ async function funcion() {
   // en silencio, sin un solo aviso. Ahora se mira `parrafos` primero.
   const hayPreludio = (PRELUDIO?.parrafos?.length || PRELUDIO?.texto);
   if (!hayPreludio) console.warn('  ⚠ preludio.json vacío o ausente: no habrá preludio.');
-  if (hayPreludio && process.env.SIN_PRELUDIO !== '1') {
+  if (hayPreludio && process.env.SIN_PRELUDIO !== '1' && (!DESDE || DESDE.zona === 'preludio')) {
     // El compilador ya deja los párrafos partidos; si no, se parten aquí.
     const parrafos = (PRELUDIO.parrafos?.length ? PRELUDIO.parrafos
       : PRELUDIO.texto.split(/\n+/)).map((t) => t.trim()).filter(Boolean);
@@ -886,7 +961,7 @@ async function funcion() {
     // @CLON escritos dentro del preludio (los guarda compilar_guion.js en
     // preludio.json → clon): cada uno sale justo antes de su párrafo.
     const clonesPre = Array.isArray(PRELUDIO.clon) ? PRELUDIO.clon : [];
-    for (let i = 0; i < parrafos.length; i++) {
+    for (let i = DESDE?.zona === 'preludio' ? DESDE.i : 0; i < parrafos.length; i++) {
       for (const c of clonesPre) {
         if (c.antes !== i) continue;
         console.log(`\n  ◐ CLON → ${c.figura} (${c.segundos ?? 12} s)`);
@@ -915,9 +990,9 @@ async function funcion() {
   // ── ADELANTARSE ──
   // El agente 1 se prepara mientras suena el preludio; el 2 mientras corre el
   // 1; y así. Cuando le toca a cada uno, ya está todo pedido y grabado.
-  let enCamino = preparado[0] ?? lanzar(GUION.agentes[0]);
+  let enCamino = preparado[0] ?? (GUION.agentes[primero] ? lanzar(GUION.agentes[primero]) : null);
 
-  for (let idx = 0; idx < GUION.agentes.length; idx++) {
+  for (let idx = primero; idx < GUION.agentes.length; idx++) {
     const ag = GUION.agentes[idx];
     try {
       console.log('\n' + '─'.repeat(72));
@@ -955,7 +1030,10 @@ async function funcion() {
       try {
 
       // ── Recorrer la partitura, bloque a bloque ──
-      for (let i = 0; i < ag.bloques.length; i++) {
+      // (con --desde, el primer agente arranca en el bloque elegido)
+      const i0 = arranqueI; arranqueI = 0;
+      if (i0) console.log(`\n  ▷ ensayo: se empieza en el bloque ${i0 + 1}`);
+      for (let i = i0; i < ag.bloques.length; i++) {
         const b = ag.bloques[i];
         const seg = segmentos[i];
 
@@ -1075,7 +1153,7 @@ async function funcion() {
                           { agente: 'CIERRE' });
 
     const fondoCierre = rangosDeFondo(CIERRE, 'cierre');
-    for (let i = 0; i < CIERRE.length; i++) {
+    for (let i = DESDE?.zona === 'cierre' ? DESDE.i : 0; i < CIERRE.length; i++) {
       const b = CIERRE[i];
       await sincronizarFondo(fondoCierre[i]);
       if (b.tipo === 'fondo') continue;
