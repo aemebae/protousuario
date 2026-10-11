@@ -1,5 +1,5 @@
 {
-  "_uso": "GENERADO por scripts/compilar_guion.js el 2026-10-10 22:11 desde instrucciones_permanentes.txt. NO EDITAR A MANO.",
+  "_uso": "GENERADO por scripts/compilar_guion.js el 2026-10-10 22:33 desde instrucciones_permanentes.txt. NO EDITAR A MANO.",
   "_tipos": "id_agente · orbital(gemini) · prompt(tuyo) · narracion(gemini) · pregunta(tuya) · memoria(gemini)",
   "_avanzar": "cada bloque espera un AVANZAR del celular",
   "agentes": [
@@ -41,7 +41,7 @@
         },
         {
           "tipo": "id_agente",
-          "texto": "¡Dame tu contenido!"
+          "texto": "¡Dame contenido!"
         },
         {
           "tipo": "id_agente",
@@ -456,7 +456,7 @@
         {
           "tipo": "clon",
           "figura": "Señora K",
-          "segundos": 30,
+          "segundos": 20,
           "texto": ""
         },
         {
