@@ -181,7 +181,7 @@ const UBICACION_B_CORTA = process.env.UBICACION_B_CORTA === '1';
 //  Para cambiarlos, edita los números de abajo o, sin tocar el archivo:
 //     $env:PAUSA_PREGUNTAS_S=3 ; $env:SILENCIO_S=4
 const PAUSA_PREGUNTAS_S = Number(process.env.PAUSA_PREGUNTAS_S
-  ?? (process.env.PAUSA_PREGUNTAS_MS ? Number(process.env.PAUSA_PREGUNTAS_MS) / 1000 : 5));
+  ?? (process.env.PAUSA_PREGUNTAS_MS ? Number(process.env.PAUSA_PREGUNTAS_MS) / 1000 : 4));
 const SILENCIO_S = Number(process.env.SILENCIO_S ?? 5);
 
 /**
